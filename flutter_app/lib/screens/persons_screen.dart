@@ -112,21 +112,41 @@ class _PersonsScreenState extends State<PersonsScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: _parchment, // Light beige background for inactive tabs
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
         controller: _tabController,
+        isScrollable: false, // Ensures tabs take equal width (50/50)
         indicator: BoxDecoration(
-          color: const Color(0xFF8B4513),
+          color: _brown, // Dark brown for active tab
           borderRadius: BorderRadius.circular(12),
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: _brown,
-        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        labelColor: Colors.white, // White text for active tab
+        unselectedLabelColor: _brown, // Dark brown text for inactive tab
+        labelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        splashFactory: NoSplash.splashFactory,
         tabs: const [
-          Tab(text: 'Жагсаалт'),
-          Tab(text: 'Гэр бүлийн мод'),
+          Tab(
+            child: Center(
+              child: Text('Жагсаалт'),
+            ),
+          ),
+          Tab(
+            child: Center(
+              child: Text('Гэр бүлийн мод'),
+            ),
+          ),
         ],
       ),
     );

@@ -1,692 +1,434 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+import '../models/person.dart';
+import '../components/person_node.dart';
+import '../components/person_detail_card.dart';
 
-class FamilyTreeScreen extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────
+// Family tree data model: wraps a Person with tree-specific fields.
+// ─────────────────────────────────────────────────────────────────────
+class _TreeNode {
+  final int id;
+  final int? parentId;
+  final Person person;
+  final Color color;
+  final List<_TreeNode> children = [];
+
+  _TreeNode({
+    required this.id,
+    this.parentId,
+    required this.person,
+    required this.color,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Main screen
+// ─────────────────────────────────────────────────────────────────────
+class FamilyTreeScreen extends StatefulWidget {
   const FamilyTreeScreen({super.key});
 
+  @override
+  State<FamilyTreeScreen> createState() => _FamilyTreeScreenState();
+}
+
+class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
   static const _parchment = Color(0xFFF2DFC3);
   static const _parchmentDark = Color(0xFFE8D0A8);
-  static const _cardBg = Color(0xFFFFFBF5);
   static const _brown = Color(0xFF3B2F2F);
-  static const _lineColor = Color(0xFF2D2D2D);
   static const _gold = Color(0xFFB8860B);
+  int? _selectedPersonId;
+
+  // Hardcoded tree relationships matching the reference image.
+  // IDs match person_id in persons.json.
+  static const _relationships = <int, int?>{
+    1: null, // Чингис хаан  (root)
+    2: null, // Бөртэ үжин   (spouse, rendered beside Chinggis)
+    3: 1, // Зүчи          → Чингис
+    4: 1, // Цагадай        → Чингис
+    5: 1, // Өгөдэй        → Чингис
+    6: 1, // Тулуй          → Чингис
+    7: 3, // Бат хаан       → Зүчи
+    8: 6, // Мөнх хаан      → Тулуй
+    9: 6, // Хубилай        → Тулуй
+    10: 6, // Хүлэгү         → Тулуй
+  };
+
+  static const _nodeColors = <int, Color>{
+    1: Color(0xFF8B4513),
+    2: Color(0xFFA0522D),
+    3: Color(0xFFD2691E),
+    4: Color(0xFF4682B4),
+    5: Color(0xFF6B8E23),
+    6: Color(0xFF8B0000),
+    7: Color(0xFF2E4057),
+    8: Color(0xFF556B2F),
+    9: Color(0xFF708090),
+    10: Color(0xFFB8860B),
+  };
+
+  List<_TreeNode> _buildTree(List<Person> persons) {
+    final Map<int, _TreeNode> nodeMap = {};
+
+    for (final p in persons) {
+      if (p.personId == null) continue;
+      nodeMap[p.personId!] = _TreeNode(
+        id: p.personId!,
+        parentId: _relationships[p.personId!],
+        person: p,
+        color: _nodeColors[p.personId!] ?? const Color(0xFF8B4513),
+      );
+    }
+
+    final roots = <_TreeNode>[];
+    for (final n in nodeMap.values) {
+      if (n.parentId != null && nodeMap.containsKey(n.parentId)) {
+        nodeMap[n.parentId]!.children.add(n);
+      } else {
+        roots.add(n);
+      }
+    }
+    return roots;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_parchment, _parchmentDark],
+    return Consumer<AppProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final roots = _buildTree(provider.persons);
+        final chinggis =
+            roots.firstWhere((n) => n.id == 1, orElse: () => roots.first);
+        final borte = roots.where((n) => n.id == 2).firstOrNull;
+
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [_parchment, _parchmentDark],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              _buildAppBar(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: LayoutBuilder(
-                    builder: (ctx, box) => _buildTree(box.maxWidth),
+              // --- Decorative gold accent bar ---
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 5,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        _gold.withOpacity(0.4),
+                        _gold.withOpacity(0.12),
+                        _gold.withOpacity(0.4),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomSection(),
-    );
-  }
 
-  // ======================== APP BAR ========================
-
-  Widget _buildAppBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child:
-                const Icon(Icons.arrow_back_ios_new, color: _brown, size: 24),
-          ),
-          const Expanded(
-            child: Text(
-              "Genghis Khan's Family Tree",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-                color: _brown,
-                letterSpacing: -0.3,
-              ),
-            ),
-          ),
-          const FlutterLogo(size: 30),
-        ],
-      ),
-    );
-  }
-
-  // ======================== TREE ========================
-
-  Widget _buildTree(double w) {
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        // === Generation 1: Founders ===
-        _buildGen1(),
-        SizedBox(
-          width: w,
-          height: 45,
-          child: CustomPaint(painter: _CoupleToSonsPainter()),
-        ),
-        // === Generation 2: Four Sons ===
-        _buildGen2(),
-        // Chagatai Ulus label
-        Align(
-          alignment: const Alignment(0.25, 0),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 6, bottom: 2),
-            child: _buildDropdownChip('Khans of the\nChagatai Ulus'),
-          ),
-        ),
-        SizedBox(
-          width: w,
-          height: 55,
-          child: CustomPaint(painter: _SonsToGrandsPainter()),
-        ),
-        // === Generation 3: Grandchildren ===
-        _buildGen3(),
-        SizedBox(
-          width: w,
-          height: 50,
-          child: CustomPaint(painter: _BatuToGreatGrandsPainter()),
-        ),
-        // === Generation 4: Great-Grandchildren ===
-        _buildGen4(),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  // ======================== GEN 1 ========================
-
-  Widget _buildGen1() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Genghis Khan',
-            color: const Color(0xFF8B4513),
-            initials: 'GK',
-            avatarSize: 70,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Borte Udjin',
-            color: const Color(0xFFA0522D),
-            initials: 'BU',
-            avatarSize: 70,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ======================== GEN 2 ========================
-
-  Widget _buildGen2() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Jochi',
-            color: const Color(0xFFD2691E),
-            initials: 'J',
-            avatarSize: 55,
-          ),
-        ),
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Ogedei',
-            color: const Color(0xFF6B8E23),
-            initials: 'O',
-            avatarSize: 55,
-          ),
-        ),
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Chagatai',
-            color: const Color(0xFF4682B4),
-            initials: 'Ch',
-            avatarSize: 55,
-          ),
-        ),
-        Expanded(
-          child: _buildPersonCard(
-            name: 'Tolui',
-            color: const Color(0xFF8B0000),
-            initials: 'T',
-            avatarSize: 55,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ======================== GEN 3 ========================
-
-  Widget _buildGen3() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left: Batu Khan + Guyuk Khan
-        Expanded(
-          flex: 5,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _buildPersonCard(
-                  name: 'Batu Khan',
-                  subtitle: 'Khans of the\nBlue Horde',
-                  color: const Color(0xFF2E4057),
-                  initials: 'BK',
-                  avatarSize: 50,
-                ),
-              ),
-              Expanded(
-                child: _buildPersonCard(
-                  name: 'Guyuk Khan',
-                  color: const Color(0xFF4A6B8A),
-                  initials: 'GY',
-                  avatarSize: 50,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Right: Tolui's descendants grouped
-        Expanded(
-          flex: 6,
-          child: _buildToluiDescendantsCard(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToluiDescendantsCard() {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                  child: _buildMiniPerson('Mongke', const Color(0xFF556B2F))),
-              Expanded(
-                  child: _buildMiniPerson('Kublai', const Color(0xFF708090))),
-              Expanded(
-                  child:
-                      _buildMiniPerson('Ariq\nBoke', const Color(0xFF8B7355))),
-              Expanded(
-                  child: _buildMiniPerson('Hulagu', const Color(0xFFB8860B))),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: _cardBg,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: const Text(
-              'Yuan Emperors',
-              style: TextStyle(
-                fontSize: 11,
-                color: _brown,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ======================== GEN 4 ========================
-
-  Widget _buildGen4() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 5,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildPersonCard(
-                      name: 'Orda Ichen',
-                      color: const Color(0xFF808080),
-                      initials: 'OI',
-                      avatarSize: 45,
-                      badge: 'Berke',
-                    ),
-                    const SizedBox(height: 4),
-                    _buildSubtitleChip('Khans of the\nWhite Horde'),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildPersonCard(
-                      name: 'Shayban',
-                      color: const Color(0xFF6B4226),
-                      initials: 'Sh',
-                      avatarSize: 45,
-                    ),
-                    const SizedBox(height: 4),
-                    _buildSubtitleChip('Khans of the\nShayban Ulus'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Expanded(flex: 6, child: SizedBox()),
-      ],
-    );
-  }
-
-  // ======================== REUSABLE COMPONENTS ========================
-
-  Widget _buildPersonCard({
-    required String name,
-    required Color color,
-    required String initials,
-    double avatarSize = 55,
-    String? subtitle,
-    String? badge,
-  }) {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              _buildAvatar(initials: initials, color: color, size: avatarSize),
-              if (badge != null)
-                Positioned(
-                  right: -22,
-                  top: 0,
+              // --- Title ---
+              Positioned(
+                top: 10,
+                left: 0,
+                right: 0,
+                child: Center(
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _cardBg,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.grey.shade300),
+                      color: _parchment.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(10),
+                      border:
+                          Border.all(color: _gold.withOpacity(0.3), width: 1),
                     ),
-                    child: Text(
-                      badge,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                    child: const Text(
+                      '13-Р ЗУУНЫ МОНГОЛЫН ТҮҮХ',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                         color: _brown,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
                 ),
+              ),
+
+              // --- Zoomable / pannable tree ---
+              Padding(
+                padding: const EdgeInsets.only(top: 42),
+                child: InteractiveViewer(
+                  minScale: 0.35,
+                  maxScale: 3.0,
+                  boundaryMargin: const EdgeInsets.all(300),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        child: _buildTreeLayout(chinggis, borte, provider),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // --- Person detail card overlay ---
+              if (_selectedPersonId != null) _buildDetailOverlay(provider),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: _brown,
-            ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: _brown.withOpacity(0.65),
-              ),
-            ),
-          ],
+        );
+      },
+    );
+  }
+
+  // ───────────── TREE LAYOUT ─────────────
+
+  Widget _buildTreeLayout(
+      _TreeNode chinggis, _TreeNode? borte, AppProvider provider) {
+    return CustomPaint(
+      foregroundPainter: _TreeLinePainter(
+        chinggis: chinggis,
+        borte: borte,
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          // === Gen 1: Founding couple ===
+          _buildGen1Row(chinggis, borte),
+          const SizedBox(height: 55),
+          // === Gen 2: Four sons ===
+          _buildGen2Row(chinggis.children),
+          const SizedBox(height: 55),
+          // === Gen 3: Grandchildren ===
+          _buildGen3Row(chinggis.children),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildAvatar({
-    required String initials,
-    required Color color,
-    required double size,
-  }) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: _gold.withOpacity(0.5), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: size * 0.28,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMiniPerson(String name, Color color) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildGen1Row(_TreeNode chinggis, _TreeNode? borte) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildAvatar(initials: name.characters.first, color: color, size: 40),
-        const SizedBox(height: 4),
-        Text(
-          name,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: _brown,
-          ),
-        ),
+        _buildNode(chinggis, 80),
+        if (borte != null) ...[
+          const SizedBox(width: 40),
+          _buildNode(borte, 80),
+        ],
       ],
     );
   }
 
-  Widget _buildDropdownChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            text,
-            style: const TextStyle(fontSize: 11, color: _brown),
-          ),
-          const SizedBox(width: 4),
-          const Icon(Icons.keyboard_arrow_down, size: 18, color: _brown),
-        ],
-      ),
+  Widget _buildGen2Row(List<_TreeNode> children) {
+    if (children.isEmpty) return const SizedBox();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children
+          .map((c) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: _buildNode(c, 65),
+              ))
+          .toList(),
     );
   }
 
-  Widget _buildSubtitleChip(String text) {
+  Widget _buildGen3Row(List<_TreeNode> gen2) {
+    final allGrandchildren = <_TreeNode>[];
+    for (final parent in gen2) {
+      allGrandchildren.addAll(parent.children);
+    }
+    if (allGrandchildren.isEmpty) return const SizedBox();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Left side: Batu Khan (Jochi's son)
+        ...gen2
+            .where((p) => p.id == 3)
+            .expand((p) => p.children)
+            .map((c) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    children: [
+                      _buildNode(c, 58),
+                      const SizedBox(height: 6),
+                      _buildGroupLabel('Алтан Ордны\nхаад'),
+                    ],
+                  ),
+                )),
+        const SizedBox(width: 24),
+        // Right side: Tolui's sons
+        ...gen2
+            .where((p) => p.id == 6)
+            .expand((p) => p.children)
+            .map((c) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _buildNode(c, 58),
+                )),
+      ],
+    );
+  }
+
+  Widget _buildGroupLabel(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _cardBg,
+        color: const Color(0xFFFFFBF5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: _gold.withOpacity(0.3)),
       ),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 10, color: _brown),
-      ),
-    );
-  }
-
-  // ======================== BOTTOM NAV + FOOTER ========================
-
-  Widget _buildBottomSection() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildBottomNav(),
-        _buildFooter(),
-      ],
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F0E8),
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(Icons.account_tree, 'Tree', true),
-          _buildNavItem(Icons.format_list_bulleted, 'Timeline', false),
-          _buildNavItem(Icons.search, 'Search', false),
-          _buildNavItem(Icons.person_outline, 'Profile', false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool selected) {
-    final color = selected ? const Color(0xFF8B4513) : Colors.grey;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: color,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-          ),
+        style: TextStyle(
+          fontSize: 10,
+          color: _brown.withOpacity(0.7),
+          fontWeight: FontWeight.w500,
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildFooter() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Powered by ',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-          ),
-          const FlutterLogo(size: 20),
-          Text(
-            ' Flutter',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 24),
-          Icon(Icons.blur_circular, size: 20, color: Colors.grey.shade700),
-          const SizedBox(width: 4),
-          Text(
-            'MyHeritage',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildNode(_TreeNode node, double size) {
+    return PersonNode(
+      person: node.person,
+      size: size,
+      accentColor: node.color,
+      isSelected: _selectedPersonId == node.id,
+      onTap: () {
+        setState(() {
+          _selectedPersonId = _selectedPersonId == node.id ? null : node.id;
+        });
+      },
+    );
+  }
+
+  // ───────────── DETAIL OVERLAY ─────────────
+
+  Widget _buildDetailOverlay(AppProvider provider) {
+    final person = provider.getPersonById(_selectedPersonId!);
+    if (person == null) return const SizedBox();
+
+    final events = provider.getEventsForPerson(_selectedPersonId!);
+    final eventNames = events.map((e) => e.title).toList();
+
+    return PersonDetailCard(
+      person: person,
+      keyEvents: eventNames,
+      onClose: () => setState(() => _selectedPersonId = null),
     );
   }
 }
 
-// ======================== TREE LINE PAINTERS ========================
+// ─────────────────────────────────────────────────────────────────────
+// Custom painter for connecting lines between tree generations.
+// ─────────────────────────────────────────────────────────────────────
+class _TreeLinePainter extends CustomPainter {
+  final _TreeNode chinggis;
+  final _TreeNode? borte;
 
-/// Draws connecting lines from the founding couple down to the four sons.
-class _CoupleToSonsPainter extends CustomPainter {
+  _TreeLinePainter({required this.chinggis, this.borte});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2D2D2D)
-      ..strokeWidth = 2
+      ..color = const Color(0xFF5C4033)
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
     final midX = size.width / 2;
-    final midY = size.height * 0.5;
 
-    // Vertical from couple center down
-    canvas.drawLine(Offset(midX, 0), Offset(midX, midY), paint);
+    // ── Gen1 couple connector (horizontal) ──
+    if (borte != null) {
+      final chX = midX - 35;
+      final boX = midX + 35;
+      const coupleY = 80.0;
+      canvas.drawLine(Offset(chX, coupleY), Offset(boX, coupleY), paint);
+    }
 
-    // Son centers (4 Expanded widgets → centers at 1/8, 3/8, 5/8, 7/8)
-    final xs = [
-      size.width * 0.125,
-      size.width * 0.375,
-      size.width * 0.625,
-      size.width * 0.875,
-    ];
+    // ── Couple → Gen2 vertical & horizontal fan ──
+    final gen2 = chinggis.children;
+    if (gen2.isEmpty) return;
 
-    // Horizontal bar
-    canvas.drawLine(Offset(xs.first, midY), Offset(xs.last, midY), paint);
+    const gen1BottomY = 108.0;
+    const gen2TopY = 163.0;
+    final gen2MidY = (gen1BottomY + gen2TopY) / 2;
 
-    // Vertical drops to each son
-    for (final x in xs) {
-      canvas.drawLine(Offset(x, midY), Offset(x, size.height), paint);
+    canvas.drawLine(Offset(midX, gen1BottomY), Offset(midX, gen2MidY), paint);
+
+    final nodeW = 95.0;
+    final gap = 20.0;
+    final totalW = gen2.length * nodeW + (gen2.length - 1) * gap;
+    final startX = midX - totalW / 2;
+
+    final gen2Xs = List.generate(gen2.length, (i) {
+      return startX + i * (nodeW + gap) + nodeW / 2;
+    });
+
+    if (gen2Xs.length > 1) {
+      canvas.drawLine(
+          Offset(gen2Xs.first, gen2MidY), Offset(gen2Xs.last, gen2MidY), paint);
+    }
+
+    for (final x in gen2Xs) {
+      canvas.drawLine(Offset(x, gen2MidY), Offset(x, gen2TopY), paint);
+    }
+
+    // ── Gen2 → Gen3 lines ──
+    const gen2BottomY = 253.0;
+    const gen3TopY = 308.0;
+    final gen3MidY = (gen2BottomY + gen3TopY) / 2;
+
+    double grandStartX = midX - 160;
+    final grandSpacing = 76.0;
+
+    for (int i = 0; i < gen2.length; i++) {
+      final parent = gen2[i];
+      if (parent.children.isEmpty) continue;
+
+      final parentX = gen2Xs[i];
+      List<double> childXs = [];
+
+      if (parent.id == 3) {
+        childXs = [grandStartX + 50];
+      } else if (parent.id == 6) {
+        final rightStart = midX + 10;
+        childXs = List.generate(
+            parent.children.length, (j) => rightStart + j * grandSpacing);
+      }
+
+      if (childXs.isEmpty) continue;
+
+      canvas.drawLine(
+          Offset(parentX, gen2BottomY), Offset(parentX, gen3MidY), paint);
+
+      if (childXs.length == 1) {
+        canvas.drawLine(
+            Offset(parentX, gen3MidY), Offset(childXs[0], gen3MidY), paint);
+      } else {
+        final allX = [parentX, ...childXs];
+        allX.sort();
+        canvas.drawLine(
+            Offset(allX.first, gen3MidY), Offset(allX.last, gen3MidY), paint);
+      }
+
+      for (final cx in childXs) {
+        canvas.drawLine(Offset(cx, gen3MidY), Offset(cx, gen3TopY), paint);
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Draws connecting lines from sons (Gen2) to grandchildren (Gen3).
-class _SonsToGrandsPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF2D2D2D)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    final midY = size.height * 0.4;
-
-    // Jochi (0.125) → Batu Khan (left section: flex 5/11, first Expanded → center ~5/44)
-    final jochiX = size.width * 0.125;
-    final batuX = size.width * 5 / 44;
-    _drawElbow(canvas, paint, jochiX, 0, batuX, size.height, midY);
-
-    // Ogedei (0.375) → Guyuk Khan (left section: second Expanded → center ~15/44)
-    final ogedeiX = size.width * 0.375;
-    final guyukX = size.width * 15 / 44;
-    _drawElbow(canvas, paint, ogedeiX, 0, guyukX, size.height, midY);
-
-    // Tolui (0.875) → center of Tolui group card (right section center ~8/11)
-    final toluiX = size.width * 0.875;
-    final groupCenterX = size.width * 8 / 11;
-    _drawElbow(canvas, paint, toluiX, 0, groupCenterX, size.height, midY);
-  }
-
-  void _drawElbow(Canvas canvas, Paint paint, double fromX, double fromY,
-      double toX, double toY, double midY) {
-    canvas.drawLine(Offset(fromX, fromY), Offset(fromX, midY), paint);
-    canvas.drawLine(Offset(fromX, midY), Offset(toX, midY), paint);
-    canvas.drawLine(Offset(toX, midY), Offset(toX, toY), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Draws connecting lines from Batu Khan to Orda Ichen and Shayban.
-class _BatuToGreatGrandsPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF2D2D2D)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    // Batu center (left section flex 5/11, first Expanded → 5/44)
-    final batuX = size.width * 5 / 44;
-    // Orda center: same position as Batu (5/44)
-    final ordaX = size.width * 5 / 44;
-    // Shayban center (left section, second Expanded → 15/44)
-    final shaybanX = size.width * 15 / 44;
-    final midY = size.height * 0.45;
-
-    // Vertical from Batu
-    canvas.drawLine(Offset(batuX, 0), Offset(batuX, midY), paint);
-    // Horizontal bar spanning Orda to Shayban
-    canvas.drawLine(Offset(ordaX, midY), Offset(shaybanX, midY), paint);
-    // Vertical drops
-    canvas.drawLine(Offset(ordaX, midY), Offset(ordaX, size.height), paint);
-    canvas.drawLine(
-        Offset(shaybanX, midY), Offset(shaybanX, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
