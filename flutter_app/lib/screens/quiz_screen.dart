@@ -88,7 +88,7 @@ class _QuizScreenState extends State<QuizScreen> {
               _buildAppBar(context),
               Expanded(
                 child: _shuffledQuizzes.isEmpty
-                    ? const Center(child: Text('Квиз олдсонгүй'))
+                    ? const Center(child: Text('Quiz олдсонгүй'))
                     : _quizComplete
                         ? _buildResultScreen()
                         : _buildQuizContent(),

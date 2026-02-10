@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class InsightService extends ChangeNotifier {
   String _insight =
-      "Discover fascinating historical facts from the Mongol Empire";
+      'Discover fascinating historical facts from the Mongol Empire';
   bool _isLoading = false;
 
   String get insight => _insight;
@@ -26,18 +26,18 @@ class InsightService extends ChangeNotifier {
 
       // Sample insights for demonstration
       final insights = [
-        "The Mongol Empire was the largest contiguous land empire in history, spanning over 24 million square kilometers.",
-        "Genghis Khan established the first international postal system called the Yam.",
-        "The Mongols promoted religious tolerance and freedom of worship across their vast empire.",
-        "Mongol warriors could ride for days without stopping, sleeping in their saddles.",
-        "The Silk Road flourished under Mongol protection, enabling unprecedented cultural exchange.",
+        'The Mongol Empire was the largest contiguous land empire in history, spanning over 24 million square kilometers.',
+        'Genghis Khan established the first international postal system called the Yam.',
+        'The Mongols promoted religious tolerance and freedom of worship across their vast empire.',
+        'Mongol warriors could ride for days without stopping, sleeping in their saddles.',
+        'The Silk Road flourished under Mongol protection, enabling unprecedented cultural exchange.',
       ];
 
       insights.shuffle();
       _insight = insights.first;
     } catch (e) {
       _insight =
-          "Unable to fetch insight at this time. Please try again later.";
+          'Unable to fetch insight at this time. Please try again later.';
       debugPrint('Error fetching insight: $e');
     } finally {
       _isLoading = false;

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 
 /// FR-07: Соёл, нийгмийн амьдралын мэдээлэл таниулах
-/// Doc menu: "Хүмүүс, Үйл явдал, Газрын зураг, Квиз, Соёл"
+/// Doc menu: "Хүмүүс, Үйл явдал, Газрын зураг, Quiz, Соёл"
 class CultureScreen extends StatelessWidget {
   const CultureScreen({super.key});
 

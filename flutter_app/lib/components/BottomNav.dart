@@ -19,7 +19,7 @@ class _BottomNavState extends State<BottomNav> {
     _NavItem(icon: Icons.account_balance, label: 'Хүмүүс'),
     _NavItem(icon: Icons.event_note, label: 'Үйл явдал'),
     _NavItem(icon: Icons.map_outlined, label: 'Газрын зураг'),
-    _NavItem(icon: Icons.quiz_outlined, label: 'Квиз'),
+    _NavItem(icon: Icons.quiz_outlined, label: 'Quiz'),
     _NavItem(icon: Icons.museum_outlined, label: 'Соёл'),
   ];
 

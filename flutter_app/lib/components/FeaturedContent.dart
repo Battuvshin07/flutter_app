@@ -12,7 +12,7 @@ class FeaturedContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Онцлох түүхүүд",
+            'Онцлох түүхүүд',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -22,24 +22,24 @@ class FeaturedContent extends StatelessWidget {
           const SizedBox(height: 16),
           _buildFeaturedCard(
             context,
-            title: "Монголын эзэнт гүрний үүсэл",
-            description: "Чингис хаан нүүдэлчин овгуудыг нэгтгэсэн түүх",
+            title: 'Монголын эзэнт гүрний үүсэл',
+            description: 'Чингис хаан нүүдэлчин овгуудыг нэгтгэсэн түүх',
             imageColor: Colors.red.shade400,
             icon: Icons.workspace_premium,
           ),
           const SizedBox(height: 12),
           _buildFeaturedCard(
             context,
-            title: "Монголын цэргийн тактик",
-            description: "Дэлхийг байлдан дагуулсан хувьсгалт стратеги",
+            title: 'Монголын цэргийн тактик',
+            description: 'Дэлхийг байлдан дагуулсан хувьсгалт стратеги',
             imageColor: Colors.indigo.shade400,
             icon: Icons.shield,
           ),
           const SizedBox(height: 12),
           _buildFeaturedCard(
             context,
-            title: "Нүүдлийн амьдрал",
-            description: "Нүүдэлчин дайчдын өдөр тутмын амьдрал ба соёл",
+            title: 'Нүүдлийн амьдрал',
+            description: 'Нүүдэлчин дайчдын өдөр тутмын амьдрал ба соёл',
             imageColor: Colors.teal.shade400,
             icon: Icons.landscape,
           ),

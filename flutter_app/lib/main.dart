@@ -179,7 +179,7 @@ class _HistoryInsightCardState extends State<HistoryInsightCard> {
                       ? const Icon(Icons.auto_awesome,
                           color: Colors.white, size: 18)
                       : const Text(
-                          "GK",
+                          'GK',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -194,7 +194,7 @@ class _HistoryInsightCardState extends State<HistoryInsightCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Түүхийн мэдлэг",
+                      'Түүхийн мэдлэг',
                       style: TextStyle(
                         fontSize: 10,
                         color: Colors.orange.shade400,
@@ -205,7 +205,7 @@ class _HistoryInsightCardState extends State<HistoryInsightCard> {
                     const SizedBox(height: 4),
                     Text(
                       insightService.isLoading
-                          ? "Их хааны архиваас хайж байна..."
+                          ? 'Их хааны архиваас хайж байна...'
                           : insightService.insight,
                       style: TextStyle(
                         fontSize: 12,

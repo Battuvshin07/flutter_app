@@ -15,7 +15,7 @@ class QuickActions extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildActionCard(
-            label: "Хүмүүс",
+            label: 'Хүмүүс',
             imagePath: 'assets/images/logo_1.png',
             onTap: () {
               Navigator.push(
@@ -27,7 +27,7 @@ class QuickActions extends StatelessWidget {
             },
           ),
           _buildActionCard(
-            label: "Үйл явдал",
+            label: 'Үйл явдал',
             imagePath: 'assets/images/logo_2.png',
             onTap: () {
               Navigator.push(
@@ -39,7 +39,7 @@ class QuickActions extends StatelessWidget {
             },
           ),
           _buildActionCard(
-            label: "Газрын зураг",
+            label: 'Газрын зураг',
             imagePath: 'assets/images/logo_3.png',
             onTap: () {
               Navigator.push(
@@ -51,7 +51,7 @@ class QuickActions extends StatelessWidget {
             },
           ),
           _buildActionCard(
-            label: "Квиз",
+            label: 'Quiz',
             imagePath: 'assets/images/logo_4.png',
             onTap: () {
               Navigator.push(

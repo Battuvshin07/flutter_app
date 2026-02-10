@@ -302,7 +302,7 @@ class _MapScreenState extends State<MapScreen> {
                   const SizedBox(height: 4),
                   Text(
                     data.title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: _brown,
