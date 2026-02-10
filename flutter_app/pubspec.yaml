@@ -22,6 +22,7 @@ dependencies:
   lucide_flutter: ^0.563.0
 
   cupertino_icons: ^1.0.2
+  flutter_earth_globe: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +34,4 @@ flutter:
   assets:
     - assets/images/
     - assets/data/
+    - assets/maps/
