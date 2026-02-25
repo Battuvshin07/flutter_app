@@ -363,12 +363,12 @@ class _TreeLinePainter extends CustomPainter {
 
     const gen1BottomY = 108.0;
     const gen2TopY = 163.0;
-    final gen2MidY = (gen1BottomY + gen2TopY) / 2;
+    const gen2MidY = (gen1BottomY + gen2TopY) / 2;
 
     canvas.drawLine(Offset(midX, gen1BottomY), Offset(midX, gen2MidY), paint);
 
-    final nodeW = 95.0;
-    final gap = 20.0;
+    const nodeW = 95.0;
+    const gap = 20.0;
     final totalW = gen2.length * nodeW + (gen2.length - 1) * gap;
     final startX = midX - totalW / 2;
 
@@ -388,10 +388,10 @@ class _TreeLinePainter extends CustomPainter {
     // ── Gen2 → Gen3 lines ──
     const gen2BottomY = 253.0;
     const gen3TopY = 308.0;
-    final gen3MidY = (gen2BottomY + gen3TopY) / 2;
+    const gen3MidY = (gen2BottomY + gen3TopY) / 2;
 
     double grandStartX = midX - 160;
-    final grandSpacing = 76.0;
+    const grandSpacing = 76.0;
 
     for (int i = 0; i < gen2.length; i++) {
       final parent = gen2[i];

@@ -219,7 +219,7 @@ class _PersonDetailCardState extends State<PersonDetailCard>
                                       margin: const EdgeInsets.only(top: 5),
                                       width: 5,
                                       height: 5,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: _gold,
                                       ),

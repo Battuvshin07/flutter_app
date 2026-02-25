@@ -6,9 +6,11 @@ import 'package:flutter_earth_globe/point.dart';
 import 'package:flutter_earth_globe/point_connection.dart';
 import 'package:flutter_earth_globe/point_connection_style.dart';
 import '../models/empire_territory.dart';
+import '../components/flat_map_widget.dart';
 
-/// FR-02: Mongol Empire - 3D Interactive Globe
+/// FR-02: Mongol Empire - 3D Interactive Globe & 2D Flat Map
 /// Rotatable, zoomable 3D Earth with empire territory border and conquest markers.
+/// Toggles between 3D globe and 2D flat map with smooth animated crossfade.
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -16,7 +18,8 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _MapScreenState extends State<MapScreen>
+    with SingleTickerProviderStateMixin {
   // Theme
   static const _bgDark = Color(0xFF0B0D17);
   static const _cardBg = Color(0xFF1A1D2E);
@@ -28,10 +31,58 @@ class _MapScreenState extends State<MapScreen> {
   bool _globeReady = false;
   String? _selectedMarkerId;
 
+  /// true = 3D globe, false = 2D flat map
+  bool _is3D = true;
+
+  /// Animation controller for crossfade / scale transition
+  late AnimationController _viewToggleCtrl;
+  late Animation<double> _fadeIn;
+  late Animation<double> _fadeOut;
+  late Animation<double> _scaleIn;
+  late Animation<double> _scaleOut;
+
   @override
   void initState() {
     super.initState();
     _initGlobe();
+    _initViewToggleAnimation();
+  }
+
+  void _initViewToggleAnimation() {
+    _viewToggleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    // Outgoing view fades/scales out in the first half
+    _fadeOut = Tween(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+          parent: _viewToggleCtrl,
+          curve: const Interval(0.0, 0.45, curve: Curves.easeIn)),
+    );
+    _scaleOut = Tween(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(
+          parent: _viewToggleCtrl,
+          curve: const Interval(0.0, 0.45, curve: Curves.easeIn)),
+    );
+    // Incoming view fades/scales in in the second half
+    _fadeIn = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+          parent: _viewToggleCtrl,
+          curve: const Interval(0.50, 1.0, curve: Curves.easeOut)),
+    );
+    _scaleIn = Tween(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(
+          parent: _viewToggleCtrl,
+          curve: const Interval(0.50, 1.0, curve: Curves.easeOut)),
+    );
+  }
+
+  void _toggleViewMode() {
+    if (_viewToggleCtrl.isAnimating) return;
+    _viewToggleCtrl.forward(from: 0).then((_) {
+      setState(() => _is3D = !_is3D);
+      _viewToggleCtrl.reset();
+    });
   }
 
   void _initGlobe() {
@@ -160,19 +211,23 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onMarkerTapped(ConquestMarker marker) {
     setState(() => _selectedMarkerId = marker.id);
-    _globeCtrl.focusOnCoordinates(
-      GlobeCoordinates(marker.lat, marker.lon),
-      animate: true,
-    );
+    if (_is3D) {
+      _globeCtrl.focusOnCoordinates(
+        GlobeCoordinates(marker.lat, marker.lon),
+        animate: true,
+      );
+    }
     _showConquestDetail(marker);
   }
 
   void _toggleEmpireVisibility() {
     setState(() => _showEmpire = !_showEmpire);
+
     if (_showEmpire) {
       _addEmpireBorder();
     } else {
       const coords = EmpireTerritory.boundaryCoords;
+
       for (int i = 0; i < coords.length - 1; i++) {
         _globeCtrl.removePointConnection('border-$i');
       }
@@ -188,6 +243,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
+    _viewToggleCtrl.dispose();
     // Do NOT call _globeCtrl.dispose() here.
     // The FlutterEarthGlobe widget's State already disposes the
     // controller's rotationController and internal AnimationControllers
@@ -203,16 +259,11 @@ class _MapScreenState extends State<MapScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // 3D Globe (full screen)
+            // Animated map view (3D globe or 2D flat map)
             Positioned.fill(
-              child: FlutterEarthGlobe(
-                controller: _globeCtrl,
-                radius: MediaQuery.of(context).size.width * 0.42,
-                onTap: (coords) {
-                  if (coords != null) {
-                    setState(() => _selectedMarkerId = null);
-                  }
-                },
+              child: AnimatedBuilder(
+                animation: _viewToggleCtrl,
+                builder: (context, child) => _buildAnimatedMapView(context),
               ),
             ),
             // Top bar
@@ -235,8 +286,8 @@ class _MapScreenState extends State<MapScreen> {
               bottom: 0,
               child: _buildConquestLegend(),
             ),
-            // Loading
-            if (!_globeReady)
+            // Loading (only for 3D globe)
+            if (!_globeReady && _is3D)
               Container(
                 color: _bgDark,
                 child: const Center(
@@ -255,6 +306,60 @@ class _MapScreenState extends State<MapScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedMapView(BuildContext context) {
+    final isAnimating = _viewToggleCtrl.isAnimating;
+
+    // Determine which view is outgoing and which is incoming
+    final Widget currentView = _is3D ? _build3DGlobe(context) : _build2DMap();
+    final Widget nextView = _is3D ? _build2DMap() : _build3DGlobe(context);
+
+    if (!isAnimating) {
+      return currentView;
+    }
+
+    // During animation: crossfade with scale
+    return Stack(
+      children: [
+        // Outgoing view
+        FadeTransition(
+          opacity: _fadeOut,
+          child: ScaleTransition(
+            scale: _scaleOut,
+            child: currentView,
+          ),
+        ),
+        // Incoming view
+        FadeTransition(
+          opacity: _fadeIn,
+          child: ScaleTransition(
+            scale: _scaleIn,
+            child: nextView,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _build3DGlobe(BuildContext context) {
+    return FlutterEarthGlobe(
+      controller: _globeCtrl,
+      radius: MediaQuery.of(context).size.width * 0.42,
+      onTap: (coords) {
+        if (coords != null) {
+          setState(() => _selectedMarkerId = null);
+        }
+      },
+    );
+  }
+
+  Widget _build2DMap() {
+    return FlatMapWidget(
+      selectedMarkerId: _selectedMarkerId,
+      showEmpire: _showEmpire,
+      onMarkerTapped: _onMarkerTapped,
     );
   }
 
@@ -301,24 +406,57 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: _empireRed.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _empireRed.withValues(alpha: 0.4)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.public, color: _empireRed, size: 16),
-                SizedBox(width: 4),
-                Text('3D',
-                    style: TextStyle(
-                        color: _empireRed,
+          GestureDetector(
+            onTap: _toggleViewMode,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _is3D
+                    ? _empireRed.withValues(alpha: 0.2)
+                    : const Color(0xFF4FC3F7).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _is3D
+                      ? _empireRed.withValues(alpha: 0.4)
+                      : const Color(0xFF4FC3F7).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, anim) => ScaleTransition(
+                      scale: anim,
+                      child: child,
+                    ),
+                    child: Icon(
+                      _is3D ? Icons.map_outlined : Icons.public,
+                      key: ValueKey(_is3D),
+                      color: _is3D ? _empireRed : const Color(0xFF4FC3F7),
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, anim) => FadeTransition(
+                      opacity: anim,
+                      child: child,
+                    ),
+                    child: Text(
+                      _is3D ? '2D' : '3D',
+                      key: ValueKey(_is3D ? '2D' : '3D'),
+                      style: TextStyle(
+                        color: _is3D ? _empireRed : const Color(0xFF4FC3F7),
                         fontSize: 12,
-                        fontWeight: FontWeight.w800)),
-              ],
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
