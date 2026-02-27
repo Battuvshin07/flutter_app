@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "823744797822",
+    "project_id": "historyapp-d1d66",
+    "storage_bucket": "historyapp-d1d66.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823744797822:android:41b5316eb3a0c57ff08c2f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRn814INliD8_NVnj396GcdSm_mCJVpHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

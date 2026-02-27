@@ -24,6 +24,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_earth_globe: ^2.2.0
 
+  # Backend layer
+  sqflite: ^2.3.0
+  path: ^1.8.0
+  encrypt: ^5.0.3
+  flutter_secure_storage: ^9.0.0
+  connectivity_plus: ^6.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
