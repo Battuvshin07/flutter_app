@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../screens/persons_screen.dart';
 import '../screens/map_screen.dart';
+import '../screens/profile_screen.dart';
 
 /// G) Floating bottom navigation bar
 /// 358×64, radius 22, blur/glass effect, 4 items, active underline 24×3.
@@ -36,7 +37,7 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
         screen = const MapScreen();
         break;
       case 3:
-        // Profile – no screen yet, stay put
+        screen = const ProfileScreen();
         break;
     }
     if (screen != null) {
