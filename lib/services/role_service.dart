@@ -18,7 +18,10 @@ class RoleService {
     // 1) Check Custom Claims (preferred — set via Cloud Function)
     final tokenResult = await user.getIdTokenResult(true);
     final claimRole = tokenResult.claims?['role'];
-    if (claimRole != null && (claimRole == 'admin' || claimRole == 'user')) {
+    if (claimRole != null &&
+        (claimRole == 'admin' ||
+            claimRole == 'superAdmin' ||
+            claimRole == 'user')) {
       return claimRole as String;
     }
 
@@ -31,10 +34,10 @@ class RoleService {
     return 'user'; // default
   }
 
-  /// Check if the current user is an admin.
+  /// Check if the current user is an admin or superAdmin.
   Future<bool> isAdmin() async {
     final role = await getCurrentUserRole();
-    return role == 'admin';
+    return role == 'admin' || role == 'superAdmin';
   }
 
   /// Stream that re-emits the role whenever the Firestore user doc changes.

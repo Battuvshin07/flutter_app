@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../components/admin/glass_card.dart';
 import '../components/admin/admin_stat_card.dart';
 import '../components/admin/admin_widgets.dart';
+import '../main.dart' show HomeScreen;
 
 // ══════════════════════════════════════════════════════════════════
 //  ADMIN DASHBOARD SCREEN
@@ -119,7 +120,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.maybePop(context),
+            onTap: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (_) => false,
+              );
+            },
             child: Container(
               width: 40,
               height: 40,

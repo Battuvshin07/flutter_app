@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'admin_dashboard_screen.dart';
 import 'auth_gate.dart';
+import '../components/admin_gate.dart';
 
 // ══════════════════════════════════════════════════════════════════
 //  PROFILE SCREEN – gamified user profile for Mongolian history app
@@ -493,33 +494,39 @@ class _ProfileScreenState extends State<ProfileScreen>
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
         children: [
-          _SettingsTile(
-            icon: Icons.admin_panel_settings_rounded,
-            label: 'Admin Dashboard',
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'ADMIN',
-                style: AppTheme.chip.copyWith(
-                  color: AppTheme.accentGold,
-                  fontSize: 10,
+          // Admin Dashboard — only visible to admin / superAdmin
+          if (context.watch<AuthProvider>().isAdmin) ...[
+            _SettingsTile(
+              icon: Icons.admin_panel_settings_rounded,
+              label: 'Admin Dashboard',
+              trailing: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGold.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'ADMIN',
+                  style: AppTheme.chip.copyWith(
+                    color: AppTheme.accentGold,
+                    fontSize: 10,
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AdminGate(
+                      child: AdminDashboardScreen(),
+                    ),
+                  ),
+                );
+              },
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AdminDashboardScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
+          ],
           _SettingsTile(
             icon: Icons.edit_rounded,
             label: 'Edit Profile',

@@ -12,9 +12,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    /// Check if the authenticated user is an admin (via Custom Claims)
+    /// Check if the authenticated user is an admin or superAdmin (via Custom Claims)
     function isAdmin() {
-      return isAuthenticated() && request.auth.token.role == 'admin';
+      return isAuthenticated() &&
+             (request.auth.token.role == 'admin' || request.auth.token.role == 'superAdmin');
     }
 
     /// Check if the authenticated user owns this document

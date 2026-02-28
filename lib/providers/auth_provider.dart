@@ -26,7 +26,8 @@ class AuthProvider with ChangeNotifier {
   String get role => _role;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
-  bool get isAdmin => _role == 'admin';
+  bool get isAdmin => _role == 'admin' || _role == 'superAdmin';
+  bool get isSuperAdmin => _role == 'superAdmin';
   String? get error => _error;
 
   // ── Init ─────────────────────────────────────────────────────
@@ -114,6 +115,13 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    // Eagerly reset role BEFORE Firebase sign-out fires the stream
+    // to prevent stale admin state leaking to the next login.
+    _role = 'user';
+    _user = null;
+    _error = null;
+    notifyListeners();
+
     await _authService.signOut();
   }
 

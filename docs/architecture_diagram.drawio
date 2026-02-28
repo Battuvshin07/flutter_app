@@ -1,0 +1,432 @@
+<mxfile host="app.diagrams.net" modified="2026-02-28T00:00:00.000Z" agent="Copilot" version="24.0.0" type="device">
+  <diagram id="page1" name="Clean Architecture">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title1" value="&lt;b&gt;Mongol History App — Clean Architecture&lt;/b&gt;" style="text;html=1;fontSize=22;fontColor=#F4C84A;align=center;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="400" y="10" width="800" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer1" value="&lt;b&gt;PRESENTATION LAYER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Flutter UI — Screens &amp;amp; Widgets&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#0B1220;strokeColor=#F4C84A;fontColor=#F4C84A;rounded=1;arcSize=8;fontSize=14;html=1;collapsible=0;swimlaneLine=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1520" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_home" value="&lt;b&gt;HomeScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;main.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="20" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_login" value="&lt;b&gt;LoginScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;login_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="155" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_register" value="&lt;b&gt;RegisterScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;register_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="290" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_profile" value="&lt;b&gt;ProfileScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;profile_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="425" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_admin" value="&lt;b&gt;AdminDashboard&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;admin_dashboard_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="560" y="50" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_persons" value="&lt;b&gt;PersonsScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;persons_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="715" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_quiz" value="&lt;b&gt;QuizScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;quiz_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="850" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_culture" value="&lt;b&gt;CultureScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;culture_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="985" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_map" value="&lt;b&gt;MapScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;map_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="1120" y="50" width="120" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_journey" value="&lt;b&gt;HistoryJourney&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;history_journey_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="1255" y="50" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_family" value="&lt;b&gt;FamilyTree&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;familyTree.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#1A2740;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer1">
+          <mxGeometry x="1395" y="50" width="110" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_group" value="&lt;b&gt;Reusable Components&lt;/b&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;&lt;br&gt;glass_card / gold_badge / person_card / event_card / xp_badge&lt;br&gt;history_wagon / quiz_answer_button / culture_topic_card&lt;br&gt;neon_progress_bar / admin_gate / explore_grid / home_bottom_nav&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=11;dashed=1;dashPattern=5 3;" vertex="1" parent="layer1">
+          <mxGeometry x="20" y="115" width="1485" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer2" value="&lt;b&gt;STATE MANAGEMENT LAYER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Provider (ChangeNotifier)&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#0B1220;strokeColor=#4ADE80;fontColor=#4ADE80;rounded=1;arcSize=8;fontSize=14;html=1;collapsible=0;swimlaneLine=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="1520" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_auth" value="&lt;b&gt;AuthProvider&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;providers/auth_provider.dart&lt;br&gt;user / role / isAdmin / signIn-Out&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer2">
+          <mxGeometry x="120" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_app" value="&lt;b&gt;AppProvider&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;providers/app_provider.dart&lt;br&gt;persons / events / quizzes / culture&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer2">
+          <mxGeometry x="650" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_insight" value="&lt;b&gt;InsightService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/ai_service.dart&lt;br&gt;daily insight / facts&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer2">
+          <mxGeometry x="1180" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer3" value="&lt;b&gt;DOMAIN LAYER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Models / Entities&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#0B1220;strokeColor=#60A5FA;fontColor=#60A5FA;rounded=1;arcSize=8;fontSize=14;html=1;collapsible=0;swimlaneLine=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="1520" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_person" value="&lt;b&gt;Person&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/person.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="30" y="50" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_event" value="&lt;b&gt;Event&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/event.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="180" y="50" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_quiz" value="&lt;b&gt;Quiz&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/quiz.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="330" y="50" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_map" value="&lt;b&gt;MapData&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/map_data.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="480" y="50" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_media" value="&lt;b&gt;Media&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/media.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="630" y="50" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_territory" value="&lt;b&gt;EmpireTerritory&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/empire_territory.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="780" y="50" width="145" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="m_topic" value="&lt;b&gt;HistoryTopic&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;models/history_topic.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer3">
+          <mxGeometry x="945" y="50" width="140" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer4" value="&lt;b&gt;DATA LAYER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Services / Data Sources&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#0B1220;strokeColor=#FF9F43;fontColor=#FF9F43;rounded=1;arcSize=8;fontSize=14;html=1;collapsible=0;swimlaneLine=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="1520" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc_auth" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/auth_service.dart&lt;br&gt;signUp / signIn / signOut&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="50" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc_role" value="&lt;b&gt;RoleService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/role_service.dart&lt;br&gt;claims then Firestore fallback&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="280" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc_data" value="&lt;b&gt;DataService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/data_service.dart&lt;br&gt;offline JSON assets loader&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="510" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc_content" value="&lt;b&gt;ContentService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/content_service.dart&lt;br&gt;Firestore CRUD (persons/events/quizzes)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="740" y="50" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc_ai" value="&lt;b&gt;InsightService&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;services/ai_service.dart&lt;br&gt;daily facts (stub)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="1010" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="local_json" value="&lt;b&gt;Local JSON&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;assets/data/*.json&lt;/font&gt;" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer4">
+          <mxGeometry x="1260" y="45" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="layer5" value="&lt;b&gt;FIREBASE LAYER&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Cloud Infrastructure&lt;/font&gt;" style="swimlane;startSize=40;fillColor=#0B1220;strokeColor=#E04B5A;fontColor=#E04B5A;rounded=1;arcSize=8;fontSize=14;html=1;collapsible=0;swimlaneLine=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="1520" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_auth" value="&lt;b&gt;Firebase Auth&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Email/Password&lt;br&gt;Custom Claims (role)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer5">
+          <mxGeometry x="120" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_firestore" value="&lt;b&gt;Cloud Firestore&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;users / persons / events&lt;br&gt;quizzes / culture / maps&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer5">
+          <mxGeometry x="540" y="50" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_functions" value="&lt;b&gt;Cloud Functions&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;setAdminRole&lt;br&gt;seedAdmin&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer5">
+          <mxGeometry x="960" y="50" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_rules" value="&lt;b&gt;Security Rules&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;firestore.rules&lt;br&gt;isAdmin() / isOwner()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="layer5">
+          <mxGeometry x="1280" y="50" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="r_authgate" value="&lt;b&gt;AuthGate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;screens/auth_gate.dart&lt;br&gt;Root route resolver&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="920" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="r_admingate" value="&lt;b&gt;AdminGate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;components/admin_gate.dart&lt;br&gt;Role guard widget&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="920" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="r_label" value="&lt;font style=&quot;font-size:10px;color:#A9B3C9&quot;&gt;AuthGate: Loading / Login / Admin / Home&lt;br&gt;AdminGate: isAdmin? child : Access Denied&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="520" y="945" width="350" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F4C84A;strokeWidth=2;fontSize=10;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="layer1" target="layer2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a1_label" value="context.watch / Consumer" style="edgeLabel;html=1;fontSize=10;fontColor=#F4C84A;align=center;" vertex="1" connectable="0" parent="a1">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint x="100" y="-2" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=2;fontSize=10;html=1;" edge="1" parent="1" source="layer2" target="layer3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a2_label" value="uses models" style="edgeLabel;html=1;fontSize=10;fontColor=#4ADE80;align=center;" vertex="1" connectable="0" parent="a2">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint x="60" y="-2" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF9F43;strokeWidth=2;fontSize=10;html=1;" edge="1" parent="1" source="layer2" target="layer4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1540" y="400"/>
+              <mxPoint x="1540" y="590"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a3_label" value="calls services" style="edgeLabel;html=1;fontSize=10;fontColor=#FF9F43;align=center;" vertex="1" connectable="0" parent="a3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="10" y="-2" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=2;fontSize=10;html=1;" edge="1" parent="1" source="layer4" target="layer5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a4_label" value="Firestore SDK / Auth SDK" style="edgeLabel;html=1;fontSize=10;fontColor=#E04B5A;align=center;" vertex="1" connectable="0" parent="a4">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint x="120" y="-2" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9B3C9;strokeWidth=1;fontSize=9;html=1;dashed=1;dashPattern=5 3;entryX=1;entryY=0.5;exitX=1;exitY=0.5;" edge="1" parent="1" source="layer5" target="layer1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1580" y="825"/>
+              <mxPoint x="1580" y="150"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a5_label" value="&lt;font style=&quot;font-size:9px&quot;&gt;data flows back&lt;br&gt;Firebase to Data to State to UI&lt;/font&gt;" style="edgeLabel;html=1;fontSize=9;fontColor=#A9B3C9;align=center;" vertex="1" connectable="0" parent="a5">
+          <mxGeometry x="-0.3" relative="1" as="geometry">
+            <mxPoint x="10" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF9F43;strokeWidth=1;fontSize=9;html=1;dashed=1;" edge="1" parent="1" source="svc_data" target="local_json">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page2" name="Admin Role Flow">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t2" value="&lt;b&gt;Admin Role Flow — Mongol History App&lt;/b&gt;" style="text;html=1;fontSize=22;fontColor=#F4C84A;align=center;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="350" y="10" width="700" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_start" value="&lt;b&gt;App Start&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;main.dart: Firebase.initializeApp()&lt;br&gt;MultiProvider wraps app&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="70" width="260" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_authgate" value="&lt;b&gt;AuthGate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;screens/auth_gate.dart&lt;br&gt;Consumer&amp;lt;AuthProvider&amp;gt;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="530" y="190" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_start_gate" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F4C84A;strokeWidth=2;html=1;" edge="1" parent="1" source="f_start" target="f_authgate">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_loading" value="&lt;b&gt;auth.isLoading?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="290" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_gate_loading" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=2;html=1;" edge="1" parent="1" source="f_authgate" target="f_loading">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_splash" value="&lt;b&gt;SplashView&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Spinner while&lt;br&gt;Firebase resolves&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="830" y="295" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_loading_yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF9F43;strokeWidth=1;html=1;" edge="1" parent="1" source="f_loading" target="f_splash">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_loading_yes_lbl" value="yes" style="edgeLabel;html=1;fontSize=10;fontColor=#FF9F43;align=center;" vertex="1" connectable="0" parent="a_loading_yes">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_authed" value="&lt;b&gt;isAuthenticated?&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;FirebaseAuth.currentUser != null&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="410" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_loading_no" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=2;html=1;" edge="1" parent="1" source="f_loading" target="f_authed">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_loading_no_lbl" value="no" style="edgeLabel;html=1;fontSize=10;fontColor=#4ADE80;align=center;" vertex="1" connectable="0" parent="a_loading_no">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_login" value="&lt;b&gt;LoginScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Email + Password&lt;br&gt;AuthService.signIn()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="200" y="430" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_not_auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#60A5FA;strokeWidth=2;html=1;" edge="1" parent="1" source="f_authed" target="f_login">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_not_auth_lbl" value="null (not signed in)" style="edgeLabel;html=1;fontSize=10;fontColor=#60A5FA;align=center;" vertex="1" connectable="0" parent="a_not_auth">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_userdoc" value="&lt;b&gt;Ensure users/{uid} doc&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;AuthService creates doc on signUp&lt;br&gt;with role: 'user'&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="160" y="540" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_login_doc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#60A5FA;strokeWidth=1;html=1;" edge="1" parent="1" source="f_login" target="f_userdoc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_login_doc_lbl" value="on success" style="edgeLabel;html=1;fontSize=9;fontColor=#A9B3C9;align=center;" vertex="1" connectable="0" parent="a_login_doc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_doc_back" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9B3C9;strokeWidth=1;html=1;dashed=1;dashPattern=5 3;" edge="1" parent="1" source="f_userdoc" target="f_authgate">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="120" y="570"/>
+              <mxPoint x="120" y="220"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a_doc_back_lbl" value="&lt;font style=&quot;font-size:9px&quot;&gt;authStateChanges&lt;br&gt;fires: re-evaluate&lt;/font&gt;" style="edgeLabel;html=1;fontSize=9;fontColor=#A9B3C9;align=center;" vertex="1" connectable="0" parent="a_doc_back">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-10" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f_resolve" value="&lt;b&gt;RoleService.getCurrentUserRole()&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;1) Custom Claims (token.role)&lt;br&gt;2) Firestore users/{uid}.role fallback&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="495" y="560" width="310" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_auth_resolve" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF9F43;strokeWidth=2;html=1;" edge="1" parent="1" source="f_authed" target="f_resolve">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_auth_resolve_lbl" value="signed in" style="edgeLabel;html=1;fontSize=10;fontColor=#FF9F43;align=center;" vertex="1" connectable="0" parent="a_auth_resolve">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_store" value="&lt;b&gt;AuthProvider stores role&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;_role = 'user' | 'admin' | 'superAdmin'&lt;br&gt;notifyListeners()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="510" y="680" width="280" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_resolve_store" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=2;html=1;" edge="1" parent="1" source="f_resolve" target="f_store">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_isadmin" value="&lt;b&gt;auth.isAdmin?&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;role == 'admin' || role == 'superAdmin'&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="545" y="790" width="210" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_store_check" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F4C84A;strokeWidth=2;html=1;" edge="1" parent="1" source="f_store" target="f_isadmin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_admindash" value="&lt;b&gt;AdminDashboardScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Analytics / Content Mgmt&lt;br&gt;User Management&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="810" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_yes_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=2;html=1;" edge="1" parent="1" source="f_isadmin" target="f_admindash">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_yes_admin_lbl" value="true: admin/superAdmin" style="edgeLabel;html=1;fontSize=10;fontColor=#E04B5A;align=center;" vertex="1" connectable="0" parent="a_yes_admin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_homescreen" value="&lt;b&gt;HomeScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Explore / Quiz / Map&lt;br&gt;Journey / Culture&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="810" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_no_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=2;html=1;" edge="1" parent="1" source="f_isadmin" target="f_homescreen">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_no_admin_lbl" value="false: regular user" style="edgeLabel;html=1;fontSize=10;fontColor=#4ADE80;align=center;" vertex="1" connectable="0" parent="a_no_admin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_profile" value="&lt;b&gt;ProfileScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;profile_screen.dart&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="930" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_home_profile" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#60A5FA;strokeWidth=1;html=1;" edge="1" parent="1" source="f_homescreen" target="f_profile">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_home_profile_lbl" value="navigate" style="edgeLabel;html=1;fontSize=9;fontColor=#A9B3C9;align=center;" vertex="1" connectable="0" parent="a_home_profile">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_profile_check" value="&lt;b&gt;auth.isAdmin?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="1020" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_prof_check" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F4C84A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_profile" target="f_profile_check">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_show_btn" value="&lt;b&gt;Show Admin&lt;br&gt;Dashboard button&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;+ ADMIN badge&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#F4C84A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1120" width="160" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_show" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F4C84A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_profile_check" target="f_show_btn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_show_lbl" value="true" style="edgeLabel;html=1;fontSize=10;fontColor=#F4C84A;align=center;" vertex="1" connectable="0" parent="a_show">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_hide_btn" value="&lt;b&gt;Hide Admin button&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Settings section only&lt;br&gt;shows Edit / Language / Logout&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#A9B3C9;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1120" width="190" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_hide" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#A9B3C9;strokeWidth=1;html=1;" edge="1" parent="1" source="f_profile_check" target="f_hide_btn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_hide_lbl" value="false" style="edgeLabel;html=1;fontSize=10;fontColor=#A9B3C9;align=center;" vertex="1" connectable="0" parent="a_hide">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_admingate" value="&lt;b&gt;AdminGate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;components/admin_gate.dart&lt;br&gt;Wraps AdminDashboardScreen&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1220" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_btn_gate" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=2;html=1;" edge="1" parent="1" source="f_show_btn" target="f_admingate">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_btn_gate_lbl" value="onTap: Navigator.push" style="edgeLabel;html=1;fontSize=9;fontColor=#E04B5A;align=center;" vertex="1" connectable="0" parent="a_btn_gate">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_gate_check" value="&lt;b&gt;isAdmin?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1A2740;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="355" y="1220" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_gate_c" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_admingate" target="f_gate_check">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_allow" value="&lt;b&gt;Render child&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;AdminDashboardScreen&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="530" y="1210" width="160" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_allow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=1;html=1;" edge="1" parent="1" source="f_gate_check" target="f_allow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_allow_lbl" value="yes" style="edgeLabel;html=1;fontSize=10;fontColor=#4ADE80;align=center;" vertex="1" connectable="0" parent="a_allow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_deny" value="&lt;b&gt;Access Denied&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;Back button shown&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#E04B5A;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="530" y="1265" width="160" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_deny" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_gate_check" target="f_deny">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_deny_lbl" value="no" style="edgeLabel;html=1;fontSize=10;fontColor=#E04B5A;align=center;" vertex="1" connectable="0" parent="a_deny">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_logout_hdr" value="&lt;b style=&quot;color:#E04B5A;font-size:14px&quot;&gt;Logout Flow&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="880" y="930" width="140" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_logout1" value="&lt;b&gt;1. Eager reset&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;_role = 'user'&lt;br&gt;_user = null&lt;br&gt;notifyListeners()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="970" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_logout2" value="&lt;b&gt;2. AuthService.signOut()&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;FirebaseAuth.signOut()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1060" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_logout3" value="&lt;b&gt;3. Navigate to AuthGate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;pushAndRemoveUntil&lt;br&gt;clears nav stack&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1130" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_logout4" value="&lt;b&gt;4. AuthGate shows LoginScreen&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#A9B3C9&quot;&gt;No stale admin UI&lt;br&gt;UI rebuilt with role = 'user'&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;fontColor=#EAEDF3;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1205" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_lo12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_logout1" target="f_logout2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_lo23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E04B5A;strokeWidth=1;html=1;" edge="1" parent="1" source="f_logout2" target="f_logout3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="a_lo34" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ADE80;strokeWidth=1;html=1;" edge="1" parent="1" source="f_logout3" target="f_logout4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0B1220;strokeColor=#1A2740;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="70" width="260" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;fontSize=13;fontColor=#F4C84A;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="75" width="120" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#F4C84A;fontColor=#EAEDF3;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="105" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;Auth / Routing decision&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="101" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#4ADE80;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="130" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;State / Provider&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="126" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#60A5FA;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="155" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;Auth check / Screen&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="151" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#FF9F43;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="180" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l4t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;Service / Data layer&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="176" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#E04B5A;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="205" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l5t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;Admin / Protected&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="201" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l6" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111B2E;strokeColor=#A9B3C9;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1115" y="230" width="20" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="l6t" value="&lt;font style=&quot;font-size:10px;color:#EAEDF3&quot;&gt;Data flow back / loop&lt;/font&gt;" style="text;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1145" y="226" width="170" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
