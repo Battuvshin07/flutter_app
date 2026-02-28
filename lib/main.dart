@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/auth_provider.dart';
 import 'services/ai_service.dart';
+import 'screens/auth_gate.dart';
 
 import 'components/home_top_bar.dart';
 import 'components/hero_banner.dart';
@@ -23,6 +25,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => InsightService()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
       ],
@@ -39,7 +42,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const HomeScreen(),
+      home: const AuthGate(),
     );
   }
 }

@@ -1,0 +1,157 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════
+    // Helper functions
+    // ═══════════════════════════════════════
+
+    /// Check if the request is from an authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Check if the authenticated user is an admin (via Custom Claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    /// Check if the authenticated user owns this document
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    /// Validate that a string field is non-empty and within max length
+    function isNonEmptyString(val, maxLen) {
+      return val is string && val.size() > 0 && val.size() <= maxLen;
+    }
+
+    // ═══════════════════════════════════════
+    // users/{uid} — User profiles
+    // ═══════════════════════════════════════
+    match /users/{uid} {
+      // Any authenticated user can read any user profile
+      allow read: if isAuthenticated();
+
+      // Users can create their own profile on signup
+      // They MUST set role to 'user' (cannot self-assign admin)
+      allow create: if isOwner(uid)
+                    && request.resource.data.role == 'user'
+                    && isNonEmptyString(request.resource.data.name, 100)
+                    && isNonEmptyString(request.resource.data.email, 320);
+
+      // Users can update their own profile but CANNOT change their role
+      allow update: if isOwner(uid)
+                    && request.resource.data.role == resource.data.role;
+
+      // Admins can update any user profile (including role, isActive)
+      allow update: if isAdmin();
+
+      // Only admins can delete user profiles
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // persons/{docId} — Historical figures
+    // ═══════════════════════════════════════
+    match /persons/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.name, 200)
+                    && isNonEmptyString(request.resource.data.description, 10000);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // events/{docId} — Historical events
+    // ═══════════════════════════════════════
+    match /events/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 300)
+                    && isNonEmptyString(request.resource.data.date, 50)
+                    && isNonEmptyString(request.resource.data.description, 10000);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // maps/{docId} — Geographic data
+    // ═══════════════════════════════════════
+    match /maps/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 300)
+                    && isNonEmptyString(request.resource.data.coordinates, 50);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // quizzes/{docId} — Quiz questions
+    // ═══════════════════════════════════════
+    match /quizzes/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.question, 1000)
+                    && request.resource.data.answers is list
+                    && request.resource.data.answers.size() >= 2
+                    && request.resource.data.correct_answer is int
+                    && request.resource.data.correct_answer >= 0
+                    && request.resource.data.correct_answer < request.resource.data.answers.size();
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // culture/{docId} — Cultural topics
+    // ═══════════════════════════════════════
+    match /culture/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 300)
+                    && isNonEmptyString(request.resource.data.description, 10000);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // user_progress/{uid}/** — Per-user progress
+    // ═══════════════════════════════════════
+    match /user_progress/{uid}/{document=**} {
+      // Users can only read/write their own progress
+      allow read, write: if isOwner(uid);
+
+      // Admins can read any user's progress (for analytics)
+      allow read: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // favorites/{uid}/** — User bookmarks
+    // ═══════════════════════════════════════
+    match /favorites/{uid}/{document=**} {
+      allow read, write: if isOwner(uid);
+      allow read: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // reading_history/{uid}/** — View history
+    // ═══════════════════════════════════════
+    match /reading_history/{uid}/{document=**} {
+      allow read, write: if isOwner(uid);
+      allow read: if isAdmin();
+    }
+  }
+}

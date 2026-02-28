@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'admin_dashboard_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════
 //  PROFILE SCREEN – gamified user profile for Mongolian history app
@@ -489,6 +490,33 @@ class _ProfileScreenState extends State<ProfileScreen>
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
         children: [
+          _SettingsTile(
+            icon: Icons.admin_panel_settings_rounded,
+            label: 'Admin Dashboard',
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.accentGold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'ADMIN',
+                style: AppTheme.chip.copyWith(
+                  color: AppTheme.accentGold,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AdminDashboardScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.edit_rounded,
             label: 'Edit Profile',
