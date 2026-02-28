@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../screens/persons_screen.dart';
-import '../screens/events_timeline_screen.dart';
+import '../screens/history_journey_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/quiz_screen.dart';
 
@@ -36,7 +36,7 @@ class ExploreGrid extends StatelessWidget {
                   title: 'Тулаан',
                   subtitle: '(Battles)',
                   color: const Color(0xFF3B1F2B),
-                  onTap: () => _push(context, const EventsTimelineScreen()),
+                  onTap: () => _push(context, const HistoryJourneyScreen()),
                 ),
               ),
             ],

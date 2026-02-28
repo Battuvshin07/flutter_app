@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/persons_screen.dart';
-import '../screens/events_timeline_screen.dart';
+import '../screens/history_journey_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/quiz_screen.dart';
 
@@ -33,7 +33,7 @@ class QuickActions extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const EventsTimelineScreen(),
+                  builder: (context) => const HistoryJourneyScreen(),
                 ),
               );
             },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/persons_screen.dart';
-import '../screens/events_timeline_screen.dart';
+import '../screens/history_journey_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/culture_screen.dart';
@@ -32,7 +32,7 @@ class _BottomNavState extends State<BottomNav> {
         screen = const PersonsScreen();
         break;
       case 1:
-        screen = const EventsTimelineScreen();
+        screen = const HistoryJourneyScreen();
         break;
       case 2:
         screen = const MapScreen();

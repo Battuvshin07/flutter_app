@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../models/person.dart';
+import 'glass_card.dart';
+import 'gold_badge.dart';
 
 /// Animated floating detail card shown when a person node is tapped.
-/// Displays portrait, name, years, role, biography, and key events.
+/// Displays portrait, name, years, biography, and key events.
+/// Updated to dark + gold design system.
 class PersonDetailCard extends StatefulWidget {
   final Person person;
   final List<String> keyEvents;
@@ -21,10 +25,6 @@ class PersonDetailCard extends StatefulWidget {
 
 class _PersonDetailCardState extends State<PersonDetailCard>
     with SingleTickerProviderStateMixin {
-  static const _brown = Color(0xFF3B2F2F);
-  static const _cardBg = Color(0xFFFFFBF5);
-  static const _gold = Color(0xFFB8860B);
-
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
@@ -75,172 +75,140 @@ class _PersonDetailCardState extends State<PersonDetailCard>
       child: FadeTransition(
         opacity: _fadeAnim,
         child: Container(
-          color: Colors.black26,
+          color: Colors.black45,
           child: Center(
             child: GestureDetector(
-              onTap: () {}, // absorb taps on card
+              onTap: () {},
               child: ScaleTransition(
                 scale: _scaleAnim,
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.82,
                   constraints: const BoxConstraints(maxWidth: 380),
                   margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: _cardBg,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: _gold.withOpacity(0.3), width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // --- Close button ---
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: GestureDetector(
-                          onTap: _dismiss,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: _brown.withOpacity(0.08),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close,
-                                size: 18, color: _brown),
-                          ),
-                        ),
-                      ),
-                      // --- Portrait ---
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF8B4513),
-                          border: Border.all(color: _gold, width: 2.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _gold.withOpacity(0.3),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: hasImage
-                              ? Image.asset(
-                                  person.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _buildInitials(initials),
-                                )
-                              : _buildInitials(initials),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // --- Name ---
-                      Text(
-                        person.name,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _brown,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      if (years.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        // --- Years ---
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: _gold.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                years,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: _brown.withOpacity(0.75),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 14),
-                      // --- Biography ---
-                      Text(
-                        person.description,
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: _brown.withOpacity(0.8),
-                          height: 1.45,
-                        ),
-                        maxLines: 6,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      // --- Key Events ---
-                      if (widget.keyEvents.isNotEmpty) ...[
-                        const SizedBox(height: 14),
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(20),
+                    glowColor: AppTheme.accentGold,
+                    glowIntensity: 0.12,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Close button
                         Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Гол үйл явдлууд',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: _brown.withOpacity(0.85),
+                          alignment: Alignment.topRight,
+                          child: GestureDetector(
+                            onTap: _dismiss,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceLight,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: AppTheme.textSecondary,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        ...widget.keyEvents.take(3).map(
-                              (e) => Padding(
-                                padding:
-                                    const EdgeInsets.only(bottom: 4, left: 4),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(top: 5),
-                                      width: 5,
-                                      height: 5,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: _gold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        e,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: _brown.withOpacity(0.7),
-                                          height: 1.3,
+                        // Portrait
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.accentGold,
+                              width: 2.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.accentGold.withOpacity(0.35),
+                                blurRadius: 14,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: hasImage
+                                ? Image.asset(
+                                    person.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _buildInitials(initials),
+                                  )
+                                : _buildInitials(initials),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Name
+                        Text(
+                          person.name,
+                          textAlign: TextAlign.center,
+                          style: AppTheme.sectionTitle.copyWith(fontSize: 18),
+                        ),
+                        if (years.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          GoldBadge.year(years),
+                        ],
+                        const SizedBox(height: 14),
+                        // Biography
+                        Text(
+                          person.description,
+                          textAlign: TextAlign.start,
+                          style: AppTheme.caption.copyWith(
+                            color: AppTheme.textSecondary,
+                            height: 1.45,
+                          ),
+                          maxLines: 6,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        // Key Events
+                        if (widget.keyEvents.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Гол үйл явдлууд',
+                              style:
+                                  AppTheme.sectionTitle.copyWith(fontSize: 13),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          ...widget.keyEvents.take(3).map(
+                                (e) => Padding(
+                                  padding:
+                                      const EdgeInsets.only(bottom: 4, left: 4),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 5),
+                                        width: 5,
+                                        height: 5,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppTheme.accentGold,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          e,
+                                          style: AppTheme.caption.copyWith(
+                                            color: AppTheme.textSecondary
+                                                .withOpacity(0.85),
+                                            height: 1.3,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -253,12 +221,12 @@ class _PersonDetailCardState extends State<PersonDetailCard>
 
   Widget _buildInitials(String initials) {
     return Container(
-      color: const Color(0xFF8B4513),
+      color: AppTheme.surfaceLight,
       child: Center(
         child: Text(
           initials,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: AppTheme.accentGold,
             fontWeight: FontWeight.bold,
             fontSize: 26,
           ),

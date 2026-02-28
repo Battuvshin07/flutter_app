@@ -3,9 +3,14 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/quiz.dart';
+import '../theme/app_theme.dart';
+import '../components/glass_card.dart';
+import '../components/gold_badge.dart';
+import '../components/neon_progress_bar.dart';
+import '../components/quiz_answer_button.dart';
 
 /// FR-04: Мэдлэг шалгах quiz, оноо цуглуулах
-/// "Асуулт хариулт, оноо харуулах, дахин тоглох"
+/// Dark + gold gamified quiz experience
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
 
@@ -13,12 +18,8 @@ class QuizScreen extends StatefulWidget {
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends State<QuizScreen> {
-  static const _brown = Color(0xFF3B2F2F);
-  static const _parchment = Color(0xFFF2DFC3);
-  static const _parchmentDark = Color(0xFFE8D0A8);
-  static const _cardBg = Color(0xFFFFFBF5);
-
+class _QuizScreenState extends State<QuizScreen>
+    with SingleTickerProviderStateMixin {
   int _currentQuestionIndex = 0;
   int _score = 0;
   int? _selectedAnswer;
@@ -26,12 +27,26 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _quizComplete = false;
   List<Quiz> _shuffledQuizzes = [];
 
+  late AnimationController _scoreAnimCtrl;
+  late Animation<double> _scorePulse;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initQuiz();
-    });
+    _scoreAnimCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _scorePulse = Tween(begin: 1.0, end: 1.25).animate(
+      CurvedAnimation(parent: _scoreAnimCtrl, curve: Curves.elasticOut),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initQuiz());
+  }
+
+  @override
+  void dispose() {
+    _scoreAnimCtrl.dispose();
+    super.dispose();
   }
 
   void _initQuiz() {
@@ -53,6 +68,7 @@ class _QuizScreenState extends State<QuizScreen> {
       _answered = true;
       if (index == _shuffledQuizzes[_currentQuestionIndex].correctAnswer) {
         _score++;
+        _scoreAnimCtrl.forward(from: 0);
       }
     });
   }
@@ -65,9 +81,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _answered = false;
       });
     } else {
-      setState(() {
-        _quizComplete = true;
-      });
+      setState(() => _quizComplete = true);
     }
   }
 
@@ -79,7 +93,11 @@ class _QuizScreenState extends State<QuizScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [_parchment, _parchmentDark],
+            colors: [
+              AppTheme.background,
+              Color(0xFF0F1A2E),
+              AppTheme.background,
+            ],
           ),
         ),
         child: SafeArea(
@@ -88,7 +106,9 @@ class _QuizScreenState extends State<QuizScreen> {
               _buildAppBar(context),
               Expanded(
                 child: _shuffledQuizzes.isEmpty
-                    ? const Center(child: Text('Quiz олдсонгүй'))
+                    ? Center(
+                        child: Text('Quiz олдсонгүй', style: AppTheme.body),
+                      )
                     : _quizComplete
                         ? _buildResultScreen()
                         : _buildQuizContent(),
@@ -100,242 +120,129 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
+  // ── App bar ──────────────────────────────────────────────────────
   Widget _buildAppBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.pagePadding, vertical: 8),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.maybePop(context),
-            child:
-                const Icon(Icons.arrow_back_ios_new, color: _brown, size: 24),
-          ),
-          const Expanded(
-            child: Text(
-              'Мэдлэг шалгах',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-                color: _brown,
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.surfaceLight,
+                border: Border.all(
+                  color: AppTheme.accentGold.withOpacity(0.35),
+                ),
               ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  color: AppTheme.accentGold, size: 18),
             ),
           ),
-          // Score badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6B8E23).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text('Мэдлэг шалгах',
+                style: AppTheme.h2.copyWith(fontSize: 19)),
+          ),
+          // Animated score badge
+          ScaleTransition(
+            scale: _scorePulse,
+            child: GoldBadge.xp(_score * 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Quiz content ─────────────────────────────────────────────────
+  Widget _buildQuizContent() {
+    final quiz = _shuffledQuizzes[_currentQuestionIndex];
+    final List<dynamic> answers = json.decode(quiz.answers);
+    final progress = (_currentQuestionIndex + 1) / _shuffledQuizzes.length;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.pagePadding, vertical: 12),
+      child: Column(
+        children: [
+          // Progress row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Асуулт ${_currentQuestionIndex + 1}/${_shuffledQuizzes.length}',
+                style: AppTheme.caption,
+              ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: AppTheme.captionBold.copyWith(
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          NeonProgressBar(progress: progress),
+          const SizedBox(height: 24),
+
+          // Question card
+          GlassCard(
+            glowColor: AppTheme.accentGold,
+            glowIntensity: 0.08,
+            padding: const EdgeInsets.all(24),
+            child: Column(
               children: [
-                const Icon(Icons.star, size: 16, color: Color(0xFFB8860B)),
-                const SizedBox(width: 4),
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.accentGold.withOpacity(0.12),
+                  ),
+                  child: const Icon(Icons.quiz_outlined,
+                      color: AppTheme.accentGold, size: 28),
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  '$_score',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF6B8E23),
+                  quiz.question,
+                  textAlign: TextAlign.center,
+                  style: AppTheme.sectionTitle.copyWith(
+                    fontSize: 17,
+                    height: 1.45,
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizContent() {
-    final quiz = _shuffledQuizzes[_currentQuestionIndex];
-    final List<dynamic> answers = json.decode(quiz.answers);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          // Progress bar
-          _buildProgressBar(),
-          const SizedBox(height: 24),
-          // Question card
-          _buildQuestionCard(quiz),
           const SizedBox(height: 20),
+
           // Answer options
           ...List.generate(
             answers.length,
-            (index) => _buildAnswerOption(
-              answers[index].toString(),
-              index,
-              quiz.correctAnswer,
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Next button
-          if (_answered) _buildNextButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar() {
-    final progress = (_currentQuestionIndex + 1) / _shuffledQuizzes.length;
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Асуулт ${_currentQuestionIndex + 1}/${_shuffledQuizzes.length}',
-              style: TextStyle(
-                fontSize: 13,
-                color: _brown.withOpacity(0.7),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              '${(progress * 100).toInt()}%',
-              style: TextStyle(
-                fontSize: 13,
-                color: _brown.withOpacity(0.7),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 6,
-            backgroundColor: _brown.withOpacity(0.1),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B4513)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuestionCard(Quiz quiz) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFF8B4513).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child:
-                  Icon(Icons.quiz_outlined, color: Color(0xFF8B4513), size: 28),
+            (index) => QuizAnswerButton(
+              text: answers[index].toString(),
+              index: index,
+              isSelected: _selectedAnswer == index,
+              isRevealed: _answered,
+              isCorrect: index == quiz.correctAnswer,
+              onTap: () => _selectAnswer(index),
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            quiz.question,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-              color: _brown,
-              height: 1.4,
-            ),
-          ),
+
+          // Next / Result button
+          if (_answered) _buildNextButton(),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildAnswerOption(String answer, int index, int correctIndex) {
-    Color bgColor = _cardBg;
-    Color borderColor = Colors.grey.shade300;
-    Color textColor = _brown;
-    IconData? trailingIcon;
-
-    if (_answered) {
-      if (index == correctIndex) {
-        bgColor = const Color(0xFF6B8E23).withOpacity(0.1);
-        borderColor = const Color(0xFF6B8E23);
-        textColor = const Color(0xFF6B8E23);
-        trailingIcon = Icons.check_circle;
-      } else if (index == _selectedAnswer && index != correctIndex) {
-        bgColor = const Color(0xFF8B0000).withOpacity(0.1);
-        borderColor = const Color(0xFF8B0000);
-        textColor = const Color(0xFF8B0000);
-        trailingIcon = Icons.cancel;
-      }
-    } else if (_selectedAnswer == index) {
-      borderColor = const Color(0xFF8B4513);
-    }
-
-    return GestureDetector(
-      onTap: () => _selectAnswer(index),
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: borderColor.withOpacity(0.2),
-              ),
-              child: Center(
-                child: Text(
-                  String.fromCharCode(65 + index), // A, B, C, D
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                answer,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
-                ),
-              ),
-            ),
-            if (trailingIcon != null)
-              Icon(trailingIcon, color: textColor, size: 22),
-          ],
-        ),
-      ),
-    );
-  }
-
+  // ── Next button ──────────────────────────────────────────────────
   Widget _buildNextButton() {
     final isLast = _currentQuestionIndex == _shuffledQuizzes.length - 1;
     return SizedBox(
@@ -343,106 +250,122 @@ class _QuizScreenState extends State<QuizScreen> {
       child: ElevatedButton(
         onPressed: _nextQuestion,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF8B4513),
-          foregroundColor: Colors.white,
+          backgroundColor: AppTheme.accentGold,
+          foregroundColor: AppTheme.background,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          ),
+          elevation: 0,
         ),
         child: Text(
           isLast ? 'Үр дүн харах' : 'Дараагийн асуулт',
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          style: AppTheme.button,
         ),
       ),
     );
   }
 
+  // ── Result screen ────────────────────────────────────────────────
   Widget _buildResultScreen() {
     final total = _shuffledQuizzes.length;
     final percentage = (_score / total * 100).toInt();
-    final emoji = percentage >= 80
-        ? '🏆'
-        : percentage >= 50
-            ? '👍'
-            : '📚';
+
+    final Color accentColor;
+    final IconData trophyIcon;
+    final String resultText;
+    if (percentage >= 80) {
+      accentColor = AppTheme.accentGold;
+      trophyIcon = Icons.emoji_events_rounded;
+      resultText = 'Маш сайн!';
+    } else if (percentage >= 50) {
+      accentColor = AppTheme.streakOrange;
+      trophyIcon = Icons.thumb_up_alt_rounded;
+      resultText = 'Сайн байна!';
+    } else {
+      accentColor = AppTheme.crimson;
+      trophyIcon = Icons.menu_book_rounded;
+      resultText = 'Дахин оролдоорой!';
+    }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.pagePadding, vertical: 20),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          Text(emoji, style: const TextStyle(fontSize: 64)),
-          const SizedBox(height: 16),
-          Text(
-            percentage >= 80
-                ? 'Маш сайн!'
-                : percentage >= 50
-                    ? 'Сайн байна!'
-                    : 'Дахин оролдоорой!',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: _brown,
+          const SizedBox(height: 24),
+          // Trophy icon with glow
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accentColor.withOpacity(0.12),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withOpacity(0.3),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
+            child: Icon(trophyIcon, color: accentColor, size: 52),
           ),
+          const SizedBox(height: 20),
+          Text(resultText, style: AppTheme.h2.copyWith(fontSize: 26)),
           const SizedBox(height: 12),
           Text(
             '$_score / $total зөв хариулт',
-            style: TextStyle(
-              fontSize: 18,
-              color: _brown.withOpacity(0.7),
+            style: AppTheme.body.copyWith(fontSize: 16),
+          ),
+          const SizedBox(height: 12),
+          // Percentage
+          Text(
+            '$percentage%',
+            style: AppTheme.h2.copyWith(
+              fontSize: 56,
+              color: accentColor,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '$percentage%',
-            style: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-              color: percentage >= 80
-                  ? const Color(0xFF6B8E23)
-                  : percentage >= 50
-                      ? const Color(0xFFB8860B)
-                      : const Color(0xFF8B0000),
-            ),
-          ),
-          const SizedBox(height: 30),
+          // XP earned
+          GoldBadge.xp(_score * 10),
+          const SizedBox(height: 36),
+
           // Replay button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _initQuiz,
-              icon: const Icon(Icons.replay),
-              label: const Text(
-                'Дахин тоглох',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
+              icon: const Icon(Icons.replay_rounded),
+              label: Text('Дахин тоглох', style: AppTheme.button),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B4513),
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: AppTheme.background,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
+                elevation: 0,
               ),
             ),
           ),
           const SizedBox(height: 12),
-          // Back to home
+          // Home button
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () => Navigator.maybePop(context),
               style: OutlinedButton.styleFrom(
-                foregroundColor: _brown,
+                foregroundColor: AppTheme.textPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: _brown.withOpacity(0.3)),
+                side: BorderSide(color: AppTheme.cardBorder.withOpacity(0.6)),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
               ),
-              child: const Text(
-                'Нүүр хуудас',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
+              child: Text('Нүүр хуудас',
+                  style: AppTheme.button.copyWith(color: AppTheme.textPrimary)),
             ),
           ),
         ],

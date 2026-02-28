@@ -1,8 +1,11 @@
 import 'dart:ui';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import 'admin_dashboard_screen.dart';
+import 'auth_gate.dart';
 
 // ══════════════════════════════════════════════════════════════════
 //  PROFILE SCREEN – gamified user profile for Mongolian history app
@@ -562,6 +565,60 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ),
             onTap: () => setState(() => _darkMode = !_darkMode),
+          ),
+          const SizedBox(height: 10),
+          _SettingsTile(
+            icon: Icons.logout_rounded,
+            label: 'Sign Out',
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppTheme.textSecondary,
+              size: 20,
+            ),
+            onTap: () => _showSignOutDialog(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSignOutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        ),
+        title: Text('Гарах', style: AppTheme.sectionTitle),
+        content: Text(
+          'Та гарахдаа итгэлтэй байна уу?',
+          style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Үгүй',
+              style:
+                  AppTheme.captionBold.copyWith(color: AppTheme.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await context.read<AuthProvider>().signOut();
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthGate()),
+                  (route) => false,
+                );
+              }
+            },
+            child: Text(
+              'Тийм',
+              style: AppTheme.captionBold.copyWith(color: AppTheme.crimson),
+            ),
           ),
         ],
       ),

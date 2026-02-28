@@ -2,30 +2,27 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/person.dart';
 
-/// Reusable tappable person node for the family tree.
-/// Shows a circular avatar with name below; animates on tap.
-/// Updated to dark + gold design system.
-class PersonNode extends StatefulWidget {
+/// Dark-themed tree node with gold glow border for the FamilyTreeScreen.
+/// Circular avatar with name below; tap animation and selected glow effect.
+class TreeNodeWidget extends StatefulWidget {
   final Person person;
   final double size;
-  final Color accentColor;
   final bool isSelected;
   final VoidCallback? onTap;
 
-  const PersonNode({
+  const TreeNodeWidget({
     super.key,
     required this.person,
     this.size = 70,
-    this.accentColor = const Color(0xFF8B4513),
     this.isSelected = false,
     this.onTap,
   });
 
   @override
-  State<PersonNode> createState() => _PersonNodeState();
+  State<TreeNodeWidget> createState() => _TreeNodeWidgetState();
 }
 
-class _PersonNodeState extends State<PersonNode>
+class _TreeNodeWidgetState extends State<TreeNodeWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnim;
@@ -56,7 +53,6 @@ class _PersonNodeState extends State<PersonNode>
   Widget build(BuildContext context) {
     final person = widget.person;
     final sz = widget.size;
-
     final hasImage = person.imageUrl != null && person.imageUrl!.isNotEmpty;
     final initials = person.name
         .split(' ')
@@ -73,17 +69,14 @@ class _PersonNodeState extends State<PersonNode>
       child: AnimatedBuilder(
         animation: _scaleAnim,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnim.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnim.value, child: child);
         },
         child: SizedBox(
           width: sz + 30,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Avatar
+              // Avatar with gold glow
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
@@ -101,15 +94,15 @@ class _PersonNodeState extends State<PersonNode>
                   boxShadow: [
                     if (widget.isSelected)
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.45),
-                        blurRadius: 14,
-                        spreadRadius: 2,
+                        color: AppTheme.accentGold.withOpacity(0.5),
+                        blurRadius: 18,
+                        spreadRadius: 3,
                       )
                     else
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
+                        color: AppTheme.accentGold.withOpacity(0.12),
+                        blurRadius: 8,
+                        spreadRadius: 1,
                       ),
                   ],
                 ),
@@ -121,9 +114,9 @@ class _PersonNodeState extends State<PersonNode>
                           width: sz,
                           height: sz,
                           errorBuilder: (_, __, ___) =>
-                              _initialsWidget(initials, sz),
+                              _buildInitials(initials, sz),
                         )
-                      : _initialsWidget(initials, sz),
+                      : _buildInitials(initials, sz),
                 ),
               ),
               const SizedBox(height: 6),
@@ -146,7 +139,7 @@ class _PersonNodeState extends State<PersonNode>
     );
   }
 
-  Widget _initialsWidget(String initials, double sz) {
+  Widget _buildInitials(String initials, double sz) {
     return Container(
       color: AppTheme.surfaceLight,
       child: Center(

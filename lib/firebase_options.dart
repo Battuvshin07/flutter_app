@@ -36,37 +36,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyCRn814INliD8_NVnj396GcdSm_mCJVpHM',
+    appId: '1:823744797822:android:41b5316eb3a0c57ff08c2f',
+    messagingSenderId: '823744797822',
+    projectId: 'historyapp-d1d66',
+    authDomain: 'historyapp-d1d66.firebaseapp.com',
+    storageBucket: 'historyapp-d1d66.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyCRn814INliD8_NVnj396GcdSm_mCJVpHM',
+    appId: '1:823744797822:android:41b5316eb3a0c57ff08c2f',
+    messagingSenderId: '823744797822',
+    projectId: 'historyapp-d1d66',
+    storageBucket: 'historyapp-d1d66.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
+    apiKey: 'AIzaSyCRn814INliD8_NVnj396GcdSm_mCJVpHM',
+    appId: '1:823744797822:android:41b5316eb3a0c57ff08c2f',
+    messagingSenderId: '823744797822',
+    projectId: 'historyapp-d1d66',
+    storageBucket: 'historyapp-d1d66.firebasestorage.app',
+    iosBundleId: 'com.example.flutterApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: 'YOUR_MACOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    iosBundleId: 'YOUR_MACOS_BUNDLE_ID',
+    apiKey: 'AIzaSyCRn814INliD8_NVnj396GcdSm_mCJVpHM',
+    appId: '1:823744797822:android:41b5316eb3a0c57ff08c2f',
+    messagingSenderId: '823744797822',
+    projectId: 'historyapp-d1d66',
+    storageBucket: 'historyapp-d1d66.firebasestorage.app',
+    iosBundleId: 'com.example.flutterApp',
   );
 }
