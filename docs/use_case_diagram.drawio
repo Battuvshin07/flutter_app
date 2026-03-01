@@ -1,0 +1,215 @@
+﻿<mxfile host="draw.io" type="device">
+  <diagram id="uc" name="Use Case Diagram  Монгол Түүхийн Апп">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1160" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="sys" value="Монгол Түүхийн Апп" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#263238;fontSize=16;fontStyle=1;verticalAlign=top;strokeWidth=2.5;fontFamily=Arial;fontColor=#263238;" vertex="1" parent="1">
+          <mxGeometry x="170" y="12" width="1295" height="1080" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ua" value="Хэрэглэгчийн хүрээ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;fontSize=11;fontStyle=2;verticalAlign=top;strokeWidth=1;dashed=1;dashPattern=8 4;fontColor=#9E9E9E;fontFamily=Arial;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="185" y="38" width="860" height="1044" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="aa" value="Админы хүрээ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#FFB300;fontSize=11;fontStyle=2;verticalAlign=top;strokeWidth=1;dashed=1;dashPattern=8 4;fontColor=#F57F17;fontFamily=Arial;opacity=50;" vertex="1" parent="1">
+          <mxGeometry x="1058" y="38" width="395" height="1044" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="g" value="Зочин" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#ECEFF1;strokeColor=#37474F;fontSize=11;fontStyle=1;fontFamily=Arial;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="68" width="30" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="u" value="Хэрэглэгч" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11;fontStyle=1;fontFamily=Arial;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="530" width="30" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ad" value="Админ" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontStyle=1;fontFamily=Arial;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="430" width="30" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gen" value="" style="endArrow=block;endFill=0;html=1;strokeColor=#37474F;strokeWidth=1.5;" edge="1" parent="1" source="u" target="g">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc1" value="Бүртгүүлэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="70" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc2" value="Нэвтрэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="120" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc4" value="Нүүр хуудас үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="184" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc5" value="Өдрийн баримт үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="174" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc6" value="Суралцах дараалал&#xa;хянах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="224" width="170" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc7" value="Аялал үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="296" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc8" value="Түүх унших" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="286" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc9" value="Судалсан гэж&#xa;тэмдэглэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="336" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc10" value="Түүхийн шалгалт&#xa;өгөх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="700" y="310" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc11" value="XP шагнал авах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="700" y="368" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc12" value="Шалгалт эхлүүлэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="432" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc13" value="Асуултад хариулах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="422" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc14" value="Оноо үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="472" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc15" value="Газрын зураг үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="536" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc16" value="3D бөмбөрцөг харах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="522" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc17" value="2D газрын зураг&#xa;харах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="572" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc18" value="Эзэнт гүрний нутаг&#xa;дэвсгэр үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="630" width="170" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc19" value="Хүмүүсийн жагсаалт&#xa;үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="702" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc20" value="Хүний дэлгэрэнгүй&#xa;үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="694" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc21" value="Угийн бичиг үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="752" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc22" value="Соёлын сэдэв үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="816" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc23" value="Соёлын дэлгэрэнгүй&#xa;үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="816" width="170" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc24" value="Профайл үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="888" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc25" value="Статистик &amp; XP үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="875" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc26" value="Амжилт үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="925" width="170" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc27" value="Суралцалтын явц&#xa;үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="465" y="975" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc28" value="Харанхуй горим" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="700" y="925" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc3" value="Гарах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#B2EBF2;strokeColor=#00695C;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#004D40;" vertex="1" parent="1">
+          <mxGeometry x="215" y="1047" width="170" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc30" value="Админ самбар&#xa;нэвтрэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="85" width="195" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc31" value="Нийт хэрэглэгч үзэх" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="235" width="195" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc32" value="Соёлын агуулга&#xa;удирдах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="385" width="195" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc33" value="Хүмүүс удирдах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="535" width="195" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc34" value="Угийн бичиг удирдах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="685" width="195" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc35" value="Шалгалт удирдах" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;fontFamily=Arial;strokeWidth=1.5;fontColor=#BF360C;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="835" width="195" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ag1" value="" style="endArrow=none;html=1;strokeColor=#37474F;strokeWidth=1.5;" edge="1" parent="1" source="g" target="uc1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ag2" value="" style="endArrow=none;html=1;strokeColor=#37474F;strokeWidth=1.5;" edge="1" parent="1" source="g" target="uc2"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="au1" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au2" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au3" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc12"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au4" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc15"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au5" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc19"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au6" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc22"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au7" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc24"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="au8" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=1.5;" edge="1" parent="1" source="u" target="uc3"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="aad" value="" style="endArrow=none;html=1;strokeColor=#E65100;strokeWidth=1.5;" edge="1" parent="1" source="ad" target="uc30"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="i1" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc4" target="uc5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i2" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc4" target="uc6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i3" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc7" target="uc8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1" value="extend" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc8" target="uc9"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="extend" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc9" target="uc10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i4" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc10" target="uc11"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i5" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc12" target="uc13"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i6" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc12" target="uc14"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i7" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc15" target="uc16"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i8" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc15" target="uc17"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i9" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc15" target="uc18"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i10" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc19" target="uc20"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i11" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc19" target="uc21"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i12" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc22" target="uc23"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i13" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc24" target="uc25"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i14" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc24" target="uc26"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i15" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc24" target="uc27"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="extend" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#546E7A;fontFamily=Arial;" edge="1" parent="1" source="uc24" target="uc28"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="ia1" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#BF360C;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#BF360C;fontFamily=Arial;" edge="1" parent="1" source="uc30" target="uc31"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ia2" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#BF360C;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#BF360C;fontFamily=Arial;" edge="1" parent="1" source="uc30" target="uc32"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ia3" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#BF360C;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#BF360C;fontFamily=Arial;" edge="1" parent="1" source="uc30" target="uc33"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ia4" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#BF360C;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#BF360C;fontFamily=Arial;" edge="1" parent="1" source="uc30" target="uc34"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ia5" value="include" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#BF360C;strokeWidth=1;fontSize=9;fontStyle=2;fontColor=#BF360C;fontFamily=Arial;" edge="1" parent="1" source="uc30" target="uc35"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="leg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;strokeWidth=1;fontSize=10;fontFamily=Arial;" vertex="1" parent="1">
+          <mxGeometry x="170" y="1098" width="440" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="l0" value="Тайлбар:" style="text;html=1;fontSize=10;fontStyle=1;fontFamily=Arial;fontColor=#263238;align=left;" vertex="1" parent="1">
+          <mxGeometry x="178" y="1102" width="60" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1a" value="" style="endArrow=none;html=1;strokeColor=#1565C0;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="178" y="1128" as="sourcePoint"/><mxPoint x="213" y="1128" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l1b" value="Холболт" style="text;html=1;fontSize=9;fontFamily=Arial;fontColor=#37474F;align=left;" vertex="1" parent="1">
+          <mxGeometry x="218" y="1120" width="52" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2a" value="" style="endArrow=open;endFill=0;dashed=1;html=1;strokeColor=#546E7A;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="280" y="1128" as="sourcePoint"/><mxPoint x="315" y="1128" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l2b" value="include / extend" style="text;html=1;fontSize=9;fontFamily=Arial;fontColor=#37474F;align=left;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1120" width="120" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3a" value="" style="endArrow=block;endFill=0;html=1;strokeColor=#37474F;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="450" y="1128" as="sourcePoint"/><mxPoint x="485" y="1128" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="l3b" value="Удамшил" style="text;html=1;fontSize=9;fontFamily=Arial;fontColor=#37474F;align=left;" vertex="1" parent="1">
+          <mxGeometry x="490" y="1120" width="55" height="16" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
