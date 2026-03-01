@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/profile_provider.dart';
 import 'admin_dashboard_screen.dart';
+import 'edit_profile_screen.dart';
 import 'auth_gate.dart';
 import '../components/admin_gate.dart';
 
@@ -42,6 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
     _progressController.forward();
     _accuracyController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProfileProvider>(context, listen: false).loadProfile();
+    });
   }
 
   @override
@@ -70,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 32),
             child: Column(
               children: [
@@ -84,8 +89,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _buildAchievementsSection(),
                 const SizedBox(height: 28),
                 _buildStudyProgressSection(),
-                const SizedBox(height: 28),
-                _buildFriendsSection(),
                 const SizedBox(height: 28),
                 _buildSettingsSection(),
                 const SizedBox(height: 20),
@@ -144,6 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Avatar + Name + Level ────────────────────────────────────────
   Widget _buildAvatarSection() {
+    final profile = context.watch<ProfileProvider>();
     return Column(
       children: [
         Stack(
@@ -164,18 +168,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ],
               ),
               child: ClipOval(
-                child: Image.asset(
-                  'assets/images/pic_2.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: AppTheme.surfaceLight,
-                    child: const Icon(
-                      Icons.person_rounded,
-                      size: 48,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ),
+                child: (profile.photoUrl ?? '').isNotEmpty
+                    ? Image.network(
+                        profile.photoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppTheme.surfaceLight,
+                          child: const Icon(Icons.person_rounded,
+                              size: 48, color: AppTheme.textSecondary),
+                        ),
+                      )
+                    : Image.asset(
+                        'assets/images/pic_2.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppTheme.surfaceLight,
+                          child: const Icon(Icons.person_rounded,
+                              size: 48, color: AppTheme.textSecondary),
+                        ),
+                      ),
               ),
             ),
             Container(
@@ -202,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ],
         ),
         const SizedBox(height: 14),
-        Text('Хаятар', style: AppTheme.h2),
+        Text(profile.displayName ?? 'Хэрэглэгч', style: AppTheme.h2),
         const SizedBox(height: 4),
         Text(
           '#F4C84A',
@@ -280,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           Expanded(
             child: _StatChip(
               icon: '🛡️',
-              label: '7 days',
+              label: '7 өдөр',
               suffix: '+',
               color: AppTheme.streakOrange,
             ),
@@ -290,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: _StatChip(
               icon: '⭐',
               label: '#23',
-              suffix: 'ланк',
+              suffix: 'байр',
               color: AppTheme.accentGold,
             ),
           ),
@@ -306,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-          child: Text('Achievements', style: AppTheme.sectionTitle),
+          child: Text('Амжилтууд', style: AppTheme.sectionTitle),
         ),
         const SizedBox(height: 14),
         SizedBox(
@@ -355,7 +366,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Будалсан сүэдвүэд', style: AppTheme.sectionTitle),
+          Text('Судалсан сэдвүүд', style: AppTheme.sectionTitle),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +434,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const Text('🔥', style: TextStyle(fontSize: 22)),
           const SizedBox(width: 8),
           Text(
-            '7-day streik!',
+            '7 өдрийн цуврал!',
             style: AppTheme.captionBold.copyWith(
               color: AppTheme.background,
               fontSize: 14,
@@ -432,59 +443,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ],
       ),
-    );
-  }
-
-  // ── Friends ──────────────────────────────────────────────────────
-  Widget _buildFriendsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-          child: Row(
-            children: [
-              Text('Габууд', style: AppTheme.sectionTitle),
-              const Spacer(),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppTheme.textSecondary,
-                size: 22,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 70,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.pagePadding,
-            ),
-            children: const [
-              _FriendCard(
-                name: 'Хаатар',
-                tag: '#F4C84A',
-                emoji: '🗡️',
-              ),
-              SizedBox(width: 10),
-              _FriendCard(
-                name: 'Хаятар',
-                tag: '#F4C84A',
-                emoji: '🔥',
-              ),
-              SizedBox(width: 10),
-              _FriendCard(
-                name: 'Баатар',
-                tag: '#A9B3C9',
-                emoji: '⚔️',
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -529,17 +487,23 @@ class _ProfileScreenState extends State<ProfileScreen>
           ],
           _SettingsTile(
             icon: Icons.edit_rounded,
-            label: 'Edit Profile',
-            trailing: Text(
-              '#F4C84A',
-              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+            label: 'Профайл засах',
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppTheme.textSecondary,
+              size: 20,
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+              );
+            },
           ),
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.language_rounded,
-            label: 'Language',
+            label: 'Хэл',
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -559,7 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.dark_mode_rounded,
-            label: 'Dark Mode',
+            label: 'Харанхуй горим',
             trailing: SizedBox(
               height: 28,
               child: Switch(
@@ -576,7 +540,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 10),
           _SettingsTile(
             icon: Icons.logout_rounded,
-            label: 'Sign Out',
+            label: 'Гарах',
             trailing: const Icon(
               Icons.chevron_right_rounded,
               color: AppTheme.textSecondary,
@@ -856,7 +820,7 @@ class _AccuracyGauge extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Accuracy',
+                'Нарийвчлал',
                 style: AppTheme.caption.copyWith(fontSize: 12),
               ),
             ],
@@ -920,86 +884,6 @@ class _GaugePainter extends CustomPainter {
   @override
   bool shouldRepaint(_GaugePainter oldDelegate) =>
       oldDelegate.progress != progress;
-}
-
-// ── Friend Card ────────────────────────────────────────────────────
-class _FriendCard extends StatelessWidget {
-  final String name;
-  final String tag;
-  final String emoji;
-
-  const _FriendCard({
-    required this.name,
-    required this.tag,
-    required this.emoji,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.cardBorder),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.surfaceLight,
-              border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.4),
-                width: 1.5,
-              ),
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 18)),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: AppTheme.captionBold.copyWith(fontSize: 13),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                tag,
-                style: AppTheme.chip.copyWith(
-                  color: AppTheme.accentGold,
-                  fontSize: 9,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'Найз',
-              style: AppTheme.chip.copyWith(
-                color: AppTheme.background,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ── Settings Tile ──────────────────────────────────────────────────

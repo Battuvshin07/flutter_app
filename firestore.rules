@@ -115,7 +115,7 @@ service cloud.firestore {
     }
 
     // ═══════════════════════════════════════
-    // culture/{docId} — Cultural topics
+    // culture/{docId} — Cultural topics (legacy)
     // ═══════════════════════════════════════
     match /culture/{docId} {
       allow read: if isAuthenticated();
@@ -123,6 +123,43 @@ service cloud.firestore {
       allow create: if isAdmin()
                     && isNonEmptyString(request.resource.data.title, 300)
                     && isNonEmptyString(request.resource.data.description, 10000);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // cultures/{docId} — Cultural content (admin CRUD)
+    // ═══════════════════════════════════════
+    match /cultures/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 300);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // person_details/{docId} — Extended person info
+    // ═══════════════════════════════════════
+    match /person_details/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // family_tree/{docId} — Family tree graphs
+    // ═══════════════════════════════════════
+    match /family_tree/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 300);
 
       allow update: if isAdmin();
       allow delete: if isAdmin();
@@ -151,6 +188,38 @@ service cloud.firestore {
     // reading_history/{uid}/** — View history
     // ═══════════════════════════════════════
     match /reading_history/{uid}/{document=**} {
+      allow read, write: if isOwner(uid);
+      allow read: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // stories/{docId} — Journey story content
+    // ═══════════════════════════════════════
+    match /stories/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin()
+                    && isNonEmptyString(request.resource.data.title, 500);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // story_quizzes/{docId} — Story quizzes
+    // ═══════════════════════════════════════
+    match /story_quizzes/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
+    // users/{uid}/progress/{storyId} — Journey progress
+    // ═══════════════════════════════════════
+    match /users/{uid}/progress/{storyId} {
       allow read, write: if isOwner(uid);
       allow read: if isAdmin();
     }

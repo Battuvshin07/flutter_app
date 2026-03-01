@@ -5,7 +5,11 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/profile_provider.dart';
+import 'providers/journey_provider.dart';
+import 'providers/story_quiz_provider.dart';
 import 'services/ai_service.dart';
 import 'screens/auth_gate.dart';
 
@@ -34,6 +38,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => InsightService()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => JourneyProvider()),
+        ChangeNotifierProvider(create: (_) => StoryQuizProvider()),
       ],
       child: const MyApp(),
     ),
