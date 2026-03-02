@@ -1,0 +1,104 @@
+<mxfile host="app.diagrams.net" modified="2026-03-02T00:00:00.000Z" agent="Copilot" version="24.0.0" type="device">
+  <diagram id="erd-page" name="Database ERD">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ===== Users ===== -->
+        <mxCell id="users_h" value="Users" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="200" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="users_f" value="uid (PK)&#xa;email&#xa;name&#xa;role&#xa;created_at" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="200" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== History_Journeys ===== -->
+        <mxCell id="hj_h" value="History_Journeys" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="100" width="220" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="hj_f" value="journey_id (PK)&#xa;title&#xa;description&#xa;order_index&#xa;created_at" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="460" y="130" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Lessons ===== -->
+        <mxCell id="les_h" value="Lessons" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="370" width="220" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="les_f" value="lesson_id (PK)&#xa;journey_id (FK)&#xa;title&#xa;content&#xa;exp_reward&#xa;order_index" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="460" y="400" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Quizzes ===== -->
+        <mxCell id="qz_h" value="Quizzes" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="650" width="220" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="qz_f" value="quiz_id (PK)&#xa;lesson_id (FK)&#xa;question&#xa;created_at" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="460" y="680" width="220" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Quiz_Options ===== -->
+        <mxCell id="qo_h" value="Quiz_Options" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="890" width="220" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="qo_f" value="option_id (PK)&#xa;quiz_id (FK)&#xa;option_text&#xa;is_correct" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="460" y="920" width="220" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== User_Progress ===== -->
+        <mxCell id="up_h" value="User_Progress" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="420" width="200" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="up_f" value="progress_id (PK)&#xa;uid (FK)&#xa;lesson_id (FK)&#xa;completed&#xa;exp_earned&#xa;completed_at" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="60" y="450" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Culture_Content ===== -->
+        <mxCell id="cc_h" value="Culture_Content" style="shape=rectangle;fillColor=#DAEEF3;strokeColor=#5B9BD5;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="720" width="200" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="cc_f" value="culture_id (PK)&#xa;title&#xa;description&#xa;image_url&#xa;created_by (FK)" style="shape=rectangle;fillColor=#FFFFFF;strokeColor=#5B9BD5;fontSize=11;align=left;verticalAlign=top;whiteSpace=wrap;spacingLeft=10;spacingTop=6;spacingBottom=6;rounded=0;fontFamily=Consolas;" vertex="1" parent="1">
+          <mxGeometry x="60" y="750" width="200" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== RELATIONSHIPS ===== -->
+
+        <!-- Users 1──< User_Progress -->
+        <mxCell id="r1" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;" edge="1" source="users_f" target="up_h" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Users 1──< Culture_Content -->
+        <mxCell id="r2" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;exitX=0.15;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;" edge="1" source="up_f" target="cc_h" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- History_Journeys 1──< Lessons -->
+        <mxCell id="r3" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;" edge="1" source="hj_f" target="les_h" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Lessons 1──< Quizzes -->
+        <mxCell id="r4" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;" edge="1" source="les_f" target="qz_h" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Quizzes 1──< Quiz_Options -->
+        <mxCell id="r5" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;" edge="1" source="qz_f" target="qo_h" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Lessons 1──< User_Progress -->
+        <mxCell id="r6" style="endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#333333;strokeWidth=1.5;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" edge="1" source="les_f" target="up_f" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="430"/>
+              <mxPoint x="380" y="480"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
