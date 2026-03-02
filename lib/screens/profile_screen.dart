@@ -383,7 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                     const SizedBox(height: 14),
                     _AnimatedProgressRow(
-                      label: 'Тулаан',
+                      label: 'Судлах Түүх',
                       value: 0.60,
                       color: AppTheme.accentGold,
                       controller: _progressController,

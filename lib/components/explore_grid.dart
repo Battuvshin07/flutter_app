@@ -33,7 +33,7 @@ class ExploreGrid extends StatelessWidget {
               Expanded(
                 child: _ExploreCard(
                   emoji: '⚔️',
-                  title: 'Тулаан',
+                  title: 'Судлах Түүх',
                   subtitle: '(Battles)',
                   color: const Color(0xFF3B1F2B),
                   onTap: () => _push(context, const HistoryJourneyScreen()),

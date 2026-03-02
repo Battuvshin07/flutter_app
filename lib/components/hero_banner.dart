@@ -66,7 +66,7 @@ class _HeroBannerState extends State<HeroBanner>
                       borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                     ),
                     child: Text(
-                      'ШИНЭ: Тулааны түүхүүд',
+                      'ШИНЭ: Судлах Түүхүүд',
                       style: AppTheme.chip.copyWith(
                         color: AppTheme.background,
                         fontSize: 10,
