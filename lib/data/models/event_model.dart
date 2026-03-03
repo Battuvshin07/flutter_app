@@ -1,0 +1,72 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+/// Firestore model for `events/{eventId}`.
+class EventModel {
+  final String? id;
+  final String title;
+  final String date; // stored as string, e.g. "1206", "1227-03"
+  final String description;
+  final String? location;
+  final String? coverImageUrl;
+  final DateTime? updatedAt;
+  final String? updatedBy;
+
+  EventModel({
+    this.id,
+    required this.title,
+    required this.date,
+    this.description = '',
+    this.location,
+    this.coverImageUrl,
+    this.updatedAt,
+    this.updatedBy,
+  });
+
+  factory EventModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return EventModel(
+      id: doc.id,
+      title: data['title'] ?? '',
+      date: data['date'] ?? '',
+      description: data['description'] ?? '',
+      location: data['location'],
+      coverImageUrl: data['coverImageUrl'],
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      updatedBy: data['updatedBy'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'date': date,
+      'description': description,
+      'location': location,
+      'coverImageUrl': coverImageUrl,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedBy': updatedBy,
+    };
+  }
+
+  EventModel copyWith({
+    String? id,
+    String? title,
+    String? date,
+    String? description,
+    String? location,
+    String? coverImageUrl,
+    DateTime? updatedAt,
+    String? updatedBy,
+  }) {
+    return EventModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      date: date ?? this.date,
+      description: description ?? this.description,
+      location: location ?? this.location,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      updatedAt: updatedAt ?? this.updatedAt,
+      updatedBy: updatedBy ?? this.updatedBy,
+    );
+  }
+}

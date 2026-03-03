@@ -10,6 +10,10 @@ import 'admin/culture_list_screen.dart';
 import 'admin/persons_list_screen.dart';
 import 'admin/family_tree_list_screen.dart';
 import 'admin/quizzes_list_screen.dart';
+import 'admin/content_list_screen.dart';
+import 'admin/event_list_screen.dart';
+import 'admin/story_list_screen.dart';
+import 'admin/progress_list_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════
 //  ADMIN DASHBOARD SCREEN — Simplified
@@ -332,6 +336,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             subtitle: 'Тест, асуулт удирдах',
             color: const Color(0xFFA78BFA),
             onTap: () => _push(const QuizzesListScreen()),
+          ),
+          _contentTile(
+            icon: Icons.article_rounded,
+            title: 'Contents',
+            subtitle: 'Контент удирдах',
+            color: const Color(0xFFFB923C),
+            onTap: () => _push(const ContentListScreen()),
+          ),
+          _contentTile(
+            icon: Icons.history_edu_rounded,
+            title: 'Events',
+            subtitle: 'Түүхэн үйл явдал удирдах',
+            color: const Color(0xFF38BDF8),
+            onTap: () => _push(const EventListScreen()),
+          ),
+          _contentTile(
+            icon: Icons.menu_book_rounded,
+            title: 'Stories',
+            subtitle: 'Түүхийн нийтлэлүүд удирдах',
+            color: const Color(0xFFF472B6),
+            onTap: () => _push(const StoryListScreen()),
+          ),
+          _contentTile(
+            icon: Icons.bar_chart_rounded,
+            title: 'Progress',
+            subtitle: 'Хэрэглэгчийн ахиц харах',
+            color: const Color(0xFF34D399),
+            onTap: () => _push(const ProgressListScreen()),
           ),
         ],
       ),

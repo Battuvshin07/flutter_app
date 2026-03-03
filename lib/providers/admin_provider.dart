@@ -6,6 +6,9 @@ import '../data/models/person_model.dart';
 import '../data/models/person_detail_model.dart';
 import '../data/models/family_tree_model.dart';
 import '../data/models/quiz_model.dart';
+import '../data/models/content_model.dart';
+import '../data/models/event_model.dart';
+import '../data/models/story_model.dart';
 
 /// State management provider for all admin CRUD operations.
 /// Uses ChangeNotifier (matching the project's existing Provider pattern).
@@ -32,6 +35,22 @@ class AdminProvider with ChangeNotifier {
   List<QuizModel> _quizzes = [];
   List<QuizModel> get quizzes => _quizzes;
 
+  // ── Contents ──
+  List<ContentModel> _contents = [];
+  List<ContentModel> get contents => _contents;
+
+  // ── Events ──
+  List<EventModel> _events = [];
+  List<EventModel> get events => _events;
+
+  // ── Stories ──
+  List<StoryModel> _stories = [];
+  List<StoryModel> get stories => _stories;
+
+  // ── Progress (flat list for admin read) ──
+  List<Map<String, dynamic>> _progress = [];
+  List<Map<String, dynamic>> get progress => _progress;
+
   // ── Loading / Error ──
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -44,6 +63,9 @@ class AdminProvider with ChangeNotifier {
   StreamSubscription? _personsSub;
   StreamSubscription? _familyTreesSub;
   StreamSubscription? _quizzesSub;
+  StreamSubscription? _contentsSub;
+  StreamSubscription? _eventsSub;
+  StreamSubscription? _storiesSub;
 
   AdminProvider() {
     _initStreams();
@@ -65,6 +87,18 @@ class AdminProvider with ChangeNotifier {
     });
     _quizzesSub = _repo.watchQuizzes().listen((data) {
       _quizzes = data;
+      notifyListeners();
+    });
+    _contentsSub = _repo.watchContents().listen((data) {
+      _contents = data;
+      notifyListeners();
+    });
+    _eventsSub = _repo.watchEvents().listen((data) {
+      _events = data;
+      notifyListeners();
+    });
+    _storiesSub = _repo.watchStories().listen((data) {
+      _stories = data;
       notifyListeners();
     });
   }
@@ -168,6 +202,75 @@ class AdminProvider with ChangeNotifier {
   }
 
   // ══════════════════════════════════════════════════════════════
+  //  CONTENTS
+  // ══════════════════════════════════════════════════════════════
+
+  Future<bool> createContent(ContentModel model) async {
+    return _safeExecute(() => _repo.createContent(model));
+  }
+
+  Future<bool> updateContent(ContentModel model) async {
+    return _safeExecute(() => _repo.updateContent(model));
+  }
+
+  Future<bool> deleteContent(String id) async {
+    return _safeExecute(() => _repo.deleteContent(id));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  EVENTS
+  // ══════════════════════════════════════════════════════════════
+
+  Future<bool> createEvent(EventModel model) async {
+    return _safeExecute(() => _repo.createEvent(model));
+  }
+
+  Future<bool> updateEvent(EventModel model) async {
+    return _safeExecute(() => _repo.updateEvent(model));
+  }
+
+  Future<bool> deleteEvent(String id) async {
+    return _safeExecute(() => _repo.deleteEvent(id));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  STORIES
+  // ══════════════════════════════════════════════════════════════
+
+  Future<bool> createStory(StoryModel model) async {
+    return _safeExecute(() => _repo.createStory(model));
+  }
+
+  Future<bool> updateStory(StoryModel model) async {
+    return _safeExecute(() => _repo.updateStory(model));
+  }
+
+  Future<bool> deleteStory(String id) async {
+    return _safeExecute(() => _repo.deleteStory(id));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  PROGRESS (read-only + admin reset)
+  // ══════════════════════════════════════════════════════════════
+
+  Future<void> loadProgress() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _progress = await _repo.getAllProgress();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteProgress(String id, {String? userId}) async {
+    return _safeExecute(() => _repo.deleteProgress(id, userId: userId));
+  }
+
+  // ══════════════════════════════════════════════════════════════
   //  HELPERS
   // ══════════════════════════════════════════════════════════════
 
@@ -200,6 +303,9 @@ class AdminProvider with ChangeNotifier {
     _personsSub?.cancel();
     _familyTreesSub?.cancel();
     _quizzesSub?.cancel();
+    _contentsSub?.cancel();
+    _eventsSub?.cancel();
+    _storiesSub?.cancel();
     super.dispose();
   }
 }

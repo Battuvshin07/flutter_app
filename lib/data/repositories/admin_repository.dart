@@ -4,6 +4,9 @@ import '../models/person_model.dart';
 import '../models/person_detail_model.dart';
 import '../models/family_tree_model.dart';
 import '../models/quiz_model.dart';
+import '../models/content_model.dart';
+import '../models/event_model.dart';
+import '../models/story_model.dart';
 
 /// Repository for all admin CRUD operations against Cloud Firestore.
 ///
@@ -198,5 +201,152 @@ class AdminRepository {
 
   Future<void> deleteQuiz(String id) async {
     await _db.collection('quizzes').doc(id).delete();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  CONTENTS — CRUD
+  // ══════════════════════════════════════════════════════════════
+
+  Stream<List<ContentModel>> watchContents() {
+    return _db
+        .collection('contents')
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => ContentModel.fromFirestore(d)).toList());
+  }
+
+  Future<List<ContentModel>> getContents({String? searchQuery}) async {
+    final snap = await _db
+        .collection('contents')
+        .orderBy('updatedAt', descending: true)
+        .get();
+    var list = snap.docs.map((d) => ContentModel.fromFirestore(d)).toList();
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      list = list.where((c) => c.title.toLowerCase().contains(q)).toList();
+    }
+    return list;
+  }
+
+  Future<void> createContent(ContentModel model) async {
+    await _db.collection('contents').add(model.toFirestore());
+  }
+
+  Future<void> updateContent(ContentModel model) async {
+    await _db.collection('contents').doc(model.id).update(model.toFirestore());
+  }
+
+  Future<void> deleteContent(String id) async {
+    await _db.collection('contents').doc(id).delete();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  EVENTS — CRUD
+  // ══════════════════════════════════════════════════════════════
+
+  Stream<List<EventModel>> watchEvents() {
+    return _db
+        .collection('events')
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => EventModel.fromFirestore(d)).toList());
+  }
+
+  Future<List<EventModel>> getEvents({String? searchQuery}) async {
+    final snap = await _db
+        .collection('events')
+        .orderBy('updatedAt', descending: true)
+        .get();
+    var list = snap.docs.map((d) => EventModel.fromFirestore(d)).toList();
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      list = list.where((e) => e.title.toLowerCase().contains(q)).toList();
+    }
+    return list;
+  }
+
+  Future<void> createEvent(EventModel model) async {
+    await _db.collection('events').add(model.toFirestore());
+  }
+
+  Future<void> updateEvent(EventModel model) async {
+    await _db.collection('events').doc(model.id).update(model.toFirestore());
+  }
+
+  Future<void> deleteEvent(String id) async {
+    await _db.collection('events').doc(id).delete();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  STORIES — CRUD
+  // ══════════════════════════════════════════════════════════════
+
+  Stream<List<StoryModel>> watchStories() {
+    return _db.collection('stories').orderBy('order').snapshots().map(
+        (snap) => snap.docs.map((d) => StoryModel.fromFirestore(d)).toList());
+  }
+
+  Future<List<StoryModel>> getStories({String? searchQuery}) async {
+    final snap = await _db.collection('stories').orderBy('order').get();
+    var list = snap.docs.map((d) => StoryModel.fromFirestore(d)).toList();
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      list = list.where((s) => s.title.toLowerCase().contains(q)).toList();
+    }
+    return list;
+  }
+
+  Future<void> createStory(StoryModel model) async {
+    await _db.collection('stories').add(model.toFirestore());
+  }
+
+  Future<void> updateStory(StoryModel model) async {
+    await _db.collection('stories').doc(model.id).update(model.toFirestore());
+  }
+
+  Future<void> deleteStory(String id) async {
+    await _db.collection('stories').doc(id).delete();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  PROGRESS — Read-only admin view
+  // ══════════════════════════════════════════════════════════════
+
+  /// Returns a flat list of all progress docs across all users.
+  /// Reads `user_progress/{uid}/quizzes` subcollections for each user.
+  /// For a simpler admin view, we also support a top-level `progress`
+  /// collection if present.
+  Future<List<Map<String, dynamic>>> getAllProgress() async {
+    // Try flat `progress` collection first
+    final flat = await _db
+        .collection('progress')
+        .orderBy('updatedAt', descending: true)
+        .limit(200)
+        .get();
+    if (flat.docs.isNotEmpty) {
+      return flat.docs.map((d) => {'id': d.id, ...d.data()}).toList();
+    }
+    // Fallback: read user_progress per-user subcollections
+    final usersSnap = await _db.collection('user_progress').get();
+    final results = <Map<String, dynamic>>[];
+    for (final userDoc in usersSnap.docs) {
+      final quizzesSnap = await userDoc.reference.collection('quizzes').get();
+      for (final qDoc in quizzesSnap.docs) {
+        results.add({'userId': userDoc.id, 'id': qDoc.id, ...qDoc.data()});
+      }
+    }
+    return results;
+  }
+
+  /// Deletes a single progress record. Accepts either a flat `progress/{id}`
+  /// doc or `user_progress/{userId}/quizzes/{quizId}`.
+  Future<void> deleteProgress(String id, {String? userId}) async {
+    if (userId != null) {
+      await _db.doc('user_progress/$userId/quizzes/$id').delete();
+    } else {
+      await _db.collection('progress').doc(id).delete();
+    }
   }
 }
