@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/app_user.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -26,7 +29,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   late final AnimationController _progressController;
   late final AnimationController _accuracyController;
   late final Animation<double> _xpAnimation;
+  late final Stream<AppUser?> _userStream;
   bool _darkMode = true;
+
+  // Real-time user state
+  AppUser? _currentUser;
+  List<AppAchievement> _achievements = [];
+  bool _achievementsLoaded = false;
+  double _xpTarget = 0.0;
+  bool _retryFlag = false;
 
   @override
   void initState() {
@@ -39,11 +50,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
-    _xpAnimation = Tween<double>(begin: 0.0, end: 0.68).animate(
+    _xpAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
     );
-    _progressController.forward();
     _accuracyController.forward();
+    _userStream = UserService.watchCurrentUser();
+    // Ensure Firestore doc has all required fields
+    UserService.ensureUserDocExists();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProfileProvider>(context, listen: false).loadProfile();
     });
@@ -54,6 +67,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     _progressController.dispose();
     _accuracyController.dispose();
     super.dispose();
+  }
+
+  // ── XP / Progress animation helper ──────────────────────────────
+  void _animateToUserXP(int totalXP) {
+    final target = UserService.levelProgress(totalXP);
+    if ((target - _xpTarget).abs() > 0.005) {
+      if (!mounted) return;
+      setState(() => _xpTarget = target);
+      _progressController.forward(from: 0.0);
+    }
   }
 
   @override
@@ -74,28 +97,171 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 32),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                _buildAppBar(),
-                const SizedBox(height: 20),
-                _buildAvatarSection(),
-                const SizedBox(height: 24),
-                _buildStatsRow(),
-                const SizedBox(height: 28),
-                _buildAchievementsSection(),
-                const SizedBox(height: 28),
-                _buildStudyProgressSection(),
-                const SizedBox(height: 28),
-                _buildSettingsSection(),
-                const SizedBox(height: 20),
-              ],
-            ),
+          child: StreamBuilder<AppUser?>(
+            stream: _userStream,
+            builder: (context, snapshot) {
+              // Update cached user + trigger animation on new data
+              if (snapshot.hasData && snapshot.data != null) {
+                final user = snapshot.data!;
+                final xpChanged = _currentUser?.totalXP != user.totalXP;
+                _currentUser = user;
+                if (xpChanged) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _animateToUserXP(user.totalXP);
+                  });
+                }
+                // Load achievements once
+                if (!_achievementsLoaded) {
+                  _achievementsLoaded = true;
+                  UserService.loadAchievements(user.id).then((list) {
+                    if (mounted) setState(() => _achievements = list);
+                  });
+                }
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  _currentUser == null) {
+                return _buildSkeleton();
+              }
+              if (snapshot.hasError && _currentUser == null) {
+                return _buildError('${snapshot.error}');
+              }
+              return _buildContent();
+            },
           ),
         ),
+      ),
+    );
+  }
+
+  // ── Loading Skeleton ─────────────────────────────────────────────
+  Widget _buildSkeleton() {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          _buildAppBar(),
+          const SizedBox(height: 32),
+          // Avatar skeleton
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.surfaceLight,
+              border: Border.all(
+                color: AppTheme.accentGold.withValues(alpha: 0.3),
+                width: 3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _shimmerBox(120, 18),
+          const SizedBox(height: 8),
+          _shimmerBox(80, 12),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 60),
+            child: _shimmerBox(double.infinity, 8),
+          ),
+          const SizedBox(height: 28),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: List.generate(
+                4,
+                (i) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: i == 0 ? 0 : 8),
+                    child: _shimmerBox(double.infinity, 52),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _shimmerBox(double.infinity, 120),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _shimmerBox(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLight,
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  // ── Error View ───────────────────────────────────────────────────
+  Widget _buildError(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.wifi_off_rounded,
+                size: 56, color: AppTheme.textSecondary),
+            const SizedBox(height: 16),
+            Text('Өгөгдөл ачаалахад алдаа гарлаа',
+                style: AppTheme.sectionTitle, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(message, style: AppTheme.caption, textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: () => setState(() {
+                _achievementsLoaded = false;
+                _retryFlag = !_retryFlag;
+              }),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.accentGold, Color(0xFFFFE08A)],
+                  ),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
+                child: Text('Дахин оролдох', style: AppTheme.button),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Main Content ────────────────────────────────────────────────
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 32),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          _buildAppBar(),
+          const SizedBox(height: 20),
+          _buildAvatarSection(),
+          const SizedBox(height: 24),
+          _buildStatsRow(),
+          const SizedBox(height: 28),
+          _buildAchievementsSection(),
+          const SizedBox(height: 28),
+          _buildStudyProgressSection(),
+          const SizedBox(height: 28),
+          _buildSettingsSection(),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -147,7 +313,12 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Avatar + Name + Level ────────────────────────────────────────
   Widget _buildAvatarSection() {
-    final profile = context.watch<ProfileProvider>();
+    final user = _currentUser;
+    final level = UserService.levelFromXP(user?.totalXP ?? 0);
+    final displayName = user?.effectiveName ?? 'Хэрэглэгч';
+    final photoUrl = user?.photoUrl;
+    final initials = user?.initials ?? '?';
+
     return Column(
       children: [
         Stack(
@@ -168,25 +339,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ],
               ),
               child: ClipOval(
-                child: (profile.photoUrl ?? '').isNotEmpty
+                child: (photoUrl?.isNotEmpty == true)
                     ? Image.network(
-                        profile.photoUrl!,
+                        photoUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AppTheme.surfaceLight,
-                          child: const Icon(Icons.person_rounded,
-                              size: 48, color: AppTheme.textSecondary),
-                        ),
+                        errorBuilder: (_, __, ___) =>
+                            _buildInitialsAvatar(initials),
                       )
-                    : Image.asset(
-                        'assets/images/pic_2.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AppTheme.surfaceLight,
-                          child: const Icon(Icons.person_rounded,
-                              size: 48, color: AppTheme.textSecondary),
-                        ),
-                      ),
+                    : _buildInitialsAvatar(initials),
               ),
             ),
             Container(
@@ -202,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ],
               ),
               child: Text(
-                'Level 12',
+                'Level $level',
                 style: AppTheme.chip.copyWith(
                   color: AppTheme.background,
                   fontSize: 10,
@@ -213,10 +373,10 @@ class _ProfileScreenState extends State<ProfileScreen>
           ],
         ),
         const SizedBox(height: 14),
-        Text(profile.displayName ?? 'Хэрэглэгч', style: AppTheme.h2),
+        Text(displayName, style: AppTheme.h2),
         const SizedBox(height: 4),
         Text(
-          '#F4C84A',
+          user?.email ?? '',
           style: AppTheme.caption.copyWith(color: AppTheme.accentGold),
         ),
         const SizedBox(height: 14),
@@ -225,7 +385,29 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  Widget _buildInitialsAvatar(String initials) {
+    return Container(
+      color: AppTheme.surfaceLight,
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: AppTheme.h2.copyWith(
+          fontSize: 36,
+          color: AppTheme.accentGold,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   Widget _buildXpProgressBar() {
+    final totalXP = _currentUser?.totalXP ?? 0;
+    final progressPct = (_xpTarget * 100).toInt();
+    // Format totalXP with thousands separator (e.g. 18,400)
+    final xpLabel = totalXP >= 1000
+        ? '${(totalXP ~/ 1000)},${(totalXP % 1000).toString().padLeft(3, '0')} XP'
+        : '$totalXP XP';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 60),
       child: Column(
@@ -234,11 +416,11 @@ class _ProfileScreenState extends State<ProfileScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '18,400 XP',
+                xpLabel,
                 style: AppTheme.chip.copyWith(color: AppTheme.xpGreen),
               ),
               Text(
-                '68%',
+                '$progressPct%',
                 style: AppTheme.chip.copyWith(color: AppTheme.textSecondary),
               ),
             ],
@@ -250,7 +432,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               return ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: _xpAnimation.value,
+                  value: (_xpAnimation.value * _xpTarget).clamp(0.0, 1.0),
                   minHeight: 8,
                   backgroundColor: AppTheme.surfaceLight,
                   valueColor:
@@ -266,41 +448,49 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Stats Row ────────────────────────────────────────────────────
   Widget _buildStatsRow() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+    final user = _currentUser;
+    final totalXP = user?.totalXP ?? 0;
+    final streakDays = user?.streakDays ?? 0;
+    // Format totalXP (e.g. 18,400)
+    final totalXPStr = totalXP >= 1000
+        ? '${(totalXP ~/ 1000)},${(totalXP % 1000).toString().padLeft(3, '0')}'
+        : '$totalXP';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Row(
         children: [
           Expanded(
             child: _StatChip(
               icon: '🪙',
-              label: '2450',
-              suffix: 'XP',
+              label: '0',
+              suffix: 'XP/өдөр',
               color: AppTheme.accentGold,
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: _StatChip(
               icon: '💎',
-              label: '18,400',
+              label: totalXPStr,
               suffix: 'XP',
               color: AppTheme.xpGreen,
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: _StatChip(
               icon: '🛡️',
-              label: '7 өдөр',
+              label: '$streakDays өдөр',
               suffix: '+',
               color: AppTheme.streakOrange,
             ),
           ),
-          SizedBox(width: 8),
-          Expanded(
+          const SizedBox(width: 8),
+          const Expanded(
             child: _StatChip(
               icon: '⭐',
-              label: '#23',
+              label: '—',
               suffix: 'байр',
               color: AppTheme.accentGold,
             ),
@@ -312,6 +502,54 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Achievements ─────────────────────────────────────────────────
   Widget _buildAchievementsSection() {
+    // Map icon string to IconData
+    IconData iconFor(String icon) {
+      switch (icon) {
+        case 'shield':
+          return Icons.shield_rounded;
+        case 'medal':
+          return Icons.military_tech_rounded;
+        case 'star':
+          return Icons.auto_awesome_rounded;
+        default:
+          return Icons.emoji_events_rounded;
+      }
+    }
+
+    Color colorFor(int index) {
+      const colors = [
+        Color(0xFFFFD700),
+        Color(0xFF4ADE80),
+        Color(0xFF60A5FA),
+        Color(0xFFF472B6),
+      ];
+      return colors[index % colors.length];
+    }
+
+    // Fill up to 4 slots; pad with locked placeholders
+    const displayCount = 4;
+    final realCount = _achievements.length.clamp(0, displayCount);
+    final cards = <Widget>[];
+    for (int i = 0; i < displayCount; i++) {
+      if (i < realCount) {
+        final a = _achievements[i];
+        cards.add(_AchievementCard(
+          icon: iconFor(a.icon),
+          color: colorFor(i),
+          title: a.title,
+          isLocked: false,
+        ));
+      } else {
+        cards.add(const _AchievementCard(
+          icon: Icons.lock_rounded,
+          color: AppTheme.textSecondary,
+          title: 'Түлхгүй',
+          isLocked: true,
+        ));
+      }
+      if (i < displayCount - 1) cards.add(const SizedBox(width: 12));
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -328,31 +566,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.pagePadding,
             ),
-            children: const [
-              _AchievementCard(
-                icon: Icons.emoji_events_rounded,
-                color: Color(0xFFFFD700),
-                title: 'Алтан цом',
-              ),
-              SizedBox(width: 12),
-              _AchievementCard(
-                icon: Icons.shield_rounded,
-                color: Color(0xFF4ADE80),
-                title: 'Хамгаалагч',
-              ),
-              SizedBox(width: 12),
-              _AchievementCard(
-                icon: Icons.military_tech_rounded,
-                color: Color(0xFF60A5FA),
-                title: 'Медаль',
-              ),
-              SizedBox(width: 12),
-              _AchievementCard(
-                icon: Icons.auto_awesome_rounded,
-                color: Color(0xFFF472B6),
-                title: 'Од',
-              ),
-            ],
+            children: cards,
           ),
         ),
       ],
@@ -361,6 +575,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Study Progress ───────────────────────────────────────────────
   Widget _buildStudyProgressSection() {
+    final progress = _currentUser?.progress ?? {};
+    final humansProgress = (progress['humans'] ?? 0.0).clamp(0.0, 1.0);
+    final historyProgress = (progress['history'] ?? 0.0).clamp(0.0, 1.0);
+    final mapProgress = (progress['map'] ?? 0.0).clamp(0.0, 1.0);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
@@ -377,21 +596,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                   children: [
                     _AnimatedProgressRow(
                       label: 'Хүмүүс',
-                      value: 0.85,
+                      value: humansProgress,
                       color: AppTheme.accentGold,
                       controller: _progressController,
                     ),
                     const SizedBox(height: 14),
                     _AnimatedProgressRow(
                       label: 'Судлах Түүх',
-                      value: 0.60,
+                      value: historyProgress,
                       color: AppTheme.accentGold,
                       controller: _progressController,
                     ),
                     const SizedBox(height: 14),
                     _AnimatedProgressRow(
                       label: 'Газрын зураг',
-                      value: 0.92,
+                      value: mapProgress,
                       color: AppTheme.accentGold,
                       controller: _progressController,
                     ),
@@ -413,6 +632,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildStreakBadge() {
+    final streak = _currentUser?.streakDays ?? 0;
+    final label = streak > 0 ? '$streak өдрийн цуврал!' : 'Цуврал эхлүүлэх';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -434,7 +655,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const Text('🔥', style: TextStyle(fontSize: 22)),
           const SizedBox(width: 8),
           Text(
-            '7 өдрийн цуврал!',
+            label,
             style: AppTheme.captionBold.copyWith(
               color: AppTheme.background,
               fontSize: 14,
@@ -548,6 +769,55 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
             onTap: () => _showSignOutDialog(),
           ),
+          // ── Debug: Seed fake data (debug builds only) ────────────
+          if (kDebugMode) ...[
+            const SizedBox(height: 10),
+            _SettingsTile(
+              icon: Icons.science_rounded,
+              label: '[Debug] Туршилтын өгөгдөл',
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.crimson.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'DEV',
+                  style: AppTheme.chip.copyWith(
+                    color: AppTheme.crimson,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+              onTap: () async {
+                try {
+                  await UserService.seedDebugData();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Туршилтын өгөгдөл амжилттай нэмэгдлээ!',
+                        style: AppTheme.caption
+                            .copyWith(color: AppTheme.textPrimary),
+                      ),
+                      backgroundColor: AppTheme.surface,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Алдаа: $e',
+                          style: AppTheme.caption
+                              .copyWith(color: AppTheme.crimson)),
+                      backgroundColor: AppTheme.surface,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
         ],
       ),
     );
@@ -649,15 +919,18 @@ class _AchievementCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title;
+  final bool isLocked;
 
   const _AchievementCard({
     required this.icon,
     required this.color,
     required this.title,
+    this.isLocked = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final tileColor = isLocked ? AppTheme.textSecondary : color;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       child: BackdropFilter(
@@ -666,14 +939,16 @@ class _AchievementCard extends StatelessWidget {
           width: 100,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.surface.withValues(alpha: 0.6),
+            color: isLocked
+                ? AppTheme.surface.withValues(alpha: 0.3)
+                : AppTheme.surface.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(
-              color: color.withValues(alpha: 0.25),
+              color: tileColor.withValues(alpha: isLocked ? 0.1 : 0.25),
             ),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.08),
+                color: tileColor.withValues(alpha: 0.08),
                 blurRadius: 16,
               ),
             ],
@@ -685,15 +960,22 @@ class _AchievementCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
+                  color: tileColor.withValues(alpha: isLocked ? 0.06 : 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 26),
+                child: Icon(icon,
+                    color: tileColor.withValues(alpha: isLocked ? 0.4 : 1.0),
+                    size: 26),
               ),
               const SizedBox(height: 8),
               Text(
                 title,
-                style: AppTheme.chip.copyWith(fontSize: 10),
+                style: AppTheme.chip.copyWith(
+                  fontSize: 10,
+                  color: isLocked
+                      ? AppTheme.textSecondary.withValues(alpha: 0.5)
+                      : AppTheme.textPrimary,
+                ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

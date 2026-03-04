@@ -217,6 +217,18 @@ service cloud.firestore {
     }
 
     // ═══════════════════════════════════════
+    // users/{uid}/achievements/{achievementId}
+    // ═══════════════════════════════════════
+    match /users/{uid}/achievements/{achievementId} {
+      // Owner can read their own achievements
+      allow read: if isOwner(uid);
+      // Admins can read any user's achievements (for leaderboard / analytics)
+      allow read: if isAdmin();
+      // Only admins or server (via Admin SDK) can write achievements
+      allow write: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════
     // users/{uid}/progress/{storyId} — Journey progress
     // ═══════════════════════════════════════
     match /users/{uid}/progress/{storyId} {

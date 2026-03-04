@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'user_service.dart';
 
 /// Firebase Authentication service.
 /// Handles sign-up, sign-in, sign-out, and auth state stream.
@@ -30,14 +31,25 @@ class AuthService {
       // Update display name in Auth
       await user.updateDisplayName(name);
 
-      // Create Firestore user profile
+      // Create Firestore user profile (includes all required fields)
       await _db.doc('users/${user.uid}').set({
         'uid': user.uid,
         'name': name,
+        'displayName': name,
         'email': email,
         'role': 'user',
         'isActive': true,
         'avatarUrl': '',
+        'photoUrl': null,
+        'bio': null,
+        'preferredLanguage': 'mn',
+        'totalXP': 0,
+        'streakDays': 0,
+        'progress': <String, dynamic>{
+          'humans': 0.0,
+          'history': 0.0,
+          'map': 0.0,
+        },
         'lastLogin': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -60,6 +72,8 @@ class AuthService {
 
     final user = credential.user;
     if (user != null) {
+      // Ensure doc exists (handles accounts created before field additions)
+      await UserService.ensureUserDocExists();
       // Update last login
       await _db.doc('users/${user.uid}').update({
         'lastLogin': FieldValue.serverTimestamp(),
