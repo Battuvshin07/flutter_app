@@ -10,28 +10,36 @@ class AppAchievement {
   final String id;
   final String title;
   final String icon; // 'trophy' | 'shield' | 'medal' | 'star' …
+  final bool unlocked; // true when this achievement has been earned
   final DateTime? unlockedAt;
 
   const AppAchievement({
     required this.id,
     required this.title,
     this.icon = 'trophy',
+    this.unlocked = false,
     this.unlockedAt,
   });
 
   factory AppAchievement.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+    final unlockedAt = (data['unlockedAt'] as Timestamp?)?.toDate();
+    // Consider an achievement unlocked if unlockedAt is present or
+    // an explicit 'unlocked' boolean field is true
+    final unlocked = (data['unlocked'] as bool? ?? false) || unlockedAt != null;
     return AppAchievement(
       id: doc.id,
       title: data['title'] as String? ?? 'Амжилт',
       icon: data['icon'] as String? ?? 'trophy',
-      unlockedAt: (data['unlockedAt'] as Timestamp?)?.toDate(),
+      unlocked: unlocked,
+      unlockedAt: unlockedAt,
     );
   }
 
   Map<String, dynamic> toFirestore() => {
         'title': title,
         'icon': icon,
+        'unlocked': unlocked,
         if (unlockedAt != null) 'unlockedAt': Timestamp.fromDate(unlockedAt!),
       };
 }

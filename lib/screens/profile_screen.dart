@@ -537,7 +537,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           icon: iconFor(a.icon),
           color: colorFor(i),
           title: a.title,
-          isLocked: false,
+          isLocked: !a.unlocked,
         ));
       } else {
         cards.add(const _AchievementCard(

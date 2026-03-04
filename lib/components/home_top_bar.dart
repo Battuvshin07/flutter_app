@@ -1,19 +1,19 @@
+// ════════════════════════════════════════════════════════
+//  HomeTopBar – live Firestore data, no hardcoded values
+//   Profile avatar with initials fallback
+//   Level badge + mini XP progress bar from totalXP
+//   Notification bell – NO badge
+// ════════════════════════════════════════════════════════
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/app_user.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/xp_helpers.dart' as xp;
 
-/// A) Top App Bar – 96pt height
-/// Profile circle (left), Level+XP chip (center), bell icon (right).
 class HomeTopBar extends StatelessWidget {
-  final int level;
-  final int currentXp;
-  final int maxXp;
-
-  const HomeTopBar({
-    super.key,
-    this.level = 5,
-    this.currentXp = 120,
-    this.maxXp = 244,
-  });
+  const HomeTopBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,131 +27,138 @@ class HomeTopBar extends StatelessWidget {
         bottom: 8,
       ),
       color: AppTheme.background,
-      child: Row(
-        children: [
-          // ── Profile circle ──
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.accentGold, width: 2),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/pic_1.png'),
-                fit: BoxFit.cover,
+      child: StreamBuilder<AppUser?>(
+        stream: UserService.watchCurrentUser(),
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          final totalXP = user?.totalXP ?? 0;
+          final level = xp.levelFromXP(totalXP);
+          final progress = xp.levelProgress(totalXP);
+          final xpInto = xp.xpIntoCurrentLevel(totalXP);
+          final xpNeeded = xp.xpNeededForNextLevel(totalXP);
+          final photoUrl = user?.photoUrl;
+          final initials = user?.initials ??
+              (FirebaseAuth.instance.currentUser?.displayName
+                      ?.substring(0, 1)
+                      .toUpperCase() ??
+                  '?');
+          final isLoading =
+              snapshot.connectionState == ConnectionState.waiting &&
+                  user == null;
+
+          return Row(
+            children: [
+              // ── Profile circle ──────────────────────────────────
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.accentGold, width: 2),
+                ),
+                child: ClipOval(
+                  child: (photoUrl?.isNotEmpty == true)
+                      ? Image.network(
+                          photoUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _InitialsCircle(initials: initials),
+                        )
+                      : _InitialsCircle(initials: initials),
+                ),
               ),
-            ),
-          ),
 
-          const Spacer(),
+              const Spacer(),
 
-          // ── Level + XP chip ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Level $level', style: AppTheme.chip),
-                const SizedBox(width: 8),
-                const Text('•',
-                    style:
-                        TextStyle(color: AppTheme.textSecondary, fontSize: 8)),
-                const SizedBox(width: 8),
-                // Mini XP bar
-                SizedBox(
-                  width: 48,
-                  height: 4,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(
-                      value: currentXp / maxXp,
-                      backgroundColor: AppTheme.surfaceLight,
-                      valueColor:
-                          const AlwaysStoppedAnimation(AppTheme.accentGold),
+              // ── Level + XP chip ─────────────────────────────────
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  border: Border.all(color: AppTheme.cardBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Level $level', style: AppTheme.chip),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '•',
+                      style:
+                          TextStyle(color: AppTheme.textSecondary, fontSize: 8),
                     ),
+                    const SizedBox(width: 8),
+                    // Mini XP progress bar
+                    SizedBox(
+                      width: 48,
+                      height: 4,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: AppTheme.surfaceLight,
+                          valueColor:
+                              const AlwaysStoppedAnimation(AppTheme.accentGold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isLoading ? '…xp' : '$xpInto/$xpNeeded xp',
+                      style: AppTheme.chip
+                          .copyWith(color: AppTheme.accentGold, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Spacer(),
+
+              // ── Notification bell – NO badge ─────────────────────
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppTheme.cardBorder),
+                  ),
+                  child: const Icon(
+                    Icons.notifications_none_rounded,
+                    color: AppTheme.textPrimary,
+                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '${currentXp}xp',
-                  style: AppTheme.chip
-                      .copyWith(color: AppTheme.accentGold, fontSize: 10),
-                ),
-              ],
-            ),
-          ),
-
-          const Spacer(),
-
-          // ── Notifications ──
-          _CircleButton(
-            icon: Icons.notifications_none_rounded,
-            onTap: () {},
-            badgeCount: 2,
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _CircleButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final int badgeCount;
-
-  const _CircleButton({
-    required this.icon,
-    required this.onTap,
-    this.badgeCount = 0,
-  });
+// ── Initials avatar for when no photoUrl is available ───────────────
+class _InitialsCircle extends StatelessWidget {
+  final String initials;
+  const _InitialsCircle({required this.initials});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: Icon(icon, color: AppTheme.textPrimary, size: 18),
-          ),
-          if (badgeCount > 0)
-            Positioned(
-              right: -2,
-              top: -2,
-              child: Container(
-                width: 14,
-                height: 14,
-                decoration: const BoxDecoration(
-                  color: AppTheme.crimson,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '$badgeCount',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+    return Container(
+      color: AppTheme.surfaceLight,
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: const TextStyle(
+          color: AppTheme.accentGold,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

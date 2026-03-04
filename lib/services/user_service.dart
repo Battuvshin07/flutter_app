@@ -1,16 +1,12 @@
 // ════════════════════════════════════════════════════════
 //  UserService – Firestore + Firebase Auth user layer
-//  Provides:
-//    • XP / Level helpers
-//    • Real-time stream of current user
-//    • One-shot fetch & doc seeding
-//    • Debug data seeder (debug builds only)
 // ════════════════════════════════════════════════════════
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/app_user.dart';
+import '../utils/xp_helpers.dart' as xp;
 
 class UserService {
   UserService._(); // static-only
@@ -22,46 +18,24 @@ class UserService {
   static String? get _uid => _auth.currentUser?.uid;
 
   // ═══════════════════════════════════════════════════════════════
-  //  XP → Level formulæ
-  //  Level 1 starts at 0 XP.
-  //  Gap between level N and N+1 = 1000 + (N-1)*250
-  //
-  //  Examples:
-  //    Lv 1 → Lv 2 : 1000 XP
-  //    Lv 2 → Lv 3 : 1250 XP
-  //    Lv 3 → Lv 4 : 1500 XP   …and so on.
+  //  XP → Level formulæ (delegated to utils/xp_helpers.dart)
   // ═══════════════════════════════════════════════════════════════
 
-  /// Total XP required to *reach* [level] (level starts at 1).
-  static int xpForLevel(int level) {
-    if (level <= 1) return 0;
-    int total = 0;
-    for (int i = 2; i <= level; i++) {
-      total += 1000 + (i - 2) * 250;
-    }
-    return total;
-  }
+  /// Total XP required to reach [level].
+  static int xpForLevel(int level) => xp.xpForLevel(level);
 
   /// Current level derived from [totalXP].
-  static int levelFromXP(int totalXP) {
-    if (totalXP <= 0) return 1;
-    int level = 1;
-    while (xpForLevel(level + 1) <= totalXP) {
-      level++;
-    }
-    return level;
-  }
+  static int levelFromXP(int totalXP) => xp.levelFromXP(totalXP);
 
-  /// Fractional progress within the current level [0.0 – 1.0].
-  static double levelProgress(int totalXP) {
-    if (totalXP <= 0) return 0.0;
-    final level = levelFromXP(totalXP);
-    final currentLevelXP = xpForLevel(level);
-    final nextLevelXP = xpForLevel(level + 1);
-    final span = nextLevelXP - currentLevelXP;
-    if (span <= 0) return 1.0;
-    return ((totalXP - currentLevelXP) / span).clamp(0.0, 1.0);
-  }
+  /// Fractional progress within current level [0.0 – 1.0].
+  static double levelProgress(int totalXP) => xp.levelProgress(totalXP);
+
+  /// XP earned inside current level.
+  static int xpIntoCurrentLevel(int totalXP) => xp.xpIntoCurrentLevel(totalXP);
+
+  /// XP gap for the current level.
+  static int xpNeededForNextLevel(int totalXP) =>
+      xp.xpNeededForNextLevel(totalXP);
 
   // ═══════════════════════════════════════════════════════════════
   //  Firestore streams / fetches
@@ -100,9 +74,18 @@ class UserService {
           .collection('users')
           .doc(uid)
           .collection('achievements')
-          .orderBy('unlockedAt', descending: true)
           .get();
-      return snap.docs.map(AppAchievement.fromFirestore).toList();
+      final list = snap.docs.map(AppAchievement.fromFirestore).toList();
+      // Sort in Dart to avoid Firestore composite index requirements
+      list.sort((a, b) {
+        if (a.unlocked && !b.unlocked) return -1;
+        if (!a.unlocked && b.unlocked) return 1;
+        if (a.unlockedAt != null && b.unlockedAt != null) {
+          return b.unlockedAt!.compareTo(a.unlockedAt!);
+        }
+        return 0;
+      });
+      return list;
     } catch (e) {
       debugPrint('UserService.loadAchievements error: $e');
       return [];
@@ -110,6 +93,7 @@ class UserService {
   }
 
   /// Real-time stream of achievements subcollection.
+  /// Ordered: unlocked first (by unlockedAt desc), then locked.
   static Stream<List<AppAchievement>> watchAchievements() {
     final uid = _uid;
     if (uid == null) return Stream.value([]);
@@ -117,9 +101,20 @@ class UserService {
         .collection('users')
         .doc(uid)
         .collection('achievements')
-        .orderBy('unlockedAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map(AppAchievement.fromFirestore).toList());
+        .map((snap) {
+      final list = snap.docs.map(AppAchievement.fromFirestore).toList();
+      // Sort: unlocked first (newest first), then locked
+      list.sort((a, b) {
+        if (a.unlocked && !b.unlocked) return -1;
+        if (!a.unlocked && b.unlocked) return 1;
+        if (a.unlockedAt != null && b.unlockedAt != null) {
+          return b.unlockedAt!.compareTo(a.unlockedAt!);
+        }
+        return 0;
+      });
+      return list;
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════

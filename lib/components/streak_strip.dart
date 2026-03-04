@@ -1,19 +1,18 @@
+// ════════════════════════════════════════════════════════
+//  StreakStrip – live Firestore data
+//   Left  : streakDays from users/{uid}
+//   Center: XP level progress bar from totalXP
+//   Right : count of unlocked achievements
+// ════════════════════════════════════════════════════════
+
 import 'package:flutter/material.dart';
+import '../models/app_user.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/xp_helpers.dart' as xp;
 
-/// D) Progress / Streak strip – 358×52, radius 16
-/// Left: Streak 🔥, Center: animated progress bar 140×6, Right: Badges.
 class StreakStrip extends StatefulWidget {
-  final int streak;
-  final double progress; // 0.0–1.0
-  final int badges;
-
-  const StreakStrip({
-    super.key,
-    this.streak = 7,
-    this.progress = 0.62,
-    this.badges = 3,
-  });
+  const StreakStrip({super.key});
 
   @override
   State<StreakStrip> createState() => _StreakStripState();
@@ -24,6 +23,9 @@ class _StreakStripState extends State<StreakStrip>
   late AnimationController _animCtrl;
   late Animation<double> _progressAnim;
 
+  // Cached values that drive the animation target
+  double _targetProgress = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -31,10 +33,9 @@ class _StreakStripState extends State<StreakStrip>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _progressAnim = Tween<double>(begin: 0, end: widget.progress).animate(
+    _progressAnim = Tween<double>(begin: 0, end: 0).animate(
       CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic),
     );
-    _animCtrl.forward();
   }
 
   @override
@@ -43,91 +44,121 @@ class _StreakStripState extends State<StreakStrip>
     super.dispose();
   }
 
+  void _animateTo(double target) {
+    if ((target - _targetProgress).abs() < 0.005) return;
+    _targetProgress = target;
+    _progressAnim = Tween<double>(begin: _progressAnim.value, end: target)
+        .animate(
+            CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+    _animCtrl.forward(from: 0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-      child: Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: AppTheme.cardBorder),
-        ),
-        child: Row(
-          children: [
-            // ── Streak ──
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🔥', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 6),
-                Text(
-                  '${widget.streak} өдөр',
-                  style: AppTheme.captionBold.copyWith(
-                    color: AppTheme.streakOrange,
-                  ),
-                ),
-              ],
-            ),
+    return StreamBuilder<AppUser?>(
+      stream: UserService.watchCurrentUser(),
+      builder: (context, userSnap) {
+        final user = userSnap.data;
+        final streakDays = user?.streakDays ?? 0;
+        final totalXP = user?.totalXP ?? 0;
+        final progress = xp.levelProgress(totalXP);
 
-            const Spacer(),
+        // Trigger animation when progress changes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _animateTo(progress);
+        });
 
-            // ── Animated progress bar ──
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Явц',
-                  style: AppTheme.chip.copyWith(
-                    fontSize: 9,
-                    color: AppTheme.textSecondary,
-                  ),
+        return StreamBuilder<List<AppAchievement>>(
+          stream: UserService.watchAchievements(),
+          builder: (context, achSnap) {
+            final achievements = achSnap.data ?? [];
+            final unlockedCount = achievements.where((a) => a.unlocked).length;
+
+            return Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+              child: Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  border: Border.all(color: AppTheme.cardBorder),
                 ),
-                const SizedBox(height: 4),
-                AnimatedBuilder(
-                  animation: _progressAnim,
-                  builder: (context, _) {
-                    return SizedBox(
-                      width: 120,
-                      height: 6,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
-                        child: LinearProgressIndicator(
-                          value: _progressAnim.value,
-                          backgroundColor: AppTheme.surfaceLight,
-                          valueColor: const AlwaysStoppedAnimation(
-                            AppTheme.accentGold,
+                child: Row(
+                  children: [
+                    // ── Streak ────────────────────────────────
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$streakDays өдөр',
+                          style: AppTheme.captionBold.copyWith(
+                            color: AppTheme.streakOrange,
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                      ],
+                    ),
 
-            const Spacer(),
+                    const Spacer(),
 
-            // ── Badges ──
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🏅', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 6),
-                Text(
-                  '${widget.badges}',
-                  style: AppTheme.captionBold,
+                    // ── Animated XP progress bar ───────────────
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Явц',
+                          style: AppTheme.chip.copyWith(
+                            fontSize: 9,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        AnimatedBuilder(
+                          animation: _progressAnim,
+                          builder: (context, _) {
+                            return SizedBox(
+                              width: 120,
+                              height: 6,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: LinearProgressIndicator(
+                                  value: _progressAnim.value,
+                                  backgroundColor: AppTheme.surfaceLight,
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    AppTheme.accentGold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    // ── Unlocked achievements badge count ──────
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🏅', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$unlockedCount',
+                          style: AppTheme.captionBold,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
-
-/// Simple AnimatedBuilder stand-in (AnimatedBuilder exists in Flutter already).
-/// If the name clashes, we can just use AnimatedBuilder directly.
