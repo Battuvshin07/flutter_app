@@ -47,6 +47,7 @@ class _PersonsListScreenState extends State<PersonsListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.personsLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.persons);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

@@ -46,6 +46,7 @@ class _QuizzesListScreenState extends State<QuizzesListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.quizzesLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.quizzes);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

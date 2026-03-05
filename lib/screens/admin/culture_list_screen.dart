@@ -46,6 +46,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.culturesLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.cultures);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

@@ -50,6 +50,7 @@ class _ContentListScreenState extends State<ContentListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.contentsLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.contents);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

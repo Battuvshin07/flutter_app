@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
-import '../../components/admin/glass_card.dart';
 
 /// Shared confirm-delete dialog used by all admin CRUD screens.
 Future<bool> showDeleteConfirmDialog(
@@ -130,6 +129,21 @@ class AdminEmptyState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Shown while the Firestore stream hasn't fired its first event yet.
+class AdminLoadingState extends StatelessWidget {
+  const AdminLoadingState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 2.5,
+        color: AppTheme.accentGold,
       ),
     );
   }

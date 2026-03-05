@@ -46,6 +46,7 @@ class _FamilyTreeListScreenState extends State<FamilyTreeListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.familyTreesLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.familyTrees);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

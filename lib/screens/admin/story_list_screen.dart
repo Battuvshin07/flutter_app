@@ -50,6 +50,7 @@ class _StoryListScreenState extends State<StoryListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
+                if (!admin.storiesLoaded) return const AdminLoadingState();
                 final items = _filtered(admin.stories);
                 if (items.isEmpty) {
                   return const AdminEmptyState(

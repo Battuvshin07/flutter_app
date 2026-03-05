@@ -58,6 +58,28 @@ class AdminProvider with ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  // ── Per-collection stream initialized flags ──
+  bool _culturesLoaded = false;
+  bool get culturesLoaded => _culturesLoaded;
+
+  bool _personsLoaded = false;
+  bool get personsLoaded => _personsLoaded;
+
+  bool _familyTreesLoaded = false;
+  bool get familyTreesLoaded => _familyTreesLoaded;
+
+  bool _quizzesLoaded = false;
+  bool get quizzesLoaded => _quizzesLoaded;
+
+  bool _contentsLoaded = false;
+  bool get contentsLoaded => _contentsLoaded;
+
+  bool _eventsLoaded = false;
+  bool get eventsLoaded => _eventsLoaded;
+
+  bool _storiesLoaded = false;
+  bool get storiesLoaded => _storiesLoaded;
+
   // ── Stream subscriptions ──
   StreamSubscription? _culturesSub;
   StreamSubscription? _personsSub;
@@ -73,34 +95,90 @@ class AdminProvider with ChangeNotifier {
   }
 
   void _initStreams() {
-    _culturesSub = _repo.watchCultures().listen((data) {
-      _cultures = data;
-      notifyListeners();
-    });
-    _personsSub = _repo.watchPersons().listen((data) {
-      _persons = data;
-      notifyListeners();
-    });
-    _familyTreesSub = _repo.watchFamilyTrees().listen((data) {
-      _familyTrees = data;
-      notifyListeners();
-    });
-    _quizzesSub = _repo.watchQuizzes().listen((data) {
-      _quizzes = data;
-      notifyListeners();
-    });
-    _contentsSub = _repo.watchContents().listen((data) {
-      _contents = data;
-      notifyListeners();
-    });
-    _eventsSub = _repo.watchEvents().listen((data) {
-      _events = data;
-      notifyListeners();
-    });
-    _storiesSub = _repo.watchStories().listen((data) {
-      _stories = data;
-      notifyListeners();
-    });
+    _culturesSub = _repo.watchCultures().listen(
+      (data) {
+        _cultures = data;
+        _culturesLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('cultures stream error: $e');
+        _culturesLoaded = true;
+        notifyListeners();
+      },
+    );
+    _personsSub = _repo.watchPersons().listen(
+      (data) {
+        _persons = data;
+        _personsLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('persons stream error: $e');
+        _personsLoaded = true;
+        notifyListeners();
+      },
+    );
+    _familyTreesSub = _repo.watchFamilyTrees().listen(
+      (data) {
+        _familyTrees = data;
+        _familyTreesLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('family_tree stream error: $e');
+        _familyTreesLoaded = true;
+        notifyListeners();
+      },
+    );
+    _quizzesSub = _repo.watchQuizzes().listen(
+      (data) {
+        _quizzes = data;
+        _quizzesLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('quizzes stream error: $e');
+        _quizzesLoaded = true;
+        notifyListeners();
+      },
+    );
+    _contentsSub = _repo.watchContents().listen(
+      (data) {
+        _contents = data;
+        _contentsLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('contents stream error: $e');
+        _contentsLoaded = true;
+        notifyListeners();
+      },
+    );
+    _eventsSub = _repo.watchEvents().listen(
+      (data) {
+        _events = data;
+        _eventsLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('events stream error: $e');
+        _eventsLoaded = true;
+        notifyListeners();
+      },
+    );
+    _storiesSub = _repo.watchStories().listen(
+      (data) {
+        _stories = data;
+        _storiesLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('stories stream error: $e');
+        _storiesLoaded = true;
+        notifyListeners();
+      },
+    );
   }
 
   // ══════════════════════════════════════════════════════════════
