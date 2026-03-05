@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../models/culture_model.dart';
 import '../models/person_model.dart';
 import '../models/person_detail_model.dart';
@@ -17,6 +18,22 @@ import '../models/story_model.dart';
 /// onCreate/onDelete triggers.
 class AdminRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  /// Safely map Firestore docs, skipping any that fail to parse.
+  List<T> _safeParse<T>(
+    QuerySnapshot snap,
+    T Function(DocumentSnapshot) fromFirestore,
+  ) {
+    final results = <T>[];
+    for (final doc in snap.docs) {
+      try {
+        results.add(fromFirestore(doc));
+      } catch (e) {
+        debugPrint('⚠ Skipping bad doc ${doc.id}: $e');
+      }
+    }
+    return results;
+  }
 
   // ══════════════════════════════════════════════════════════════
   //  USERS — count only
@@ -38,8 +55,7 @@ class AdminRepository {
         .collection('cultures')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => CultureModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, CultureModel.fromFirestore));
   }
 
   Future<List<CultureModel>> getCultures({String? searchQuery}) async {
@@ -75,8 +91,7 @@ class AdminRepository {
         .collection('persons')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => PersonModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, PersonModel.fromFirestore));
   }
 
   Future<List<PersonModel>> getPersons({String? searchQuery}) async {
@@ -135,8 +150,7 @@ class AdminRepository {
         .collection('family_tree')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => FamilyTreeModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, FamilyTreeModel.fromFirestore));
   }
 
   Future<List<FamilyTreeModel>> getFamilyTrees({String? searchQuery}) async {
@@ -175,8 +189,7 @@ class AdminRepository {
         .collection('quizzes')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => QuizModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, QuizModel.fromFirestore));
   }
 
   Future<List<QuizModel>> getQuizzes({String? searchQuery}) async {
@@ -212,8 +225,7 @@ class AdminRepository {
         .collection('contents')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => ContentModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, ContentModel.fromFirestore));
   }
 
   Future<List<ContentModel>> getContents({String? searchQuery}) async {
@@ -250,8 +262,7 @@ class AdminRepository {
         .collection('events')
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map((snap) =>
-            snap.docs.map((d) => EventModel.fromFirestore(d)).toList());
+        .map((snap) => _safeParse(snap, EventModel.fromFirestore));
   }
 
   Future<List<EventModel>> getEvents({String? searchQuery}) async {
@@ -284,8 +295,11 @@ class AdminRepository {
   // ══════════════════════════════════════════════════════════════
 
   Stream<List<StoryModel>> watchStories() {
-    return _db.collection('stories').orderBy('order').snapshots().map(
-        (snap) => snap.docs.map((d) => StoryModel.fromFirestore(d)).toList());
+    return _db
+        .collection('stories')
+        .orderBy('order')
+        .snapshots()
+        .map((snap) => _safeParse(snap, StoryModel.fromFirestore));
   }
 
   Future<List<StoryModel>> getStories({String? searchQuery}) async {

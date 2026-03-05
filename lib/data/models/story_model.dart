@@ -40,9 +40,16 @@ class StoryModel {
       quizId: data['quizId'],
       isPublished: data['isPublished'] ?? false,
       imageUrl: data['imageUrl'],
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      updatedAt: _parseTimestamp(data['updatedAt']),
       updatedBy: data['updatedBy'],
     );
+  }
+
+  static DateTime? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   Map<String, dynamic> toFirestore() {
