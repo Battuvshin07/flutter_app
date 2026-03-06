@@ -37,11 +37,12 @@ class HomeTopBar extends StatelessWidget {
           final xpInto = xp.xpIntoCurrentLevel(totalXP);
           final xpNeeded = xp.xpNeededForNextLevel(totalXP);
           final photoUrl = user?.photoUrl;
+          final _displayName =
+              FirebaseAuth.instance.currentUser?.displayName ?? '';
           final initials = user?.initials ??
-              (FirebaseAuth.instance.currentUser?.displayName
-                      ?.substring(0, 1)
-                      .toUpperCase() ??
-                  '?');
+              (_displayName.isNotEmpty
+                  ? _displayName.substring(0, 1).toUpperCase()
+                  : '?');
           final isLoading =
               snapshot.connectionState == ConnectionState.waiting &&
                   user == null;

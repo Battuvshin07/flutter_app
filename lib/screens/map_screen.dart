@@ -80,6 +80,7 @@ class _MapScreenState extends State<MapScreen>
   void _toggleViewMode() {
     if (_viewToggleCtrl.isAnimating) return;
     _viewToggleCtrl.forward(from: 0).then((_) {
+      if (!mounted) return;
       setState(() => _is3D = !_is3D);
       _viewToggleCtrl.reset();
     });
@@ -210,6 +211,7 @@ class _MapScreenState extends State<MapScreen>
   }
 
   void _onMarkerTapped(ConquestMarker marker) {
+    if (!mounted) return;
     setState(() => _selectedMarkerId = marker.id);
     if (_is3D) {
       _globeCtrl.focusOnCoordinates(
@@ -348,6 +350,7 @@ class _MapScreenState extends State<MapScreen>
       controller: _globeCtrl,
       radius: MediaQuery.of(context).size.width * 0.42,
       onTap: (coords) {
+        if (!mounted) return;
         if (coords != null) {
           setState(() => _selectedMarkerId = null);
         }

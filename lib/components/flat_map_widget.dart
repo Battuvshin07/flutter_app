@@ -40,29 +40,15 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
     final vw = MediaQuery.of(context).size.width;
     final vh = MediaQuery.of(context).size.height;
 
-    // Target viewport: lon -10..140 (150°), lat 10..70 (60°)
-    // Center: lon 65, lat 40
-    const centerLon = 65.0;
-    const centerLat = 40.0;
-    const lonSpan = 160.0; // degrees of longitude visible
-    const latSpan = 70.0; // degrees of latitude visible
+    // BoxFit.cover: scale so the map fills the entire viewport with no
+    // empty space, keeping the 2:1 equirectangular aspect ratio intact.
+    final scaleX = vw / _baseMapWidth;
+    final scaleY = vh / _baseMapHeight;
+    final scale = scaleX > scaleY ? scaleX : scaleY;
 
-    // Pixels that span covers on the inner map
-    const lonPixels = lonSpan / 360 * _baseMapWidth;
-    const latPixels = latSpan / 180 * _baseMapHeight;
-
-    // Scale so the target region fits the viewport
-    final scaleX = vw / lonPixels;
-    final scaleY = vh / latPixels;
-    final scale = scaleX < scaleY ? scaleX : scaleY;
-
-    // Center pixel on the inner map
-    final cx = _lonToX(centerLon, _baseMapWidth);
-    final cy = _latToY(centerLat, _baseMapHeight);
-
-    // Translation so that (cx, cy) maps to viewport center after scaling
-    final tx = vw / 2 - cx * scale;
-    final ty = vh / 2 - cy * scale;
+    // Center the scaled canvas in the viewport.
+    final tx = (vw - _baseMapWidth * scale) / 2.0;
+    final ty = (vh - _baseMapHeight * scale) / 2.0;
 
     final m = Matrix4.identity();
     m.storage[0] = scale; // scaleX
@@ -88,7 +74,7 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
       // InteractiveViewer handles panning/zooming within it.
       return InteractiveViewer(
         transformationController: _transformCtrl,
-        minScale: 0.4,
+        minScale: 0.05,
         maxScale: 8.0,
         constrained: false,
         child: SizedBox(
