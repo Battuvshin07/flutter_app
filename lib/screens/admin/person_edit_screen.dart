@@ -23,7 +23,10 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
   late final TextEditingController _deathYearCtrl;
   late final TextEditingController _shortBioCtrl;
   late final TextEditingController _avatarUrlCtrl;
+  late final TextEditingController _titleCtrl;
   late final TextEditingController _tagsCtrl;
+  String? _fatherId;
+  String? _motherId;
 
   bool get _isEditing => widget.person != null;
 
@@ -38,6 +41,9 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
     _shortBioCtrl = TextEditingController(text: widget.person?.shortBio ?? '');
     _avatarUrlCtrl =
         TextEditingController(text: widget.person?.avatarUrl ?? '');
+    _titleCtrl = TextEditingController(text: widget.person?.title ?? '');
+    _fatherId = widget.person?.fatherId;
+    _motherId = widget.person?.motherId;
     _tagsCtrl =
         TextEditingController(text: widget.person?.tags.join(', ') ?? '');
   }
@@ -49,6 +55,7 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
     _deathYearCtrl.dispose();
     _shortBioCtrl.dispose();
     _avatarUrlCtrl.dispose();
+    _titleCtrl.dispose();
     _tagsCtrl.dispose();
     super.dispose();
   }
@@ -73,6 +80,9 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
       avatarUrl: _avatarUrlCtrl.text.trim().isEmpty
           ? null
           : _avatarUrlCtrl.text.trim(),
+      title: _titleCtrl.text.trim().isEmpty ? null : _titleCtrl.text.trim(),
+      fatherId: _fatherId,
+      motherId: _motherId,
       tags: tags,
       updatedBy: uid,
     );
@@ -165,6 +175,33 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    controller: _titleCtrl,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: adminInputDecoration(
+                      label: 'Цол / Title (optional)',
+                      hint: 'Монголын Их Хаан',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Father picker
+                  _buildPersonDropdown(
+                    label: 'Эцэг / Father',
+                    value: _fatherId,
+                    persons: admin.persons,
+                    currentPersonId: widget.person?.id,
+                    onChanged: (v) => setState(() => _fatherId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  // Mother picker
+                  _buildPersonDropdown(
+                    label: 'Эх / Mother',
+                    value: _motherId,
+                    persons: admin.persons,
+                    currentPersonId: widget.person?.id,
+                    onChanged: (v) => setState(() => _motherId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _tagsCtrl,
                     style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
                     decoration: adminInputDecoration(
@@ -195,6 +232,36 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildPersonDropdown({
+    required String label,
+    required String? value,
+    required List<PersonModel> persons,
+    required String? currentPersonId,
+    required ValueChanged<String?> onChanged,
+  }) {
+    // Exclude the current person from the dropdown to prevent self-reference.
+    final options =
+        persons.where((p) => p.id != null && p.id != currentPersonId).toList();
+
+    return DropdownButtonFormField<String?>(
+      value: value,
+      dropdownColor: AppTheme.surface,
+      style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+      decoration: adminInputDecoration(label: label),
+      items: [
+        const DropdownMenuItem<String?>(
+          value: null,
+          child: Text('— Сонгоогүй —'),
+        ),
+        ...options.map((p) => DropdownMenuItem<String?>(
+              value: p.id,
+              child: Text(p.name),
+            )),
+      ],
+      onChanged: onChanged,
     );
   }
 }

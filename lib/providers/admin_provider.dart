@@ -4,7 +4,6 @@ import '../data/repositories/admin_repository.dart';
 import '../data/models/culture_model.dart';
 import '../data/models/person_model.dart';
 import '../data/models/person_detail_model.dart';
-import '../data/models/family_tree_model.dart';
 import '../data/models/quiz_model.dart';
 import '../data/models/content_model.dart';
 import '../data/models/event_model.dart';
@@ -26,10 +25,6 @@ class AdminProvider with ChangeNotifier {
   // ── Persons ──
   List<PersonModel> _persons = [];
   List<PersonModel> get persons => _persons;
-
-  // ── Family Trees ──
-  List<FamilyTreeModel> _familyTrees = [];
-  List<FamilyTreeModel> get familyTrees => _familyTrees;
 
   // ── Quizzes ──
   List<QuizModel> _quizzes = [];
@@ -65,9 +60,6 @@ class AdminProvider with ChangeNotifier {
   bool _personsLoaded = false;
   bool get personsLoaded => _personsLoaded;
 
-  bool _familyTreesLoaded = false;
-  bool get familyTreesLoaded => _familyTreesLoaded;
-
   bool _quizzesLoaded = false;
   bool get quizzesLoaded => _quizzesLoaded;
 
@@ -83,7 +75,6 @@ class AdminProvider with ChangeNotifier {
   // ── Stream subscriptions ──
   StreamSubscription? _culturesSub;
   StreamSubscription? _personsSub;
-  StreamSubscription? _familyTreesSub;
   StreamSubscription? _quizzesSub;
   StreamSubscription? _contentsSub;
   StreamSubscription? _eventsSub;
@@ -116,18 +107,6 @@ class AdminProvider with ChangeNotifier {
       onError: (e) {
         debugPrint('persons stream error: $e');
         _personsLoaded = true;
-        notifyListeners();
-      },
-    );
-    _familyTreesSub = _repo.watchFamilyTrees().listen(
-      (data) {
-        _familyTrees = data;
-        _familyTreesLoaded = true;
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('family_tree stream error: $e');
-        _familyTreesLoaded = true;
         notifyListeners();
       },
     );
@@ -248,22 +227,6 @@ class AdminProvider with ChangeNotifier {
   }
 
   // ══════════════════════════════════════════════════════════════
-  //  FAMILY TREES
-  // ══════════════════════════════════════════════════════════════
-
-  Future<bool> createFamilyTree(FamilyTreeModel model) async {
-    return _safeExecute(() => _repo.createFamilyTree(model));
-  }
-
-  Future<bool> updateFamilyTree(FamilyTreeModel model) async {
-    return _safeExecute(() => _repo.updateFamilyTree(model));
-  }
-
-  Future<bool> deleteFamilyTree(String id) async {
-    return _safeExecute(() => _repo.deleteFamilyTree(id));
-  }
-
-  // ══════════════════════════════════════════════════════════════
   //  QUIZZES
   // ══════════════════════════════════════════════════════════════
 
@@ -379,7 +342,6 @@ class AdminProvider with ChangeNotifier {
   void dispose() {
     _culturesSub?.cancel();
     _personsSub?.cancel();
-    _familyTreesSub?.cancel();
     _quizzesSub?.cancel();
     _contentsSub?.cancel();
     _eventsSub?.cancel();

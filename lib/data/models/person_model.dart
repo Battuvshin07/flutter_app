@@ -8,6 +8,9 @@ class PersonModel {
   final int? deathYear;
   final String shortBio;
   final String? avatarUrl;
+  final String? title;
+  final String? fatherId;
+  final String? motherId;
   final List<String> tags;
   final DateTime? updatedAt;
   final String? updatedBy;
@@ -19,6 +22,9 @@ class PersonModel {
     this.deathYear,
     required this.shortBio,
     this.avatarUrl,
+    this.title,
+    this.fatherId,
+    this.motherId,
     this.tags = const [],
     this.updatedAt,
     this.updatedBy,
@@ -33,6 +39,9 @@ class PersonModel {
       deathYear: data['deathYear'],
       shortBio: data['shortBio'] ?? '',
       avatarUrl: data['avatarUrl'],
+      title: data['title'],
+      fatherId: data['fatherId'],
+      motherId: data['motherId'],
       tags: List<String>.from(data['tags'] ?? []),
       updatedAt: _parseTimestamp(data['updatedAt']),
       updatedBy: data['updatedBy'],
@@ -53,6 +62,9 @@ class PersonModel {
       'deathYear': deathYear,
       'shortBio': shortBio,
       'avatarUrl': avatarUrl,
+      'title': title,
+      'fatherId': fatherId,
+      'motherId': motherId,
       'tags': tags,
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': updatedBy,
@@ -66,6 +78,9 @@ class PersonModel {
     int? deathYear,
     String? shortBio,
     String? avatarUrl,
+    String? title,
+    String? fatherId,
+    String? motherId,
     List<String>? tags,
     DateTime? updatedAt,
     String? updatedBy,
@@ -77,6 +92,9 @@ class PersonModel {
       deathYear: deathYear ?? this.deathYear,
       shortBio: shortBio ?? this.shortBio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      title: title ?? this.title,
+      fatherId: fatherId ?? this.fatherId,
+      motherId: motherId ?? this.motherId,
       tags: tags ?? this.tags,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,

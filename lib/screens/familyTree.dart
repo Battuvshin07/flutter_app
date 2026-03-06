@@ -1,30 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
-import '../providers/app_provider.dart';
-import '../models/person.dart';
-import '../components/tree_node_widget.dart';
+import '../data/models/person_model.dart';
+import '../services/family_tree_service.dart';
 import '../components/glass_card.dart';
 import '../components/gold_badge.dart';
 
 // ─────────────────────────────────────────────────────────────────────
-// Family tree data model: wraps a Person with tree-specific fields.
-// ─────────────────────────────────────────────────────────────────────
-class _TreeNode {
-  final int id;
-  final int? parentId;
-  final Person person;
-  final List<_TreeNode> children = [];
-
-  _TreeNode({
-    required this.id,
-    this.parentId,
-    required this.person,
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Main screen – dark + gold gamified family tree
+// Main screen – Firestore-backed family tree
+// Dynamically builds hierarchy from fatherId relationships
 // ─────────────────────────────────────────────────────────────────────
 class FamilyTreeScreen extends StatefulWidget {
   const FamilyTreeScreen({super.key});
@@ -34,51 +17,15 @@ class FamilyTreeScreen extends StatefulWidget {
 }
 
 class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
-  int? _selectedPersonId;
-
-  // Hardcoded tree relationships matching the reference image.
-  // IDs match person_id in persons.json.
-  static const _relationships = <int, int?>{
-    1: null, // Чингис хаан  (root)
-    2: null, // Бөртэ үжин   (spouse, rendered beside Chinggis)
-    3: 1, // Зүчи          → Чингис
-    4: 1, // Цагадай        → Чингис
-    5: 1, // Өгөдэй        → Чингис
-    6: 1, // Тулуй          → Чингис
-    7: 3, // Бат хаан       → Зүчи
-    8: 6, // Мөнх хаан      → Тулуй
-    9: 6, // Хубилай        → Тулуй
-    10: 6, // Хүлэгү         → Тулуй
-  };
-
-  List<_TreeNode> _buildTree(List<Person> persons) {
-    final Map<int, _TreeNode> nodeMap = {};
-
-    for (final p in persons) {
-      if (p.personId == null) continue;
-      nodeMap[p.personId!] = _TreeNode(
-        id: p.personId!,
-        parentId: _relationships[p.personId!],
-        person: p,
-      );
-    }
-
-    final roots = <_TreeNode>[];
-    for (final n in nodeMap.values) {
-      if (n.parentId != null && nodeMap.containsKey(n.parentId)) {
-        nodeMap[n.parentId]!.children.add(n);
-      } else {
-        roots.add(n);
-      }
-    }
-    return roots;
-  }
+  final FamilyTreeService _service = FamilyTreeService();
+  String? _selectedPersonId;
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
+    return StreamBuilder<List<PersonModel>>(
+      stream: _service.watchAllPersons(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
               color: AppTheme.accentGold,
@@ -87,10 +34,19 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
           );
         }
 
-        final roots = _buildTree(provider.persons);
-        final chinggis =
-            roots.firstWhere((n) => n.id == 1, orElse: () => roots.first);
-        final borte = roots.where((n) => n.id == 2).firstOrNull;
+        final persons = snapshot.data ?? [];
+        if (persons.isEmpty) {
+          return Center(
+            child: Text(
+              'Удмын модны мэдээлэл олдсонгүй',
+              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+            ),
+          );
+        }
+
+        final roots = FamilyTreeService.buildTree(persons);
+        // Find the primary root (first root, or the one with most descendants)
+        final primaryRoot = roots.isNotEmpty ? roots.first : null;
 
         return Container(
           decoration: const BoxDecoration(
@@ -141,7 +97,7 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                       ),
                     ),
                     child: Text(
-                      '13-Р ЗУУНЫ МОНГОЛЫН ТҮҮХ',
+                      'МОНГОЛЫН ТҮҮХЭН УДМЫН МОД',
                       style: AppTheme.chip.copyWith(
                         fontSize: 11,
                         letterSpacing: 1.2,
@@ -154,26 +110,27 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
               ),
 
               // Zoomable / pannable tree
-              Padding(
-                padding: const EdgeInsets.only(top: 42),
-                child: InteractiveViewer(
-                  minScale: 0.35,
-                  maxScale: 3.0,
-                  boundaryMargin: const EdgeInsets.all(300),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+              if (primaryRoot != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 42),
+                  child: InteractiveViewer(
+                    minScale: 0.35,
+                    maxScale: 3.0,
+                    boundaryMargin: const EdgeInsets.all(300),
                     child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
+                      scrollDirection: Axis.horizontal,
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          child: _buildTreeWidget(roots),
                         ),
-                        child: _buildTreeLayout(chinggis, borte, provider),
                       ),
                     ),
                   ),
                 ),
-              ),
 
               // "Pinch to zoom" hint at bottom
               Positioned(
@@ -216,7 +173,7 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
               ),
 
               // Person detail card overlay
-              if (_selectedPersonId != null) _buildDetailOverlay(provider),
+              if (_selectedPersonId != null) _buildDetailOverlay(persons),
             ],
           ),
         );
@@ -224,137 +181,207 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
     );
   }
 
-  // ───────────── TREE LAYOUT ─────────────
+  // ───────────── RECURSIVE TREE LAYOUT ─────────────
 
-  Widget _buildTreeLayout(
-      _TreeNode chinggis, _TreeNode? borte, AppProvider provider) {
-    return CustomPaint(
-      foregroundPainter: _TreeLinePainter(
-        chinggis: chinggis,
-        borte: borte,
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          // Gen 1: Founding couple
-          _buildGen1Row(chinggis, borte),
-          const SizedBox(height: 55),
-          // Gen 2: Four sons
-          _buildGen2Row(chinggis.children),
-          const SizedBox(height: 55),
-          // Gen 3: Grandchildren
-          _buildGen3Row(chinggis.children),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGen1Row(_TreeNode chinggis, _TreeNode? borte) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildTreeWidget(List<FamilyTreeNode> roots) {
+    return Column(
       children: [
-        _buildNode(chinggis, 80),
-        if (borte != null) ...[
-          const SizedBox(width: 40),
-          _buildNode(borte, 80),
-        ],
+        const SizedBox(height: 8),
+        // Render each root and its descendants
+        for (final root in roots) _buildSubtree(root, 80),
+        const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildGen2Row(List<_TreeNode> children) {
-    if (children.isEmpty) return const SizedBox();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: children
-          .map((c) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: _buildNode(c, 65),
-              ))
-          .toList(),
-    );
-  }
-
-  Widget _buildGen3Row(List<_TreeNode> gen2) {
-    final allGrandchildren = <_TreeNode>[];
-    for (final parent in gen2) {
-      allGrandchildren.addAll(parent.children);
+  /// Recursively builds a subtree: parent on top, children in a row below.
+  Widget _buildSubtree(FamilyTreeNode node, double nodeSize) {
+    if (node.children.isEmpty) {
+      return _buildPersonNode(node, nodeSize);
     }
-    if (allGrandchildren.isEmpty) return const SizedBox();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final childSize = (nodeSize * 0.82).clamp(50.0, 80.0);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Left side: Batu Khan (Jochi's son)
-        ...gen2
-            .where((p) => p.id == 3)
-            .expand((p) => p.children)
-            .map((c) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    children: [
-                      _buildNode(c, 58),
-                      const SizedBox(height: 6),
-                      _buildGroupLabel('Алтан Ордны\nхаад'),
-                    ],
-                  ),
-                )),
-        const SizedBox(width: 24),
-        // Right side: Tolui's sons
-        ...gen2
-            .where((p) => p.id == 6)
-            .expand((p) => p.children)
-            .map((c) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _buildNode(c, 58),
-                )),
+        // Parent node
+        _buildPersonNode(node, nodeSize),
+        const SizedBox(height: 8),
+        // Vertical connector line
+        Container(
+            width: 2, height: 30, color: AppTheme.accentGold.withOpacity(0.45)),
+        const SizedBox(height: 4),
+        // Horizontal connector + children
+        IntrinsicWidth(
+          child: Column(
+            children: [
+              // Horizontal line spanning all children
+              if (node.children.length > 1)
+                Container(
+                    height: 2, color: AppTheme.accentGold.withOpacity(0.45)),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: node.children.map((child) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      children: [
+                        // Vertical line from horizontal bar to child
+                        Container(
+                          width: 2,
+                          height: 20,
+                          color: AppTheme.accentGold.withOpacity(0.45),
+                        ),
+                        _buildSubtree(child, childSize),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildGroupLabel(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: AppTheme.chip.copyWith(
-          fontSize: 10,
-          color: AppTheme.accentGold.withOpacity(0.8),
-          fontWeight: FontWeight.w500,
+  Widget _buildPersonNode(FamilyTreeNode node, double size) {
+    final person = node.person;
+    final hasImage = person.avatarUrl != null && person.avatarUrl!.isNotEmpty;
+    final initials = person.name
+        .split(' ')
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0])
+        .take(2)
+        .join();
+    final isSelected = _selectedPersonId == person.id;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPersonId = _selectedPersonId == person.id ? null : person.id;
+        });
+      },
+      child: SizedBox(
+        width: size + 30,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Avatar
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.surfaceLight,
+                border: Border.all(
+                  color: isSelected
+                      ? AppTheme.accentGold
+                      : AppTheme.accentGold.withOpacity(0.45),
+                  width: isSelected ? 3.5 : 2.5,
+                ),
+                boxShadow: [
+                  if (isSelected)
+                    BoxShadow(
+                      color: AppTheme.accentGold.withOpacity(0.5),
+                      blurRadius: 18,
+                      spreadRadius: 3,
+                    )
+                  else
+                    BoxShadow(
+                      color: AppTheme.accentGold.withOpacity(0.12),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                ],
+              ),
+              child: ClipOval(
+                child: hasImage
+                    ? Image.network(
+                        person.avatarUrl!,
+                        fit: BoxFit.cover,
+                        width: size,
+                        height: size,
+                        errorBuilder: (_, __, ___) =>
+                            _buildInitials(initials, size),
+                      )
+                    : _buildInitials(initials, size),
+              ),
+            ),
+            const SizedBox(height: 6),
+            // Name
+            Text(
+              person.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.chip.copyWith(
+                fontSize: size * 0.17,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            // Title (e.g. "Монголын Их Хаан")
+            if (person.title != null && person.title!.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                person.title!,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTheme.chip.copyWith(
+                  fontSize: size * 0.13,
+                  color: AppTheme.accentGold.withOpacity(0.8),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+            // Years
+            if (person.birthYear != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                _buildYearsText(person),
+                textAlign: TextAlign.center,
+                style: AppTheme.chip.copyWith(
+                  fontSize: size * 0.14,
+                  color: AppTheme.textSecondary.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildNode(_TreeNode node, double size) {
-    return TreeNodeWidget(
-      person: node.person,
-      size: size,
-      isSelected: _selectedPersonId == node.id,
-      onTap: () {
-        setState(() {
-          _selectedPersonId = _selectedPersonId == node.id ? null : node.id;
-        });
-      },
+  Widget _buildInitials(String initials, double sz) {
+    return Container(
+      color: AppTheme.surfaceLight,
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            color: AppTheme.accentGold,
+            fontWeight: FontWeight.bold,
+            fontSize: sz * 0.3,
+          ),
+        ),
+      ),
     );
   }
 
   // ───────────── DETAIL OVERLAY ─────────────
 
-  Widget _buildDetailOverlay(AppProvider provider) {
-    final person = provider.getPersonById(_selectedPersonId!);
+  Widget _buildDetailOverlay(List<PersonModel> persons) {
+    final person = persons.where((p) => p.id == _selectedPersonId).firstOrNull;
     if (person == null) return const SizedBox();
 
-    final events = provider.getEventsForPerson(_selectedPersonId!);
-    final eventNames = events.map((e) => e.title).toList();
-    final hasImage = person.imageUrl != null && person.imageUrl!.isNotEmpty;
+    final hasImage = person.avatarUrl != null && person.avatarUrl!.isNotEmpty;
     final initials = person.name
         .split(' ')
         .where((w) => w.isNotEmpty)
@@ -419,8 +446,8 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                       ),
                       child: ClipOval(
                         child: hasImage
-                            ? Image.asset(
-                                person.imageUrl!,
+                            ? Image.network(
+                                person.avatarUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
                                     _buildOverlayInitials(initials),
@@ -435,6 +462,17 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                       textAlign: TextAlign.center,
                       style: AppTheme.sectionTitle.copyWith(fontSize: 18),
                     ),
+                    if (person.title != null && person.title!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        person.title!,
+                        textAlign: TextAlign.center,
+                        style: AppTheme.caption.copyWith(
+                          color: AppTheme.accentGold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                     if (years.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       GoldBadge.year(years),
@@ -442,7 +480,7 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                     const SizedBox(height: 14),
                     // Biography
                     Text(
-                      person.description,
+                      person.shortBio,
                       textAlign: TextAlign.start,
                       style: AppTheme.caption.copyWith(
                         color: AppTheme.textSecondary,
@@ -451,49 +489,6 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                       maxLines: 6,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // Key Events
-                    if (eventNames.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Гол үйл явдлууд',
-                          style: AppTheme.sectionTitle.copyWith(fontSize: 13),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      ...eventNames.take(3).map(
-                            (e) => Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 4, left: 4),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 5),
-                                    width: 5,
-                                    height: 5,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: AppTheme.accentGold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      e,
-                                      style: AppTheme.caption.copyWith(
-                                        color: AppTheme.textSecondary
-                                            .withOpacity(0.85),
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                    ],
                   ],
                 ),
               ),
@@ -520,113 +515,10 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
     );
   }
 
-  String _buildYearsText(Person person) {
+  String _buildYearsText(PersonModel person) {
     final parts = <String>[];
-    if (person.birthDate != null) parts.add(person.birthDate!);
-    if (person.deathDate != null) parts.add(person.deathDate!);
-    return parts.join(' – ');
+    if (person.birthYear != null) parts.add('${person.birthYear}');
+    if (person.deathYear != null) parts.add('${person.deathYear}');
+    return parts.join(' — ');
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Custom painter for connecting lines between tree generations.
-// Uses gold-tinted lines on dark background.
-// ─────────────────────────────────────────────────────────────────────
-class _TreeLinePainter extends CustomPainter {
-  final _TreeNode chinggis;
-  final _TreeNode? borte;
-
-  _TreeLinePainter({required this.chinggis, this.borte});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppTheme.accentGold.withOpacity(0.45)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    final midX = size.width / 2;
-
-    // Gen1 couple connector (horizontal)
-    if (borte != null) {
-      final chX = midX - 35;
-      final boX = midX + 35;
-      const coupleY = 80.0;
-      canvas.drawLine(Offset(chX, coupleY), Offset(boX, coupleY), paint);
-    }
-
-    // Couple → Gen2 vertical & horizontal fan
-    final gen2 = chinggis.children;
-    if (gen2.isEmpty) return;
-
-    const gen1BottomY = 108.0;
-    const gen2TopY = 163.0;
-    const gen2MidY = (gen1BottomY + gen2TopY) / 2;
-
-    canvas.drawLine(Offset(midX, gen1BottomY), Offset(midX, gen2MidY), paint);
-
-    const nodeW = 95.0;
-    const gap = 20.0;
-    final totalW = gen2.length * nodeW + (gen2.length - 1) * gap;
-    final startX = midX - totalW / 2;
-
-    final gen2Xs = List.generate(gen2.length, (i) {
-      return startX + i * (nodeW + gap) + nodeW / 2;
-    });
-
-    if (gen2Xs.length > 1) {
-      canvas.drawLine(
-          Offset(gen2Xs.first, gen2MidY), Offset(gen2Xs.last, gen2MidY), paint);
-    }
-
-    for (final x in gen2Xs) {
-      canvas.drawLine(Offset(x, gen2MidY), Offset(x, gen2TopY), paint);
-    }
-
-    // Gen2 → Gen3 lines
-    const gen2BottomY = 253.0;
-    const gen3TopY = 308.0;
-    const gen3MidY = (gen2BottomY + gen3TopY) / 2;
-
-    double grandStartX = midX - 160;
-    const grandSpacing = 76.0;
-
-    for (int i = 0; i < gen2.length; i++) {
-      final parent = gen2[i];
-      if (parent.children.isEmpty) continue;
-
-      final parentX = gen2Xs[i];
-      List<double> childXs = [];
-
-      if (parent.id == 3) {
-        childXs = [grandStartX + 50];
-      } else if (parent.id == 6) {
-        final rightStart = midX + 10;
-        childXs = List.generate(
-            parent.children.length, (j) => rightStart + j * grandSpacing);
-      }
-
-      if (childXs.isEmpty) continue;
-
-      canvas.drawLine(
-          Offset(parentX, gen2BottomY), Offset(parentX, gen3MidY), paint);
-
-      if (childXs.length == 1) {
-        canvas.drawLine(
-            Offset(parentX, gen3MidY), Offset(childXs[0], gen3MidY), paint);
-      } else {
-        final allX = [parentX, ...childXs];
-        allX.sort();
-        canvas.drawLine(
-            Offset(allX.first, gen3MidY), Offset(allX.last, gen3MidY), paint);
-      }
-
-      for (final cx in childXs) {
-        canvas.drawLine(Offset(cx, gen3MidY), Offset(cx, gen3TopY), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

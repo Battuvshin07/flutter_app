@@ -232,7 +232,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           // Count total content items across all collections
           final totalContent = admin.cultures.length +
               admin.persons.length +
-              admin.familyTrees.length +
               admin.quizzes.length +
               admin.contents.length +
               admin.events.length +
@@ -354,7 +353,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final gridItems = [
       _GridItem('cultures', 'Соёл'),
       _GridItem('persons', 'Хүмүүс'),
-      _GridItem('family_tree', 'Удмын мод'),
       _GridItem('quizzes', 'Тестүүд'),
       _GridItem('contents', 'Контент'),
       _GridItem('events', 'Үйл явдал'),

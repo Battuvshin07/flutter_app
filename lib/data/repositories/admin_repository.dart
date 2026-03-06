@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../models/culture_model.dart';
 import '../models/person_model.dart';
 import '../models/person_detail_model.dart';
-import '../models/family_tree_model.dart';
 import '../models/quiz_model.dart';
 import '../models/content_model.dart';
 import '../models/event_model.dart';
@@ -139,45 +138,6 @@ class AdminRepository {
 
   Future<void> deletePersonDetail(String personId) async {
     await _db.collection('person_details').doc(personId).delete();
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  //  FAMILY TREE — CRUD
-  // ══════════════════════════════════════════════════════════════
-
-  Stream<List<FamilyTreeModel>> watchFamilyTrees() {
-    return _db
-        .collection('family_tree')
-        .orderBy('updatedAt', descending: true)
-        .snapshots()
-        .map((snap) => _safeParse(snap, FamilyTreeModel.fromFirestore));
-  }
-
-  Future<List<FamilyTreeModel>> getFamilyTrees({String? searchQuery}) async {
-    Query query =
-        _db.collection('family_tree').orderBy('updatedAt', descending: true);
-    final snap = await query.get();
-    var list = snap.docs.map((d) => FamilyTreeModel.fromFirestore(d)).toList();
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      final q = searchQuery.toLowerCase();
-      list = list.where((t) => t.title.toLowerCase().contains(q)).toList();
-    }
-    return list;
-  }
-
-  Future<void> createFamilyTree(FamilyTreeModel model) async {
-    await _db.collection('family_tree').add(model.toFirestore());
-  }
-
-  Future<void> updateFamilyTree(FamilyTreeModel model) async {
-    await _db
-        .collection('family_tree')
-        .doc(model.id)
-        .update(model.toFirestore());
-  }
-
-  Future<void> deleteFamilyTree(String id) async {
-    await _db.collection('family_tree').doc(id).delete();
   }
 
   // ══════════════════════════════════════════════════════════════

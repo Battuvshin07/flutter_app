@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../providers/admin_provider.dart';
 import '../../data/models/culture_model.dart';
 import '../../data/models/person_model.dart';
-import '../../data/models/family_tree_model.dart';
 import '../../data/models/quiz_model.dart';
 import '../../data/models/content_model.dart';
 import '../../data/models/event_model.dart';
@@ -11,7 +10,6 @@ import '../../theme/app_theme.dart';
 import 'culture_edit_screen.dart';
 import 'person_edit_screen.dart';
 import 'person_detail_edit_screen.dart';
-import 'family_tree_edit_screen.dart';
 import 'quiz_edit_screen.dart';
 import 'content_edit_screen.dart';
 import 'event_edit_screen.dart';
@@ -153,30 +151,6 @@ final Map<String, AdminCollectionConfig> adminCollections = {
         ),
       ];
     },
-  ),
-
-  // ── Family Tree ──────────────────────────────────────────────
-  'family_tree': AdminCollectionConfig(
-    key: 'family_tree',
-    title: 'Family Tree',
-    icon: Icons.account_tree_rounded,
-    color: const Color(0xFF4ADE80),
-    searchHint: 'Хайх... (гарчиг)',
-    emptyMessage: 'Удмын мод олдсонгүй.\nШинээр нэмнэ үү.',
-    getItems: (p) => p.familyTrees,
-    isLoaded: (p) => p.familyTreesLoaded,
-    getItemTitle: (item) => (item as FamilyTreeModel).title,
-    getItemSubtitle: (item) {
-      final ft = item as FamilyTreeModel;
-      return '${ft.nodes.length} nodes, ${ft.edges.length} edges';
-    },
-    getItemId: (item) => (item as FamilyTreeModel).id,
-    deleteItem: (p, id) => p.deleteFamilyTree(id),
-    editScreenBuilder: (item) =>
-        FamilyTreeEditScreen(familyTree: item as FamilyTreeModel),
-    createScreenBuilder: () => const FamilyTreeEditScreen(),
-    searchMatcher: (item, q) =>
-        (item as FamilyTreeModel).title.toLowerCase().contains(q),
   ),
 
   // ── Quizzes ──────────────────────────────────────────────────
