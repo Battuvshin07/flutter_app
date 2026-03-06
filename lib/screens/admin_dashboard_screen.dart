@@ -49,7 +49,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         child: SafeArea(
           child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(child: _buildTopBar()),
               SliverToBoxAdapter(child: _buildWelcomeHeader()),
