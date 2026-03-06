@@ -114,20 +114,24 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 42),
                   child: InteractiveViewer(
+                    constrained: false,
                     minScale: 0.35,
                     maxScale: 3.0,
-                    boundaryMargin: const EdgeInsets.all(300),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          child: _buildTreeWidget(roots),
-                        ),
+                    // top: 0   → cannot pan above the root couple.
+                    // bottom: 0 → cannot pan below the last generation.
+                    // left/right: 200 px of comfortable horizontal slack.
+                    boundaryMargin: const EdgeInsets.only(
+                      left: 200,
+                      right: 200,
+                      top: 0,
+                      bottom: 0,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
                       ),
+                      child: _buildTreeWidget(roots),
                     ),
                   ),
                 ),
@@ -196,25 +200,45 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
 
   /// Recursively builds a subtree: parent on top, children in a row below.
   Widget _buildSubtree(FamilyTreeNode node, double nodeSize) {
-    if (node.children.isEmpty) {
-      return _buildPersonNode(node, nodeSize);
-    }
+    final hasChildren = node.children.isNotEmpty;
+
+    // Top element: couple row or single node.
+    final Widget topWidget = node.spouse != null
+        ? _buildCoupleRow(node, nodeSize)
+        : _buildPersonNode(node, nodeSize);
+
+    if (!hasChildren) return topWidget;
 
     final childSize = (nodeSize * 0.82).clamp(50.0, 80.0);
 
+    // For couple rows the center of the couple is at the connector midpoint:
+    // leftNodeWidth(nodeSize+30) + connectorWidth(44)/2 = nodeSize + 52.
+    // Pinning the top widget inside a SizedBox of exactly coupleRowWidth
+    // guarantees the outer Column is never narrower than the couple, so the
+    // 2 px vertical bar (centered by CrossAxisAlignment.center) always falls
+    // precisely on the couple's midpoint even when children are narrower.
+    final coupleRowWidth =
+        node.spouse != null ? (nodeSize + 30) * 2 + 44.0 : null;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Parent node
-        _buildPersonNode(node, nodeSize),
+        // Parent / couple — constrained to its natural width so the Column
+        // never collapses narrower than the couple row.
+        if (coupleRowWidth != null)
+          SizedBox(width: coupleRowWidth, child: topWidget)
+        else
+          topWidget,
         const SizedBox(height: 8),
-        // Vertical connector line
+        // Vertical connector — centered by CrossAxisAlignment.center above.
         Container(
             width: 2, height: 30, color: AppTheme.accentGold.withOpacity(0.45)),
         const SizedBox(height: 4),
         // Horizontal connector + children
         IntrinsicWidth(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Horizontal line spanning all children
               if (node.children.length > 1)
@@ -244,6 +268,40 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  /// Renders a couple side-by-side: [spouse] — connector — [primary].
+  Widget _buildCoupleRow(FamilyTreeNode node, double size) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _buildPersonNode(FamilyTreeNode(person: node.spouse!), size),
+        _buildSpouseConnector(),
+        _buildPersonNode(node, size),
+      ],
+    );
+  }
+
+  /// Golden horizontal connector between spouses.
+  Widget _buildSpouseConnector() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+            width: 18, height: 2, color: AppTheme.accentGold.withOpacity(0.6)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppTheme.accentGold.withOpacity(0.7),
+          ),
+        ),
+        Container(
+            width: 18, height: 2, color: AppTheme.accentGold.withOpacity(0.6)),
       ],
     );
   }

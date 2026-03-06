@@ -6,7 +6,13 @@ class FamilyTreeNode {
   final PersonModel person;
   final List<FamilyTreeNode> children;
 
-  FamilyTreeNode({required this.person, List<FamilyTreeNode>? children})
+  /// Co-parent displayed side-by-side as a couple at the top of this subtree.
+  /// Set by [FamilyTreeService.buildTree] when a root node's children reference
+  /// another root via [PersonModel.motherId].
+  PersonModel? spouse;
+
+  FamilyTreeNode(
+      {required this.person, List<FamilyTreeNode>? children, this.spouse})
       : children = children ?? [];
 }
 
@@ -71,6 +77,33 @@ class FamilyTreeService {
       node.children.sort((a, b) =>
           (a.person.birthYear ?? 0).compareTo(b.person.birthYear ?? 0));
     }
+
+    // Detect spouse pairs among roots.
+    // A root node B is the spouse of root node A when at least one child of A
+    // has motherId == B.id.  In that case B is embedded as A.spouse and
+    // removed from the root list so the couple renders side-by-side.
+    final rootIds = {
+      for (final r in roots)
+        if (r.person.id != null) r.person.id!
+    };
+    final absorbedIds = <String>{};
+    for (final root in List<FamilyTreeNode>.from(roots)) {
+      if (root.person.id == null || absorbedIds.contains(root.person.id))
+        continue;
+      for (final child in root.children) {
+        final motherId = child.person.motherId;
+        if (motherId != null &&
+            motherId != root.person.id &&
+            rootIds.contains(motherId) &&
+            !absorbedIds.contains(motherId)) {
+          root.spouse = nodeMap[motherId]!.person;
+          absorbedIds.add(motherId);
+          break;
+        }
+      }
+    }
+    roots.removeWhere(
+        (r) => r.person.id != null && absorbedIds.contains(r.person.id));
 
     return roots;
   }
