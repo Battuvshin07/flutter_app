@@ -207,6 +207,24 @@ class AdminProvider with ChangeNotifier {
     return _safeExecute(() => _repo.createPerson(model));
   }
 
+  /// Creates a person and returns the new Firestore document ID, or null on error.
+  Future<String?> createPersonAndGetId(PersonModel model) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final id = await _repo.createPerson(model);
+      _isLoading = false;
+      notifyListeners();
+      return id;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<bool> updatePerson(PersonModel model) async {
     return _safeExecute(() => _repo.updatePerson(model));
   }
@@ -251,10 +269,6 @@ class AdminProvider with ChangeNotifier {
   Future<bool> deleteQuiz(String id) async {
     return _safeExecute(() => _repo.deleteQuiz(id));
   }
-
-  // ══════════════════════════════════════════════════════════════
-  //  CONTENTS
-  // ══════════════════════════════════════════════════════════════
 
   // ══════════════════════════════════════════════════════════════
   //  EVENTS

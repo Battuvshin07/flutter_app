@@ -6,7 +6,6 @@ import '../../providers/admin_provider.dart';
 import '../../data/models/person_model.dart';
 import 'shared_admin_widgets.dart';
 import 'person_edit_screen.dart';
-import 'person_detail_edit_screen.dart';
 
 /// List screen for Persons with search, sort, add.
 class PersonsListScreen extends StatefulWidget {
@@ -68,13 +67,6 @@ class _PersonsListScreenState extends State<PersonsListScreen> {
                           builder: (_) => PersonEditScreen(person: item),
                         ),
                       ),
-                      onDetailTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              PersonDetailEditScreen(personId: item.id!),
-                        ),
-                      ),
                       onDelete: () async {
                         final confirmed = await showDeleteConfirmDialog(
                           context,
@@ -99,13 +91,11 @@ class _PersonsListScreenState extends State<PersonsListScreen> {
 class _PersonTile extends StatelessWidget {
   final PersonModel item;
   final VoidCallback onTap;
-  final VoidCallback onDetailTap;
   final VoidCallback onDelete;
 
   const _PersonTile({
     required this.item,
     required this.onTap,
-    required this.onDetailTap,
     required this.onDelete,
   });
 
@@ -156,12 +146,6 @@ class _PersonTile extends StatelessWidget {
                   ],
                 ],
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.article_outlined, size: 20),
-              color: AppTheme.accentGold,
-              tooltip: 'Person Detail',
-              onPressed: onDetailTap,
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded, size: 20),

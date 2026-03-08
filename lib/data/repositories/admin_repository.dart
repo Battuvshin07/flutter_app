@@ -104,8 +104,9 @@ class AdminRepository {
     return list;
   }
 
-  Future<void> createPerson(PersonModel model) async {
-    await _db.collection('persons').add(model.toFirestore());
+  Future<String> createPerson(PersonModel model) async {
+    final ref = await _db.collection('persons').add(model.toFirestore());
+    return ref.id;
   }
 
   Future<void> updatePerson(PersonModel model) async {

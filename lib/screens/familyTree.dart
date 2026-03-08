@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/models/person_model.dart';
+import '../models/person.dart';
 import '../services/family_tree_service.dart';
-import '../components/glass_card.dart';
-import '../components/gold_badge.dart';
+import 'person_detail_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────
 // Main screen – Firestore-backed family tree
@@ -18,7 +18,6 @@ class FamilyTreeScreen extends StatefulWidget {
 
 class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
   final FamilyTreeService _service = FamilyTreeService();
-  String? _selectedPersonId;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +176,6 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
               ),
 
               // Person detail card overlay
-              if (_selectedPersonId != null) _buildDetailOverlay(persons),
             ],
           ),
         );
@@ -315,13 +313,22 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
         .map((w) => w[0])
         .take(2)
         .join();
-    final isSelected = _selectedPersonId == person.id;
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedPersonId = _selectedPersonId == person.id ? null : person.id;
-        });
+        final localPerson = Person(
+          name: person.name,
+          birthDate: person.birthYear?.toString(),
+          deathDate: person.deathYear?.toString(),
+          description: person.shortBio,
+          imageUrl: person.avatarUrl,
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PersonDetailScreen(person: localPerson),
+          ),
+        );
       },
       child: SizedBox(
         width: size + 30,
@@ -330,7 +337,7 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
           children: [
             // Avatar
             AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
               width: size,
               height: size,
@@ -338,24 +345,15 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                 shape: BoxShape.circle,
                 color: AppTheme.surfaceLight,
                 border: Border.all(
-                  color: isSelected
-                      ? AppTheme.accentGold
-                      : AppTheme.accentGold.withOpacity(0.45),
-                  width: isSelected ? 3.5 : 2.5,
+                  color: AppTheme.accentGold.withOpacity(0.45),
+                  width: 2.5,
                 ),
                 boxShadow: [
-                  if (isSelected)
-                    BoxShadow(
-                      color: AppTheme.accentGold.withOpacity(0.5),
-                      blurRadius: 18,
-                      spreadRadius: 3,
-                    )
-                  else
-                    BoxShadow(
-                      color: AppTheme.accentGold.withOpacity(0.12),
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                    ),
+                  BoxShadow(
+                    color: AppTheme.accentGold.withOpacity(0.12),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
                 ],
               ),
               child: ClipOval(
@@ -427,146 +425,6 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
             color: AppTheme.accentGold,
             fontWeight: FontWeight.bold,
             fontSize: sz * 0.3,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ───────────── DETAIL OVERLAY ─────────────
-
-  Widget _buildDetailOverlay(List<PersonModel> persons) {
-    final person = persons.where((p) => p.id == _selectedPersonId).firstOrNull;
-    if (person == null) return const SizedBox();
-
-    final hasImage = person.avatarUrl != null && person.avatarUrl!.isNotEmpty;
-    final initials = person.name
-        .split(' ')
-        .where((w) => w.isNotEmpty)
-        .map((w) => w[0])
-        .take(2)
-        .join();
-    final years = _buildYearsText(person);
-
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPersonId = null),
-      child: Container(
-        color: Colors.black45,
-        child: Center(
-          child: GestureDetector(
-            onTap: () {}, // absorb taps on card
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.82,
-              constraints: const BoxConstraints(maxWidth: 380),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              child: GlassCard(
-                padding: const EdgeInsets.all(20),
-                glowColor: AppTheme.accentGold,
-                glowIntensity: 0.12,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Close button
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedPersonId = null),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppTheme.surfaceLight,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Portrait
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppTheme.accentGold,
-                          width: 2.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentGold.withOpacity(0.35),
-                            blurRadius: 14,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: hasImage
-                            ? Image.network(
-                                person.avatarUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _buildOverlayInitials(initials),
-                              )
-                            : _buildOverlayInitials(initials),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Name
-                    Text(
-                      person.name,
-                      textAlign: TextAlign.center,
-                      style: AppTheme.sectionTitle.copyWith(fontSize: 18),
-                    ),
-                    if (person.title != null && person.title!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        person.title!,
-                        textAlign: TextAlign.center,
-                        style: AppTheme.caption.copyWith(
-                          color: AppTheme.accentGold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                    if (years.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      GoldBadge.year(years),
-                    ],
-                    const SizedBox(height: 14),
-                    // Biography
-                    Text(
-                      person.shortBio,
-                      textAlign: TextAlign.start,
-                      style: AppTheme.caption.copyWith(
-                        color: AppTheme.textSecondary,
-                        height: 1.45,
-                      ),
-                      maxLines: 6,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverlayInitials(String initials) {
-    return Container(
-      color: AppTheme.surfaceLight,
-      child: Center(
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: AppTheme.accentGold,
-            fontWeight: FontWeight.bold,
-            fontSize: 26,
           ),
         ),
       ),
