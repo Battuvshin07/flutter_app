@@ -4,7 +4,6 @@ import '../models/culture_model.dart';
 import '../models/person_model.dart';
 import '../models/person_detail_model.dart';
 import '../models/quiz_model.dart';
-import '../models/content_model.dart';
 import '../models/event_model.dart';
 import '../models/story_model.dart';
 
@@ -174,43 +173,6 @@ class AdminRepository {
 
   Future<void> deleteQuiz(String id) async {
     await _db.collection('quizzes').doc(id).delete();
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  //  CONTENTS — CRUD
-  // ══════════════════════════════════════════════════════════════
-
-  Stream<List<ContentModel>> watchContents() {
-    return _db
-        .collection('contents')
-        .orderBy('updatedAt', descending: true)
-        .snapshots()
-        .map((snap) => _safeParse(snap, ContentModel.fromFirestore));
-  }
-
-  Future<List<ContentModel>> getContents({String? searchQuery}) async {
-    final snap = await _db
-        .collection('contents')
-        .orderBy('updatedAt', descending: true)
-        .get();
-    var list = snap.docs.map((d) => ContentModel.fromFirestore(d)).toList();
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      final q = searchQuery.toLowerCase();
-      list = list.where((c) => c.title.toLowerCase().contains(q)).toList();
-    }
-    return list;
-  }
-
-  Future<void> createContent(ContentModel model) async {
-    await _db.collection('contents').add(model.toFirestore());
-  }
-
-  Future<void> updateContent(ContentModel model) async {
-    await _db.collection('contents').doc(model.id).update(model.toFirestore());
-  }
-
-  Future<void> deleteContent(String id) async {
-    await _db.collection('contents').doc(id).delete();
   }
 
   // ══════════════════════════════════════════════════════════════

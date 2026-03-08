@@ -3,7 +3,6 @@ import '../../providers/admin_provider.dart';
 import '../../data/models/culture_model.dart';
 import '../../data/models/person_model.dart';
 import '../../data/models/quiz_model.dart';
-import '../../data/models/content_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/story_model.dart';
 import '../../theme/app_theme.dart';
@@ -11,7 +10,6 @@ import 'culture_edit_screen.dart';
 import 'person_edit_screen.dart';
 import 'person_detail_edit_screen.dart';
 import 'quiz_edit_screen.dart';
-import 'content_edit_screen.dart';
 import 'event_edit_screen.dart';
 import 'story_edit_screen.dart';
 
@@ -187,44 +185,6 @@ final Map<String, AdminCollectionConfig> adminCollections = {
         _buildBadge(
           quiz.isPublished ? 'Published' : 'Draft',
           quiz.isPublished ? const Color(0xFF4ADE80) : AppTheme.textSecondary,
-        ),
-      ];
-    },
-  ),
-
-  // ── Contents ─────────────────────────────────────────────────
-  'contents': AdminCollectionConfig(
-    key: 'contents',
-    title: 'Contents',
-    icon: Icons.article_rounded,
-    color: const Color(0xFFFB923C),
-    searchHint: 'Хайх... (гарчиг, төрөл)',
-    emptyMessage: 'Контент олдсонгүй.\nШинээр нэмнэ үү.',
-    getItems: (p) => p.contents,
-    isLoaded: (p) => p.contentsLoaded,
-    getItemTitle: (item) => (item as ContentModel).title,
-    getItemSubtitle: (item) {
-      final c = item as ContentModel;
-      final status = c.isPublished ? 'Нийтлэгдсэн' : 'Ноорог';
-      return '${c.type} • $status';
-    },
-    getItemId: (item) => (item as ContentModel).id,
-    deleteItem: (p, id) => p.deleteContent(id),
-    editScreenBuilder: (item) =>
-        ContentEditScreen(content: item as ContentModel),
-    createScreenBuilder: () => const ContentEditScreen(),
-    searchMatcher: (item, q) {
-      final c = item as ContentModel;
-      return c.title.toLowerCase().contains(q) ||
-          c.type.toLowerCase().contains(q);
-    },
-    badgeBuilder: (item) {
-      final c = item as ContentModel;
-      return [
-        _buildBadge(c.type, AppTheme.textSecondary),
-        _buildBadge(
-          c.isPublished ? 'Published' : 'Draft',
-          c.isPublished ? const Color(0xFF4ADE80) : AppTheme.textSecondary,
         ),
       ];
     },

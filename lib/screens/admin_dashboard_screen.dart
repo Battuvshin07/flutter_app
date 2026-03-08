@@ -5,6 +5,8 @@ import '../components/admin/glass_card.dart';
 import '../providers/admin_provider.dart';
 import '../providers/auth_provider.dart';
 import '../main.dart' show HomeScreen;
+import '../screens/persons_screen.dart';
+import '../screens/map_screen.dart';
 import 'admin/admin_list_screen.dart';
 import 'admin/admin_collection_config.dart';
 import 'admin/progress_list_screen.dart';
@@ -21,13 +23,30 @@ class AdminDashboardScreen extends StatefulWidget {
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+class _AdminDashboardScreenState extends State<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AdminProvider>(context, listen: false).loadTotalUsers();
     });
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    await Provider.of<AdminProvider>(context, listen: false).refreshAll();
   }
 
   @override
@@ -48,22 +67,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
         child: SafeArea(
-          child: CustomScrollView(
-            physics: const ClampingScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(child: _buildTopBar()),
-              SliverToBoxAdapter(child: _buildWelcomeHeader()),
-              SliverToBoxAdapter(child: _buildStatsRow()),
-              SliverToBoxAdapter(child: _buildSectionTitle()),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.pagePadding,
-                ),
-                sliver: _buildCategoryGrid(),
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: AppTheme.accentGold,
+            backgroundColor: AppTheme.surface,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
               ),
-              SliverToBoxAdapter(child: _buildProgressTile()),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+              slivers: [
+                SliverToBoxAdapter(child: _buildTopBar()),
+                SliverToBoxAdapter(child: _buildWelcomeHeader()),
+                SliverToBoxAdapter(child: _buildErrorBanner()),
+                SliverToBoxAdapter(child: _buildStatsRow()),
+                SliverToBoxAdapter(child: _buildSectionTitle()),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.pagePadding,
+                  ),
+                  sliver: _buildCategoryGrid(),
+                ),
+                SliverToBoxAdapter(child: _buildProgressTile()),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
+            ),
           ),
         ),
       ),
@@ -217,6 +244,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ════════════════════════════════════════════════════════════════
+  //  ERROR BANNER — shown when stream/user-count errors exist
+  // ════════════════════════════════════════════════════════════════
+  Widget _buildErrorBanner() {
+    return Consumer<AdminProvider>(
+      builder: (context, admin, _) {
+        if (!admin.hasStreamError) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppTheme.pagePadding,
+            12,
+            AppTheme.pagePadding,
+            0,
+          ),
+          child: GlassCard(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            borderColor: AppTheme.crimson.withOpacity(0.4),
+            child: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    color: AppTheme.crimson, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Өгөгдөл ачаалахад алдаа гарлаа. Дахин татна уу.',
+                    style: AppTheme.caption.copyWith(
+                      color: AppTheme.crimson,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _onRefresh,
+                  child: Icon(Icons.refresh_rounded,
+                      color: AppTheme.crimson, size: 20),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════
   //  STATS ROW — Total users + Total content
   // ════════════════════════════════════════════════════════════════
   Widget _buildStatsRow() {
@@ -229,11 +300,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       child: Consumer<AdminProvider>(
         builder: (context, admin, _) {
+          final contentLoaded = admin.culturesLoaded &&
+              admin.personsLoaded &&
+              admin.quizzesLoaded &&
+              admin.eventsLoaded &&
+              admin.storiesLoaded;
+
           // Count total content items across all collections
           final totalContent = admin.cultures.length +
               admin.persons.length +
               admin.quizzes.length +
-              admin.contents.length +
               admin.events.length +
               admin.stories.length;
 
@@ -246,6 +322,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label: 'Хэрэглэгч',
                   value: '${admin.totalUsers}',
                   color: const Color(0xFF60A5FA),
+                  isLoaded: admin.totalUsersLoaded,
                   onRefresh: () => admin.loadTotalUsers(),
                 ),
               ),
@@ -257,6 +334,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label: 'Нийт контент',
                   value: '$totalContent',
                   color: AppTheme.accentGold,
+                  isLoaded: contentLoaded,
                 ),
               ),
             ],
@@ -271,6 +349,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required String label,
     required String value,
     required Color color,
+    required bool isLoaded,
     VoidCallback? onRefresh,
   }) {
     return GlassCard(
@@ -303,10 +382,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            value,
-            style: AppTheme.h2.copyWith(fontSize: 28, color: color),
-          ),
+          isLoaded
+              ? Text(
+                  value,
+                  style: AppTheme.h2.copyWith(fontSize: 28, color: color),
+                )
+              : _buildPulseBox(width: 48, height: 28, color: color),
           const SizedBox(height: 2),
           Text(
             label,
@@ -314,6 +395,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Animated pulsing placeholder box used while data is loading.
+  Widget _buildPulseBox({
+    required double width,
+    required double height,
+    required Color color,
+  }) {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (_, __) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08 + 0.08 * _pulseController.value),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        );
+      },
     );
   }
 
@@ -354,7 +456,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _GridItem('cultures', 'Соёл'),
       _GridItem('persons', 'Хүмүүс'),
       _GridItem('quizzes', 'Тестүүд'),
-      _GridItem('contents', 'Контент'),
       _GridItem('events', 'Үйл явдал'),
       _GridItem('stories', 'Түүхүүд'),
     ];
@@ -433,6 +534,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                      )
+                    else
+                      _buildPulseBox(
+                        width: 32,
+                        height: 22,
+                        color: config.color,
                       ),
                   ],
                 ),
@@ -532,7 +639,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   //  BOTTOM NAVIGATION
   // ════════════════════════════════════════════════════════════════
   Widget _buildBottomNav() {
-    const selected = 3;
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surface.withOpacity(0.95),
@@ -545,14 +651,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(Icons.home_rounded, 'Нүүр', 0, selected),
-              _navItem(Icons.explore_rounded, 'Судлах', 1, selected),
-              _navItem(Icons.map_rounded, 'Газрын зураг', 2, selected),
+              _navItem(Icons.home_rounded, 'Нүүр', 0),
+              _navItem(Icons.explore_rounded, 'Судлах', 1),
+              _navItem(Icons.map_rounded, 'Газрын зураг', 2),
               _navItem(
                 Icons.admin_panel_settings_rounded,
                 'Админ',
                 3,
-                selected,
               ),
             ],
           ),
@@ -561,16 +666,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index, int selected) {
-    final isActive = index == selected;
+  Widget _navItem(IconData icon, String label, int index) {
+    const activeIndex = 3; // Admin tab is always active on this screen
+    final isActive = index == activeIndex;
     return GestureDetector(
       onTap: () {
-        if (index == 0) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (_) => false,
-          );
+        if (index == activeIndex) return; // already here
+        switch (index) {
+          case 0:
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (_) => false,
+            );
+            break;
+          case 1:
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PersonsScreen()),
+            );
+            break;
+          case 2:
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MapScreen()),
+            );
+            break;
         }
       },
       child: Container(

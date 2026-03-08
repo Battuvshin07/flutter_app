@@ -5,7 +5,6 @@ import '../data/models/culture_model.dart';
 import '../data/models/person_model.dart';
 import '../data/models/person_detail_model.dart';
 import '../data/models/quiz_model.dart';
-import '../data/models/content_model.dart';
 import '../data/models/event_model.dart';
 import '../data/models/story_model.dart';
 
@@ -18,6 +17,12 @@ class AdminProvider with ChangeNotifier {
   int _totalUsers = 0;
   int get totalUsers => _totalUsers;
 
+  bool _totalUsersLoaded = false;
+  bool get totalUsersLoaded => _totalUsersLoaded;
+
+  String? _totalUsersError;
+  String? get totalUsersError => _totalUsersError;
+
   // ── Cultures ──
   List<CultureModel> _cultures = [];
   List<CultureModel> get cultures => _cultures;
@@ -29,10 +34,6 @@ class AdminProvider with ChangeNotifier {
   // ── Quizzes ──
   List<QuizModel> _quizzes = [];
   List<QuizModel> get quizzes => _quizzes;
-
-  // ── Contents ──
-  List<ContentModel> _contents = [];
-  List<ContentModel> get contents => _contents;
 
   // ── Events ──
   List<EventModel> _events = [];
@@ -63,20 +64,28 @@ class AdminProvider with ChangeNotifier {
   bool _quizzesLoaded = false;
   bool get quizzesLoaded => _quizzesLoaded;
 
-  bool _contentsLoaded = false;
-  bool get contentsLoaded => _contentsLoaded;
-
   bool _eventsLoaded = false;
   bool get eventsLoaded => _eventsLoaded;
 
   bool _storiesLoaded = false;
   bool get storiesLoaded => _storiesLoaded;
 
+  /// True when all collection streams + user count have delivered at least once.
+  bool get allStreamsLoaded =>
+      _totalUsersLoaded &&
+      _culturesLoaded &&
+      _personsLoaded &&
+      _quizzesLoaded &&
+      _eventsLoaded &&
+      _storiesLoaded;
+
+  /// True if any stream or the user count encountered an error.
+  bool get hasStreamError => _totalUsersError != null;
+
   // ── Stream subscriptions ──
   StreamSubscription? _culturesSub;
   StreamSubscription? _personsSub;
   StreamSubscription? _quizzesSub;
-  StreamSubscription? _contentsSub;
   StreamSubscription? _eventsSub;
   StreamSubscription? _storiesSub;
 
@@ -122,18 +131,6 @@ class AdminProvider with ChangeNotifier {
         notifyListeners();
       },
     );
-    _contentsSub = _repo.watchContents().listen(
-      (data) {
-        _contents = data;
-        _contentsLoaded = true;
-        notifyListeners();
-      },
-      onError: (e) {
-        debugPrint('contents stream error: $e');
-        _contentsLoaded = true;
-        notifyListeners();
-      },
-    );
     _eventsSub = _repo.watchEvents().listen(
       (data) {
         _events = data;
@@ -166,11 +163,24 @@ class AdminProvider with ChangeNotifier {
 
   Future<void> loadTotalUsers() async {
     try {
+      _totalUsersError = null;
       _totalUsers = await _repo.getTotalUserCount();
+      _totalUsersLoaded = true;
       notifyListeners();
     } catch (e) {
+      _totalUsersError = e.toString();
+      _totalUsersLoaded = true;
       debugPrint('Error loading total users: $e');
+      notifyListeners();
     }
+  }
+
+  /// Refresh user count (streams auto-refresh via Firestore listeners).
+  Future<void> refreshAll() async {
+    _totalUsersLoaded = false;
+    _totalUsersError = null;
+    notifyListeners();
+    await loadTotalUsers();
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -245,18 +255,6 @@ class AdminProvider with ChangeNotifier {
   // ══════════════════════════════════════════════════════════════
   //  CONTENTS
   // ══════════════════════════════════════════════════════════════
-
-  Future<bool> createContent(ContentModel model) async {
-    return _safeExecute(() => _repo.createContent(model));
-  }
-
-  Future<bool> updateContent(ContentModel model) async {
-    return _safeExecute(() => _repo.updateContent(model));
-  }
-
-  Future<bool> deleteContent(String id) async {
-    return _safeExecute(() => _repo.deleteContent(id));
-  }
 
   // ══════════════════════════════════════════════════════════════
   //  EVENTS
@@ -343,7 +341,6 @@ class AdminProvider with ChangeNotifier {
     _culturesSub?.cancel();
     _personsSub?.cancel();
     _quizzesSub?.cancel();
-    _contentsSub?.cancel();
     _eventsSub?.cancel();
     _storiesSub?.cancel();
     super.dispose();
