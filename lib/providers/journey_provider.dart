@@ -34,6 +34,13 @@ class JourneyProvider with ChangeNotifier {
     return _stories.length - 1;
   }
 
+  /// Returns the current active story (first non-completed/unlocked story).
+  Story? get currentStory {
+    if (_stories.isEmpty) return null;
+    final idx = currentIndex;
+    return idx < _stories.length ? _stories[idx] : null;
+  }
+
   // ── Unlock logic ─────────────────────────────────────────────
   /// A story is unlocked if:
   ///   - It is the first story (order == 1 or index 0), OR

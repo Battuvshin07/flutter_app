@@ -20,6 +20,7 @@ import 'components/streak_strip.dart';
 import 'components/explore_grid.dart';
 import 'components/featured_list.dart';
 import 'components/home_bottom_nav.dart';
+import 'components/quiz_journey_card.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AppProvider>(context, listen: false).loadAllData();
+      Provider.of<JourneyProvider>(context, listen: false).init();
     });
   }
 
@@ -105,7 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // E) Explore grid
               SliverToBoxAdapter(child: ExploreGrid()),
               SliverToBoxAdapter(child: SizedBox(height: 20)),
-              // F) Featured list
+              // F) Current journey quiz card
+              SliverToBoxAdapter(child: QuizJourneyCard()),
+              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              // G) Featured list
               SliverToBoxAdapter(child: FeaturedList()),
               // Bottom spacing for nav
               SliverToBoxAdapter(child: SizedBox(height: 100)),

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../data/models/quiz_model.dart';
 import '../models/story.dart';
 
 /// Loads and manages a quiz for a specific story.
+/// Quiz data is sourced from the admin-managed `quizzes` Firestore collection.
 class StoryQuizProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -34,8 +36,15 @@ class StoryQuizProvider with ChangeNotifier {
   double get percentage => totalQuestions > 0 ? _score / totalQuestions : 0.0;
   bool get passed => percentage >= 0.7;
 
-  // ── Load quiz for a story ────────────────────────────────────
-  Future<void> loadQuiz(String storyId) async {
+  // ── Load quiz by quizId from admin quizzes collection ────────
+  Future<void> loadQuiz(String? quizId) async {
+    if (quizId == null || quizId.isEmpty) {
+      _isLoading = false;
+      _error = 'Энэ түүхэд шалгалт байхгүй байна';
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     _error = null;
     _quiz = null;
@@ -43,15 +52,22 @@ class StoryQuizProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Find quiz doc where storyId matches
-      final snap = await _db
-          .collection('story_quizzes')
-          .where('storyId', isEqualTo: storyId)
-          .limit(1)
-          .get();
-
-      if (snap.docs.isNotEmpty) {
-        _quiz = StoryQuiz.fromFirestore(snap.docs.first);
+      final doc = await _db.collection('quizzes').doc(quizId).get();
+      if (doc.exists) {
+        final model = QuizModel.fromFirestore(doc);
+        _quiz = StoryQuiz(
+          id: model.id ?? quizId,
+          storyId: quizId,
+          title: model.title,
+          difficulty: model.difficulty,
+          questions: model.questions
+              .map((q) => StoryQuizQuestion(
+                    question: q.question,
+                    options: q.options,
+                    correctIndex: q.correctIndex,
+                  ))
+              .toList(),
+        );
       } else {
         _error = 'Шалгалт олдсонгүй';
       }

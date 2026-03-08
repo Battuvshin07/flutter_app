@@ -205,16 +205,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ═══════════════════════════════════════
-    // story_quizzes/{docId} — Story quizzes
-    // ═══════════════════════════════════════
-    match /story_quizzes/{docId} {
-      allow read: if isAuthenticated();
-
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
 
     // ═══════════════════════════════════════
     // users/{uid}/achievements/{achievementId}

@@ -117,11 +117,15 @@ class StoryQuizQuestion {
 class StoryQuiz {
   final String id;
   final String storyId;
+  final String title;
+  final String difficulty;
   final List<StoryQuizQuestion> questions;
 
   StoryQuiz({
     required this.id,
     required this.storyId,
+    this.title = 'Шалгалт',
+    this.difficulty = 'easy',
     required this.questions,
   });
 
@@ -131,6 +135,8 @@ class StoryQuiz {
     return StoryQuiz(
       id: doc.id,
       storyId: d['storyId'] ?? '',
+      title: d['title'] ?? 'Шалгалт',
+      difficulty: d['difficulty'] ?? 'easy',
       questions: rawQuestions
           .map((q) => StoryQuizQuestion.fromMap(q as Map<String, dynamic>))
           .toList(),

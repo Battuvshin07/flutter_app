@@ -38,7 +38,7 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<StoryQuizProvider>(context, listen: false)
-          .loadQuiz(widget.story.id);
+          .loadQuiz(widget.story.quizId);
     });
   }
 
@@ -121,6 +121,14 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
 
   // ── App bar ──────────────────────────────────────────────────────
   Widget _buildAppBar(StoryQuizProvider provider) {
+    final quizTitle = provider.quiz?.title ?? 'Шалгалт';
+    final difficulty = provider.quiz?.difficulty ?? '';
+    final difficultyColor = switch (difficulty) {
+      'hard' => const Color(0xFFFF6B6B),
+      'medium' => const Color(0xFFF59E0B),
+      _ => const Color(0xFF5ED8B5),
+    };
+
     return Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: AppTheme.pagePadding, vertical: 8),
@@ -144,7 +152,38 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('Шалгалт', style: AppTheme.h2.copyWith(fontSize: 19)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(quizTitle,
+                    style: AppTheme.h2.copyWith(fontSize: 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                if (difficulty.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: difficultyColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                      border: Border.all(
+                          color: difficultyColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      switch (difficulty) {
+                        'hard' => 'Хэцүү',
+                        'medium' => 'Дунд',
+                        _ => 'Хялбар',
+                      },
+                      style: AppTheme.caption.copyWith(
+                        color: difficultyColor,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           ScaleTransition(
             scale: _scorePulse,
