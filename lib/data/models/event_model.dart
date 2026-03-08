@@ -8,6 +8,7 @@ class EventModel {
   final String description;
   final String? location;
   final String? coverImageUrl;
+  final String? personId;
   final DateTime? updatedAt;
   final String? updatedBy;
 
@@ -18,6 +19,7 @@ class EventModel {
     this.description = '',
     this.location,
     this.coverImageUrl,
+    this.personId,
     this.updatedAt,
     this.updatedBy,
   });
@@ -31,6 +33,7 @@ class EventModel {
       description: data['description'] ?? '',
       location: data['location'],
       coverImageUrl: data['coverImageUrl'],
+      personId: data['personId'],
       updatedAt: _parseTimestamp(data['updatedAt']),
       updatedBy: data['updatedBy'],
     );
@@ -50,6 +53,7 @@ class EventModel {
       'description': description,
       'location': location,
       'coverImageUrl': coverImageUrl,
+      'personId': personId,
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': updatedBy,
     };
@@ -62,6 +66,7 @@ class EventModel {
     String? description,
     String? location,
     String? coverImageUrl,
+    String? personId,
     DateTime? updatedAt,
     String? updatedBy,
   }) {
@@ -72,6 +77,7 @@ class EventModel {
       description: description ?? this.description,
       location: location ?? this.location,
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      personId: personId ?? this.personId,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,
     );

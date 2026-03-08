@@ -4,6 +4,7 @@ class Event {
   final String date;
   final String description;
   final int? personId;
+  final String? imageUrl;
 
   Event({
     this.eventId,
@@ -11,6 +12,7 @@ class Event {
     required this.date,
     required this.description,
     this.personId,
+    this.imageUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Event {
       'date': date,
       'description': description,
       'person_id': personId,
+      'image_url': imageUrl,
     };
   }
 
@@ -30,6 +33,7 @@ class Event {
       date: map['date'] as String,
       description: map['description'] as String,
       personId: map['person_id'] as int?,
+      imageUrl: map['image_url'] as String?,
     );
   }
 
@@ -39,6 +43,7 @@ class Event {
     String? date,
     String? description,
     int? personId,
+    String? imageUrl,
   }) {
     return Event(
       eventId: eventId ?? this.eventId,
@@ -46,6 +51,7 @@ class Event {
       date: date ?? this.date,
       description: description ?? this.description,
       personId: personId ?? this.personId,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }

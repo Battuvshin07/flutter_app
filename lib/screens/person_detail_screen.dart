@@ -479,7 +479,10 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            ...events.map((event) => EventCard(event: event)),
+            ...events.map((event) => EventCard(
+                  event: event,
+                  relatedEvents: events,
+                )),
           ],
         );
       },

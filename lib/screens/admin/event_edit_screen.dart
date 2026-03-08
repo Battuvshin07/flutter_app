@@ -4,6 +4,7 @@ import '../../theme/app_theme.dart';
 import '../../providers/admin_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/person_model.dart';
 import 'shared_admin_widgets.dart';
 
 /// Create / Edit screen for a historical Event.
@@ -24,6 +25,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
   late final TextEditingController _locationCtrl;
   late final TextEditingController _imageUrlCtrl;
 
+  String? _selectedPersonId;
+
   bool get _isEditing => widget.event != null;
 
   @override
@@ -35,6 +38,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _locationCtrl = TextEditingController(text: widget.event?.location ?? '');
     _imageUrlCtrl =
         TextEditingController(text: widget.event?.coverImageUrl ?? '');
+    _selectedPersonId = widget.event?.personId;
   }
 
   @override
@@ -57,6 +61,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
       title: _titleCtrl.text.trim(),
       date: _dateCtrl.text.trim(),
       description: _descCtrl.text.trim(),
+      personId: _selectedPersonId,
       location:
           _locationCtrl.text.trim().isEmpty ? null : _locationCtrl.text.trim(),
       coverImageUrl:
@@ -79,6 +84,216 @@ class _EventEditScreenState extends State<EventEditScreen> {
     if (success && mounted) Navigator.pop(context);
   }
 
+  /// Opens a bottom sheet to pick a person from the streamed persons list.
+  Future<void> _pickPerson(List<PersonModel> persons) async {
+    // Local search state inside the sheet
+    final TextEditingController searchCtrl = TextEditingController();
+    List<PersonModel> filtered = List.from(persons);
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              maxChildSize: 0.92,
+              minChildSize: 0.4,
+              expand: false,
+              builder: (_, scrollCtrl) {
+                return Column(
+                  children: [
+                    // Handle bar
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded,
+                              color: AppTheme.accentGold, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Хүн сонгох', style: AppTheme.sectionTitle),
+                          const Spacer(),
+                          if (_selectedPersonId != null)
+                            GestureDetector(
+                              onTap: () {
+                                setState(() => _selectedPersonId = null);
+                                Navigator.pop(sheetCtx);
+                              },
+                              child: Text(
+                                'Арилгах',
+                                style: AppTheme.caption
+                                    .copyWith(color: AppTheme.crimson),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Search field
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        controller: searchCtrl,
+                        style:
+                            AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                        decoration: adminInputDecoration(
+                          label: 'Хайх...',
+                        ).copyWith(
+                          prefixIcon: const Icon(Icons.search_rounded,
+                              color: AppTheme.textSecondary, size: 20),
+                        ),
+                        onChanged: (q) {
+                          setSheetState(() {
+                            filtered = persons
+                                .where((p) => p.name
+                                    .toLowerCase()
+                                    .contains(q.toLowerCase()))
+                                .toList();
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Person list
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? Center(
+                              child: Text('Олдсонгүй', style: AppTheme.caption),
+                            )
+                          : ListView.builder(
+                              controller: scrollCtrl,
+                              itemCount: filtered.length,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              itemBuilder: (_, i) {
+                                final p = filtered[i];
+                                final isSelected = p.id == _selectedPersonId;
+                                return Material(
+                                  color: isSelected
+                                      ? AppTheme.accentGold.withOpacity(0.12)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      setState(() => _selectedPersonId = p.id);
+                                      Navigator.pop(sheetCtx);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                      child: Row(
+                                        children: [
+                                          // Avatar circle
+                                          Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: AppTheme.surfaceLight,
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? AppTheme.accentGold
+                                                    : AppTheme.cardBorder,
+                                              ),
+                                            ),
+                                            child: p.avatarUrl != null
+                                                ? ClipOval(
+                                                    child: Image.network(
+                                                      p.avatarUrl!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (_, __, ___) =>
+                                                              _personIcon(),
+                                                    ),
+                                                  )
+                                                : _personIcon(),
+                                          ),
+                                          const SizedBox(width: 12),
+
+                                          // Name + birth/death
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  p.name,
+                                                  style: AppTheme.captionBold
+                                                      .copyWith(
+                                                    fontSize: 14,
+                                                    color: isSelected
+                                                        ? AppTheme.accentGold
+                                                        : AppTheme.textPrimary,
+                                                  ),
+                                                ),
+                                                if (p.birthYear != null)
+                                                  Text(
+                                                    [
+                                                      if (p.birthYear != null)
+                                                        '${p.birthYear}',
+                                                      if (p.deathYear != null)
+                                                        '${p.deathYear}',
+                                                    ].join(' – '),
+                                                    style: AppTheme.caption
+                                                        .copyWith(fontSize: 11),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          if (isSelected)
+                                            const Icon(
+                                              Icons.check_circle_rounded,
+                                              color: AppTheme.accentGold,
+                                              size: 20,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    SizedBox(
+                        height: MediaQuery.of(sheetCtx).padding.bottom + 8),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+    searchCtrl.dispose();
+  }
+
+  Widget _personIcon() => const Icon(
+        Icons.person_rounded,
+        color: AppTheme.textSecondary,
+        size: 20,
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,6 +315,14 @@ class _EventEditScreenState extends State<EventEditScreen> {
               admin.clearError();
             });
           }
+
+          // Find the currently selected person name for the field label
+          final selectedPerson = _selectedPersonId == null
+              ? null
+              : admin.persons
+                  .where((p) => p.id == _selectedPersonId)
+                  .firstOrNull;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppTheme.pagePadding),
             child: Form(
@@ -134,6 +357,70 @@ class _EventEditScreenState extends State<EventEditScreen> {
                     decoration: adminInputDecoration(label: 'Тайлбар'),
                     maxLines: 5,
                   ),
+                  const SizedBox(height: 16),
+
+                  // ── Person picker ──────────────────────────────────────
+                  GestureDetector(
+                    onTap: () => _pickPerson(admin.persons),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        border: Border.all(
+                          color: _selectedPersonId != null
+                              ? AppTheme.accentGold.withOpacity(0.5)
+                              : AppTheme.cardBorder,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person_outline_rounded,
+                            size: 18,
+                            color: _selectedPersonId != null
+                                ? AppTheme.accentGold
+                                : AppTheme.textSecondary,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Холбоотой хүн (optional)',
+                                  style: AppTheme.caption.copyWith(
+                                    fontSize: 11,
+                                    color: _selectedPersonId != null
+                                        ? AppTheme.accentGold.withOpacity(0.8)
+                                        : AppTheme.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  selectedPerson?.name ?? 'Хүн сонгох...',
+                                  style: AppTheme.body.copyWith(
+                                    color: selectedPerson != null
+                                        ? AppTheme.textPrimary
+                                        : AppTheme.textSecondary
+                                            .withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppTheme.textSecondary,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // ── End person picker ──────────────────────────────────
+
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _locationCtrl,
