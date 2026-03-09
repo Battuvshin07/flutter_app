@@ -16,19 +16,31 @@ class RoleService {
     if (user == null) return null;
 
     // 1) Check Custom Claims (preferred — set via Cloud Function)
-    final tokenResult = await user.getIdTokenResult(true);
-    final claimRole = tokenResult.claims?['role'];
-    if (claimRole != null &&
-        (claimRole == 'admin' ||
-            claimRole == 'superAdmin' ||
-            claimRole == 'user')) {
-      return claimRole as String;
+    try {
+      final tokenResult =
+          await user.getIdTokenResult().timeout(const Duration(seconds: 5));
+      final claimRole = tokenResult.claims?['role'];
+      if (claimRole != null &&
+          (claimRole == 'admin' ||
+              claimRole == 'superAdmin' ||
+              claimRole == 'user')) {
+        return claimRole as String;
+      }
+    } catch (_) {
+      // Token fetch timed out or failed — fall through to Firestore
     }
 
     // 2) Fallback: read from Firestore user doc
-    final doc = await _db.doc('users/${user.uid}').get();
-    if (doc.exists) {
-      return doc.data()?['role'] as String? ?? 'user';
+    try {
+      final doc = await _db
+          .doc('users/${user.uid}')
+          .get()
+          .timeout(const Duration(seconds: 5));
+      if (doc.exists) {
+        return doc.data()?['role'] as String? ?? 'user';
+      }
+    } catch (_) {
+      // Firestore also failed — return default
     }
 
     return 'user'; // default

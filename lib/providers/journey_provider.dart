@@ -63,10 +63,12 @@ class JourneyProvider with ChangeNotifier {
   UserStoryProgress? getProgress(String storyId) => _progress[storyId];
 
   // ── Load stories from Firestore ──────────────────────────────
-  Future<void> loadStories() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  Future<void> loadStories({bool notify = true}) async {
+    if (notify) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
       final snap = await _db.collection('stories').orderBy('order').get();
@@ -76,8 +78,10 @@ class JourneyProvider with ChangeNotifier {
       debugPrint('JourneyProvider.loadStories error: $e');
     }
 
-    _isLoading = false;
-    notifyListeners();
+    if (notify) {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   // ── Load user progress ───────────────────────────────────────
@@ -109,7 +113,7 @@ class JourneyProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    await loadStories();
+    await loadStories(notify: false);
     await loadUserProgress();
 
     _isLoading = false;

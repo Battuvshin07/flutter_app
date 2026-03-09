@@ -27,6 +27,8 @@ class _MapScreenState extends State<MapScreen>
 
   // State
   late FlutterEarthGlobeController _globeCtrl;
+  final TransformationController _flatMapTransformCtrl =
+      TransformationController();
   bool _showEmpire = true;
   bool _globeReady = false;
   String? _selectedMarkerId;
@@ -124,6 +126,7 @@ class _MapScreenState extends State<MapScreen>
           id: 'border-$i',
           start: GlobeCoordinates(coords[i][0], coords[i][1]),
           end: GlobeCoordinates(coords[i + 1][0], coords[i + 1][1]),
+          curveScale: 0.1,
           style: PointConnectionStyle(
             type: PointConnectionType.solid,
             color: _empireRed.withValues(alpha: 0.7),
@@ -141,7 +144,7 @@ class _MapScreenState extends State<MapScreen>
       _globeCtrl.addPoint(Point(
         id: m.id,
         coordinates: GlobeCoordinates(m.lat, m.lon),
-        label: m.nameEn,
+        label: m.nameMn,
         isLabelVisible: true,
         style: PointStyle(
           color: m.color,
@@ -197,7 +200,7 @@ class _MapScreenState extends State<MapScreen>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(m.nameEn,
+          Text(m.nameMn,
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
@@ -239,13 +242,45 @@ class _MapScreenState extends State<MapScreen>
   void _resetGlobe() {
     _globeCtrl.resetRotation();
     _globeCtrl.setZoom(0.4);
-    _globeCtrl.startRotation(rotationSpeed: 0.02);
+    _globeCtrl.stopRotation();
     setState(() => _selectedMarkerId = null);
+  }
+
+  void _zoom2D({required bool zoomIn}) {
+    const mapW = 2400.0;
+    const mapH = 1200.0;
+    final m = _flatMapTransformCtrl.value;
+    final currentScale = m.storage[0];
+
+    final vw = MediaQuery.of(context).size.width;
+    final vh = MediaQuery.of(context).size.height;
+    // Minimum scale: map must always fill the screen (cover fit)
+    final minScale = vw / mapW > vh / mapH ? vw / mapW : vh / mapH;
+
+    final newScale =
+        (zoomIn ? currentScale * 1.3 : currentScale / 1.3).clamp(minScale, 8.0);
+    if (newScale == currentScale) return;
+
+    final factor = newScale / currentScale;
+    // Zoom toward viewport center
+    final rawTx = vw / 2 + (m.storage[12] - vw / 2) * factor;
+    final rawTy = vh / 2 + (m.storage[13] - vh / 2) * factor;
+    // Clamp translation so map never shows black edges
+    final newTx = rawTx.clamp(vw - mapW * newScale, 0.0);
+    final newTy = rawTy.clamp(vh - mapH * newScale, 0.0);
+
+    final newM = Matrix4.identity();
+    newM.storage[0] = newScale;
+    newM.storage[5] = newScale;
+    newM.storage[12] = newTx;
+    newM.storage[13] = newTy;
+    _flatMapTransformCtrl.value = newM;
   }
 
   @override
   void dispose() {
     _viewToggleCtrl.dispose();
+    _flatMapTransformCtrl.dispose();
     // Do NOT call _globeCtrl.dispose() here.
     // The FlutterEarthGlobe widget's State already disposes the
     // controller's rotationController and internal AnimationControllers
@@ -363,6 +398,7 @@ class _MapScreenState extends State<MapScreen>
       selectedMarkerId: _selectedMarkerId,
       showEmpire: _showEmpire,
       onMarkerTapped: _onMarkerTapped,
+      transformationController: _flatMapTransformCtrl,
     );
   }
 
@@ -471,11 +507,12 @@ class _MapScreenState extends State<MapScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _controlBtn(
-            icon: Icons.restart_alt,
-            tooltip: 'Reset Rotation',
-            onTap: _resetGlobe),
-        const SizedBox(height: 10),
+        if (_is3D)
+          _controlBtn(
+              icon: Icons.restart_alt,
+              tooltip: 'Reset Rotation',
+              onTap: _resetGlobe),
+        if (_is3D) const SizedBox(height: 10),
         _controlBtn(
             icon: _showEmpire ? Icons.visibility : Icons.visibility_off,
             tooltip: 'Toggle Empire',
@@ -486,16 +523,24 @@ class _MapScreenState extends State<MapScreen>
             icon: Icons.zoom_in,
             tooltip: 'Zoom In',
             onTap: () {
-              final z = _globeCtrl.zoom + 0.3;
-              if (z <= _globeCtrl.maxZoom) _globeCtrl.setZoom(z);
+              if (_is3D) {
+                final z = _globeCtrl.zoom + 0.3;
+                if (z <= _globeCtrl.maxZoom) _globeCtrl.setZoom(z);
+              } else {
+                _zoom2D(zoomIn: true);
+              }
             }),
         const SizedBox(height: 10),
         _controlBtn(
             icon: Icons.zoom_out,
             tooltip: 'Zoom Out',
             onTap: () {
-              final z = _globeCtrl.zoom - 0.3;
-              if (z >= _globeCtrl.minZoom) _globeCtrl.setZoom(z);
+              if (_is3D) {
+                final z = _globeCtrl.zoom - 0.3;
+                if (z >= _globeCtrl.minZoom) _globeCtrl.setZoom(z);
+              } else {
+                _zoom2D(zoomIn: false);
+              }
             }),
       ],
     );
@@ -596,7 +641,7 @@ class _MapScreenState extends State<MapScreen>
                         const SizedBox(height: 2),
                         SizedBox(
                           width: 72,
-                          child: Text(m.nameEn,
+                          child: Text(m.nameMn,
                               style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
@@ -669,13 +714,13 @@ class _MapScreenState extends State<MapScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(marker.nameEn,
+                      Text(marker.nameMn,
                           style: const TextStyle(
                               fontSize: 19,
                               fontWeight: FontWeight.bold,
                               color: Colors.white)),
                       const SizedBox(height: 2),
-                      Text(marker.nameMn,
+                      Text(marker.nameEn,
                           style: TextStyle(
                               fontSize: 13,
                               color: Colors.white.withValues(alpha: 0.6))),
@@ -708,17 +753,17 @@ class _MapScreenState extends State<MapScreen>
               ),
               child: Column(
                 children: [
-                  _infoRow(Icons.account_balance, 'Empire',
-                      'Great Mongol Empire', marker.color),
-                  const SizedBox(height: 10),
-                  _infoRow(Icons.calendar_today, 'Period', '1206 - 1368',
-                      marker.color),
+                  _infoRow(Icons.account_balance, 'Эзэнт гүрэн',
+                      'Их Монгол Улс', marker.color),
                   const SizedBox(height: 10),
                   _infoRow(
-                      Icons.person, 'Founder', 'Genghis Khan', marker.color),
+                      Icons.calendar_today, 'Үе', '1206 - 1368', marker.color),
                   const SizedBox(height: 10),
                   _infoRow(
-                      Icons.military_tech, 'Role', marker.role, marker.color),
+                      Icons.person, 'Үндэслэгч', 'Чингис хаан', marker.color),
+                  const SizedBox(height: 10),
+                  _infoRow(
+                      Icons.military_tech, 'Үүрэг', marker.role, marker.color),
                 ],
               ),
             ),

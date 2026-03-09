@@ -64,9 +64,11 @@ class _StreakStripState extends State<StreakStrip>
         final progress = xp.levelProgress(totalXP);
 
         // Trigger animation when progress changes
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _animateTo(progress);
-        });
+        if ((progress - _targetProgress).abs() >= 0.005) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _animateTo(progress);
+          });
+        }
 
         return StreamBuilder<List<AppAchievement>>(
           stream: UserService.watchAchievements(),

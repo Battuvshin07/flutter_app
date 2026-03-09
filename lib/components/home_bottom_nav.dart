@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../screens/persons_screen.dart';
@@ -59,23 +58,20 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
         right: AppTheme.pagePadding,
         bottom: bottomPad + 8,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-          child: Container(
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppTheme.surface.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(
-                _items.length,
-                (i) => _buildItem(_items[i], i),
-              ),
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppTheme.surface.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          border: Border.all(color: AppTheme.cardBorder),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              _items.length,
+              (i) => _buildItem(_items[i], i),
             ),
           ),
         ),

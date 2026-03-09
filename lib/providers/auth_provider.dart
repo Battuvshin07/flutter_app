@@ -43,7 +43,10 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
 
       try {
-        _role = await _roleService.getCurrentUserRole() ?? 'user';
+        _role = await _roleService
+                .getCurrentUserRole()
+                .timeout(const Duration(seconds: 8), onTimeout: () => 'user') ??
+            'user';
       } catch (_) {
         _role = 'user';
       }

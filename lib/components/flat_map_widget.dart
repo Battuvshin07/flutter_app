@@ -9,12 +9,14 @@ class FlatMapWidget extends StatefulWidget {
   final String? selectedMarkerId;
   final bool showEmpire;
   final ValueChanged<ConquestMarker> onMarkerTapped;
+  final TransformationController? transformationController;
 
   const FlatMapWidget({
     super.key,
     this.selectedMarkerId,
     required this.showEmpire,
     required this.onMarkerTapped,
+    this.transformationController,
   });
 
   @override
@@ -22,7 +24,8 @@ class FlatMapWidget extends StatefulWidget {
 }
 
 class _FlatMapWidgetState extends State<FlatMapWidget> {
-  final TransformationController _transformCtrl = TransformationController();
+  late final TransformationController _transformCtrl;
+  bool _ownsController = false;
 
   // The inner map canvas uses a 2:1 equirectangular aspect ratio.
   // We pick a generous base width so markers/text stay sharp when zoomed.
@@ -32,6 +35,12 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
   @override
   void initState() {
     super.initState();
+    if (widget.transformationController != null) {
+      _transformCtrl = widget.transformationController!;
+    } else {
+      _transformCtrl = TransformationController();
+      _ownsController = true;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _centerOnEmpire());
   }
 
@@ -63,7 +72,7 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
 
   @override
   void dispose() {
-    _transformCtrl.dispose();
+    if (_ownsController) _transformCtrl.dispose();
     super.dispose();
   }
 
@@ -72,9 +81,16 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
     return LayoutBuilder(builder: (context, constraints) {
       // The inner canvas is always the full 2:1 equirectangular map.
       // InteractiveViewer handles panning/zooming within it.
+      final scaleX =
+          constraints.maxWidth > 0 ? constraints.maxWidth / _baseMapWidth : 0.5;
+      final scaleY = constraints.maxHeight > 0
+          ? constraints.maxHeight / _baseMapHeight
+          : 0.5;
+      final coverScale = scaleX > scaleY ? scaleX : scaleY;
+
       return InteractiveViewer(
         transformationController: _transformCtrl,
-        minScale: 0.05,
+        minScale: coverScale,
         maxScale: 8.0,
         constrained: false,
         child: SizedBox(
@@ -118,12 +134,12 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
       final dotSize = isCapital ? 16.0 : 12.0;
 
       return Positioned(
-        left: x - 55,
+        left: x - 70,
         top: y - 56,
         child: GestureDetector(
           onTap: () => widget.onMarkerTapped(m),
           child: SizedBox(
-            width: 110,
+            width: 140,
             height: 70,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -156,10 +172,10 @@ class _FlatMapWidgetState extends State<FlatMapWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        m.nameEn,
+                        m.nameMn,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),
                         maxLines: 1,

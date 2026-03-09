@@ -30,81 +30,89 @@ class _HeroBannerState extends State<HeroBanner>
           scale: _scale,
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
-          child: Container(
-            width: width,
-            height: 188,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/pic_2.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    AppTheme.background.withOpacity(0.85),
-                  ],
-                  stops: const [0.2, 1.0],
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            child: SizedBox(
+              width: width,
+              height: 188,
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // ── "NEW" badge ──
+                  Image.asset(
+                    'assets/images/pic_2.png',
+                    fit: BoxFit.cover,
+                    cacheWidth: 720,
+                  ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentGold,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                    ),
-                    child: Text(
-                      'ШИНЭ: Судлах Түүхүүд',
-                      style: AppTheme.chip.copyWith(
-                        color: AppTheme.background,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          AppTheme.background.withOpacity(0.85),
+                        ],
+                        stops: const [0.2, 1.0],
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Монголын Эзэнт\nГүрнийг нээ',
-                    style: AppTheme.h2.copyWith(fontSize: 20, height: 1.25),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Монголын тал нутгаас дэлхийн хамгийн агуу\nэзэнт гүрэн рүү аялахад бэлэн үү?',
-                    style: AppTheme.caption.copyWith(
-                      color: AppTheme.textSecondary,
-                      fontSize: 11,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // ── CTA ──
-                  GestureDetector(
-                    onTap: widget.onStartExploring,
-                    child: Container(
-                      width: 140,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppTheme.textPrimary,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Судалж эхлэх',
-                          style: AppTheme.button.copyWith(fontSize: 13),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── "NEW" badge ──
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGold,
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusFull),
+                          ),
+                          child: Text(
+                            'ШИНЭ: Судлах Түүхүүд',
+                            style: AppTheme.chip.copyWith(
+                              color: AppTheme.background,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
-                      ),
+                        const Spacer(),
+                        Text(
+                          'Монголын Эзэнт\nГүрнийг нээ',
+                          style:
+                              AppTheme.h2.copyWith(fontSize: 20, height: 1.25),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Монголын тал нутгаас дэлхийн хамгийн агуу\nэзэнт гүрэн рүү аялахад бэлэн үү?',
+                          style: AppTheme.caption.copyWith(
+                            color: AppTheme.textSecondary,
+                            fontSize: 11,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // ── CTA ──
+                        GestureDetector(
+                          onTap: widget.onStartExploring,
+                          child: Container(
+                            width: 140,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppTheme.textPrimary,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusMd),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Судалж эхлэх',
+                                style: AppTheme.button.copyWith(fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
