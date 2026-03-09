@@ -29,7 +29,6 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _tagsCtrl;
   String? _fatherId;
-  String? _motherId;
 
   // ── Person detail fields ───────────────────────────────────────
   late final TextEditingController _longBioCtrl;
@@ -53,7 +52,6 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
         TextEditingController(text: widget.person?.avatarUrl ?? '');
     _titleCtrl = TextEditingController(text: widget.person?.title ?? '');
     _fatherId = widget.person?.fatherId;
-    _motherId = widget.person?.motherId;
     _tagsCtrl =
         TextEditingController(text: widget.person?.tags.join(', ') ?? '');
     _longBioCtrl = TextEditingController();
@@ -131,7 +129,7 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
           : _avatarUrlCtrl.text.trim(),
       title: _titleCtrl.text.trim().isEmpty ? null : _titleCtrl.text.trim(),
       fatherId: _fatherId,
-      motherId: _motherId,
+      motherId: widget.person?.motherId,
       tags: tags,
       updatedBy: uid,
     );
@@ -288,14 +286,6 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
                     persons: admin.persons,
                     currentPersonId: widget.person?.id,
                     onChanged: (v) => setState(() => _fatherId = v),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPersonDropdown(
-                    label: 'Эх / Mother',
-                    value: _motherId,
-                    persons: admin.persons,
-                    currentPersonId: widget.person?.id,
-                    onChanged: (v) => setState(() => _motherId = v),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

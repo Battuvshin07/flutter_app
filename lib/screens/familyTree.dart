@@ -581,7 +581,11 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
         }
 
         // ── build layout model ───────────────────────────────────────────
-        final roots = FamilyTreeService.buildTree(persons);
+        // Family tree: show only khans (хаад), exclude queens (хатад).
+        final khansOnly = persons
+            .where((p) => !p.tags.any((t) => t.contains('хатан')))
+            .toList();
+        final roots = FamilyTreeService.buildTree(khansOnly);
 
         // Lay out multiple roots side by side with a gap between them.
         double offsetX = 20;

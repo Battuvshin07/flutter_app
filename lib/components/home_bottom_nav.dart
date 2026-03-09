@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../screens/persons_screen.dart';
+import '../screens/history_journey_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/profile_screen.dart';
 
@@ -30,7 +30,7 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
     Widget? screen;
     switch (index) {
       case 1:
-        screen = const PersonsScreen();
+        screen = const HistoryJourneyScreen();
         break;
       case 2:
         screen = const MapScreen();
