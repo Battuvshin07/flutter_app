@@ -88,19 +88,19 @@ class _TreeNodeWidgetState extends State<TreeNodeWidget>
                   border: Border.all(
                     color: widget.isSelected
                         ? AppTheme.accentGold
-                        : AppTheme.accentGold.withOpacity(0.45),
+                        : AppTheme.accentGold.withValues(alpha: 0.45),
                     width: widget.isSelected ? 3.5 : 2.5,
                   ),
                   boxShadow: [
                     if (widget.isSelected)
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.5),
+                        color: AppTheme.accentGold.withValues(alpha: 0.5),
                         blurRadius: 18,
                         spreadRadius: 3,
                       )
                     else
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.12),
+                        color: AppTheme.accentGold.withValues(alpha: 0.12),
                         blurRadius: 8,
                         spreadRadius: 1,
                       ),

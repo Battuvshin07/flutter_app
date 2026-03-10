@@ -86,7 +86,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
                 shape: BoxShape.circle,
                 color: AppTheme.surfaceLight,
                 border: Border.all(
-                  color: AppTheme.accentGold.withOpacity(0.3),
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
                 ),
               ),
               child: const Icon(Icons.arrow_back_ios_new,
@@ -169,7 +169,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.history_edu_rounded,
-                    color: AppTheme.textSecondary.withOpacity(0.28), size: 56),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.28), size: 56),
                 const SizedBox(height: 14),
                 Text('Соёлын мэдээлэл олдсонгүй', style: AppTheme.body),
               ],

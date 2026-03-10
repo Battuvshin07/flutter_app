@@ -20,10 +20,8 @@ import 'person_detail_screen.dart';
 const double _kNodeSize = 72.0; // avatar diameter (root generation)
 const double _kNodeLabel =
     52.0; // px below avatar reserved for name/title/years
-const double _kNodeSlot = _kNodeSize + 30; // total width of one person slot
 const double _kSpouseGap = 24.0; // connector width between spouses
 const double _kColGap = 20.0; // horizontal gap between sibling subtrees
-const double _kRowGap = 80.0; // vertical gap between generations
 const double _kVStep = 36.0; // length of vertical trunk line
 const double _kHStep = 20.0; // length of short vertical drop to child
 const double _kShrink = 0.82; // nodeSize multiplier per generation
@@ -190,13 +188,13 @@ class _TreeLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = AppTheme.accentGold.withOpacity(0.55)
+      ..color = AppTheme.accentGold.withValues(alpha: 0.55)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
     final dotPaint = Paint()
-      ..color = AppTheme.accentGold.withOpacity(0.75)
+      ..color = AppTheme.accentGold.withValues(alpha: 0.75)
       ..style = PaintingStyle.fill;
 
     for (final root in roots) {
@@ -240,11 +238,8 @@ class _TreeLinePainter extends CustomPainter {
     );
 
     // ── horizontal bar spanning all children ────────────────────────────
-    final childSize = (node.nodeSize * _kShrink).clamp(_kMinNode, _kNodeSize);
-    final childTopY = trunkBottom + _kHStep + childSize + _kNodeLabel + 8;
     // The child topY for the next level:
     final nextTopY = trunkBottom + _kHStep;
-    final childAvatarCY = nextTopY + childSize / 2;
 
     if (node.children.length > 1) {
       final leftHang = node.children.first.hangX;
@@ -340,12 +335,12 @@ class _PersonNode extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: AppTheme.surfaceLight,
                 border: Border.all(
-                  color: AppTheme.accentGold.withOpacity(0.5),
+                  color: AppTheme.accentGold.withValues(alpha: 0.5),
                   width: 2.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.accentGold.withOpacity(0.15),
+                    color: AppTheme.accentGold.withValues(alpha: 0.15),
                     blurRadius: 10,
                     spreadRadius: 1,
                   ),
@@ -387,7 +382,7 @@ class _PersonNode extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTheme.chip.copyWith(
                   fontSize: (size * 0.13).clamp(8, 12),
-                  color: AppTheme.accentGold.withOpacity(0.85),
+                  color: AppTheme.accentGold.withValues(alpha: 0.85),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -400,7 +395,7 @@ class _PersonNode extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTheme.chip.copyWith(
                   fontSize: (size * 0.13).clamp(8, 11),
-                  color: AppTheme.textSecondary.withOpacity(0.7),
+                  color: AppTheme.textSecondary.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -617,9 +612,9 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.accentGold.withOpacity(0.0),
-                        AppTheme.accentGold.withOpacity(0.5),
-                        AppTheme.accentGold.withOpacity(0.0),
+                        AppTheme.accentGold.withValues(alpha: 0.0),
+                        AppTheme.accentGold.withValues(alpha: 0.5),
+                        AppTheme.accentGold.withValues(alpha: 0.0),
                       ],
                     ),
                   ),
@@ -636,10 +631,10 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.surface.withOpacity(0.9),
+                      color: AppTheme.surface.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       border: Border.all(
-                        color: AppTheme.accentGold.withOpacity(0.3),
+                        color: AppTheme.accentGold.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -684,7 +679,7 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.surface.withOpacity(0.85),
+                      color: AppTheme.surface.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       border: Border.all(color: AppTheme.cardBorder),
                     ),
@@ -693,13 +688,13 @@ class _FamilyTreeScreenState extends State<FamilyTreeScreen> {
                       children: [
                         Icon(Icons.pinch_outlined,
                             size: 14,
-                            color: AppTheme.textSecondary.withOpacity(0.7)),
+                            color: AppTheme.textSecondary.withValues(alpha: 0.7)),
                         const SizedBox(width: 6),
                         Text(
                           'Pinch to zoom  •  Pan to explore',
                           style: AppTheme.chip.copyWith(
                             fontSize: 10,
-                            color: AppTheme.textSecondary.withOpacity(0.7),
+                            color: AppTheme.textSecondary.withValues(alpha: 0.7),
                           ),
                         ),
                       ],

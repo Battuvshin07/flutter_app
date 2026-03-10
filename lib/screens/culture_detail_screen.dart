@@ -86,9 +86,9 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.black.withOpacity(0.45),
+              color: Colors.black.withValues(alpha: 0.45),
               border:
-                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
             ),
             child: const Icon(Icons.arrow_back_ios_new,
                 color: Colors.white, size: 17),
@@ -103,9 +103,9 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
             height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.black.withOpacity(0.45),
+              color: Colors.black.withValues(alpha: 0.45),
               border:
-                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
             ),
             child: const Icon(Icons.bookmark_border_rounded,
                 color: Colors.white, size: 19),
@@ -125,8 +125,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    widget.accentColor.withOpacity(0.18),
-                    AppTheme.surface.withOpacity(0.6),
+                    widget.accentColor.withValues(alpha: 0.18),
+                    AppTheme.surface.withValues(alpha: 0.6),
                     AppTheme.background,
                   ],
                   stops: const [0.0, 0.55, 1.0],
@@ -142,7 +142,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                 height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.accentColor.withOpacity(0.06),
+                  color: widget.accentColor.withValues(alpha: 0.06),
                 ),
               ),
             ),
@@ -154,7 +154,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.accentColor.withOpacity(0.04),
+                  color: widget.accentColor.withValues(alpha: 0.04),
                 ),
               ),
             ),
@@ -181,10 +181,10 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                   Row(
                     children: [
                       _badge('XP +20', AppTheme.accentGold,
-                          AppTheme.accentGold.withOpacity(0.14)),
+                          AppTheme.accentGold.withValues(alpha: 0.14)),
                       const SizedBox(width: 8),
                       _badge('● Хялбар', AppTheme.xpGreen,
-                          AppTheme.xpGreen.withOpacity(0.12)),
+                          AppTheme.xpGreen.withValues(alpha: 0.12)),
                     ],
                   ),
                 ],
@@ -207,7 +207,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: widget.accentColor.withOpacity(0.32),
+              color: widget.accentColor.withValues(alpha: 0.32),
               blurRadius: 36,
               spreadRadius: 6,
             ),
@@ -232,14 +232,14 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
       height: 110,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: widget.accentColor.withOpacity(0.12),
+        color: widget.accentColor.withValues(alpha: 0.12),
         border: Border.all(
-          color: widget.accentColor.withOpacity(0.25),
+          color: widget.accentColor.withValues(alpha: 0.25),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: widget.accentColor.withOpacity(0.28),
+            color: widget.accentColor.withValues(alpha: 0.28),
             blurRadius: 36,
             spreadRadius: 8,
           ),
@@ -255,7 +255,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: textColor.withOpacity(0.35), width: 1),
+        border: Border.all(color: textColor.withValues(alpha: 0.35), width: 1),
       ),
       child: Text(
         label,
@@ -287,7 +287,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
         unselectedLabelStyle:
             AppTheme.chip.copyWith(fontWeight: FontWeight.w500, fontSize: 12),
         indicator: BoxDecoration(
-          color: widget.accentColor.withOpacity(0.12),
+          color: widget.accentColor.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd - 2),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -322,8 +322,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppTheme.background.withOpacity(0.0),
-            AppTheme.background.withOpacity(0.96),
+            AppTheme.background.withValues(alpha: 0.0),
+            AppTheme.background.withValues(alpha: 0.96),
           ],
         ),
       ),
@@ -347,7 +347,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
             borderRadius: BorderRadius.circular(AppTheme.radiusFull),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.accentGold.withOpacity(0.38),
+                color: AppTheme.accentGold.withValues(alpha: 0.38),
                 blurRadius: 18,
                 offset: const Offset(0, 7),
               ),
@@ -477,9 +477,9 @@ class _BulletItem extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.12),
+              color: accentColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: accentColor.withOpacity(0.2)),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2)),
             ),
             child: Icon(icon, color: accentColor, size: 19),
           ),

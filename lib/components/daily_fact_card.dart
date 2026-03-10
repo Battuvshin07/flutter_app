@@ -124,7 +124,7 @@ class _DailyFactCardState extends State<DailyFactCard> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withOpacity(0.15),
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
           ),
@@ -160,7 +160,7 @@ class _DailyFactCardState extends State<DailyFactCard> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withOpacity(0.15),
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(

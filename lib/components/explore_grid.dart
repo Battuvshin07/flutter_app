@@ -137,7 +137,7 @@ class _ExploreCardState extends State<_ExploreCard> {
                   Text(
                     widget.subtitle,
                     style: AppTheme.caption.copyWith(
-                      color: AppTheme.textSecondary.withOpacity(0.6),
+                      color: AppTheme.textSecondary.withValues(alpha: 0.6),
                       fontSize: 10,
                     ),
                   ),

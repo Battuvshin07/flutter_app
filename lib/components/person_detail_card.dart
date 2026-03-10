@@ -123,7 +123,7 @@ class _PersonDetailCardState extends State<PersonDetailCard>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.accentGold.withOpacity(0.35),
+                                color: AppTheme.accentGold.withValues(alpha: 0.35),
                                 blurRadius: 14,
                               ),
                             ],
@@ -197,7 +197,7 @@ class _PersonDetailCardState extends State<PersonDetailCard>
                                           e,
                                           style: AppTheme.caption.copyWith(
                                             color: AppTheme.textSecondary
-                                                .withOpacity(0.85),
+                                                .withValues(alpha: 0.85),
                                             height: 1.3,
                                           ),
                                         ),

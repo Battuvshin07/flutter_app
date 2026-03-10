@@ -53,7 +53,7 @@ class EventCard extends StatelessWidget {
                   Text(
                     event.description,
                     style: AppTheme.caption.copyWith(
-                      color: AppTheme.textSecondary.withOpacity(0.8),
+                      color: AppTheme.textSecondary.withValues(alpha: 0.8),
                       height: 1.4,
                     ),
                     maxLines: 3,

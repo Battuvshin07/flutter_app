@@ -23,7 +23,6 @@ class PersonDetailScreen extends StatefulWidget {
 
 class _PersonDetailScreenState extends State<PersonDetailScreen> {
   PersonDetailModel? _detail;
-  bool _detailLoading = true;
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     } catch (e) {
       debugPrint('Error fetching person detail: $e');
     }
-    if (mounted) setState(() => _detailLoading = false);
+    if (mounted) setState(() {});
   }
 
   Person get person => widget.person;
@@ -181,12 +180,12 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         border: Border.all(color: AppTheme.accentGold, width: 3),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.accentGold.withOpacity(0.35),
+            color: AppTheme.accentGold.withValues(alpha: 0.35),
             blurRadius: 24,
             spreadRadius: 4,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -246,7 +245,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 child: Icon(
                   Icons.emoji_events_outlined,
                   size: 16,
-                  color: AppTheme.accentGold.withOpacity(0.6),
+                  color: AppTheme.accentGold.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -276,7 +275,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               Icon(
                 Icons.auto_stories,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.8),
+                color: AppTheme.accentGold.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text(
@@ -287,7 +286,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: AppTheme.accentGold.withOpacity(0.15),
+            color: AppTheme.accentGold.withValues(alpha: 0.15),
             thickness: 1,
           ),
           const SizedBox(height: 8),
@@ -313,7 +312,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               Icon(
                 Icons.emoji_events_rounded,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.8),
+                color: AppTheme.accentGold.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text('Амжилтууд', style: AppTheme.sectionTitle),
@@ -321,7 +320,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: AppTheme.accentGold.withOpacity(0.15),
+            color: AppTheme.accentGold.withValues(alpha: 0.15),
             thickness: 1,
           ),
           const SizedBox(height: 8),
@@ -331,7 +330,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.star_rounded,
-                        size: 14, color: AppTheme.accentGold.withOpacity(0.7)),
+                        size: 14, color: AppTheme.accentGold.withValues(alpha: 0.7)),
                     const SizedBox(width: 8),
                     Expanded(
                       child:
@@ -358,7 +357,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               Icon(
                 Icons.timeline_rounded,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.8),
+                color: AppTheme.accentGold.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text('Цаг хугацааны шугам', style: AppTheme.sectionTitle),
@@ -366,7 +365,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: AppTheme.accentGold.withOpacity(0.15),
+            color: AppTheme.accentGold.withValues(alpha: 0.15),
             thickness: 1,
           ),
           const SizedBox(height: 8),
@@ -379,7 +378,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentGold.withOpacity(0.15),
+                        color: AppTheme.accentGold.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -416,7 +415,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               Icon(
                 Icons.menu_book_rounded,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.8),
+                color: AppTheme.accentGold.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text('Эх сурвалж', style: AppTheme.sectionTitle),
@@ -424,7 +423,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: AppTheme.accentGold.withOpacity(0.15),
+            color: AppTheme.accentGold.withValues(alpha: 0.15),
             thickness: 1,
           ),
           const SizedBox(height: 8),
@@ -434,7 +433,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.link_rounded,
-                        size: 14, color: AppTheme.accentGold.withOpacity(0.7)),
+                        size: 14, color: AppTheme.accentGold.withValues(alpha: 0.7)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -466,7 +465,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 Icon(
                   Icons.event_note,
                   size: 18,
-                  color: AppTheme.accentGold.withOpacity(0.8),
+                  color: AppTheme.accentGold.withValues(alpha: 0.8),
                 ),
                 const SizedBox(width: 8),
                 Text('Холбогдсон үйл явдлууд', style: AppTheme.sectionTitle),
@@ -474,7 +473,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 Icon(
                   Icons.arrow_forward_rounded,
                   size: 18,
-                  color: AppTheme.accentGold.withOpacity(0.5),
+                  color: AppTheme.accentGold.withValues(alpha: 0.5),
                 ),
               ],
             ),

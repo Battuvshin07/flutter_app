@@ -40,10 +40,10 @@ class QuizJourneyCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentGold.withOpacity(0.12),
+                      color: AppTheme.accentGold.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                       border: Border.all(
-                          color: AppTheme.accentGold.withOpacity(0.3)),
+                          color: AppTheme.accentGold.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       '$completedCount/$totalCount гүйцэтгэсэн',
@@ -76,11 +76,11 @@ class QuizJourneyCard extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     border: Border.all(
-                      color: AppTheme.accentGold.withOpacity(0.25),
+                      color: AppTheme.accentGold.withValues(alpha: 0.25),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.08),
+                        color: AppTheme.accentGold.withValues(alpha: 0.08),
                         blurRadius: 12,
                         spreadRadius: 0,
                       ),
@@ -94,13 +94,13 @@ class QuizJourneyCard extends StatelessWidget {
                         height: 52,
                         decoration: BoxDecoration(
                           color: hasQuiz
-                              ? const Color(0xFFA78BFA).withOpacity(0.15)
-                              : AppTheme.accentGold.withOpacity(0.12),
+                              ? const Color(0xFFA78BFA).withValues(alpha: 0.15)
+                              : AppTheme.accentGold.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: hasQuiz
-                                ? const Color(0xFFA78BFA).withOpacity(0.3)
-                                : AppTheme.accentGold.withOpacity(0.25),
+                                ? const Color(0xFFA78BFA).withValues(alpha: 0.3)
+                                : AppTheme.accentGold.withValues(alpha: 0.25),
                           ),
                         ),
                         child: Icon(
@@ -129,29 +129,27 @@ class QuizJourneyCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 6),
-                            Row(
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
                               children: [
-                                if (hasQuiz) ...[
+                                if (hasQuiz)
                                   _chip(
                                     Icons.quiz_outlined,
                                     'Шалгалт байна',
                                     const Color(0xFFA78BFA),
                                   ),
-                                  const SizedBox(width: 6),
-                                ],
                                 _chip(
                                   Icons.stars_rounded,
                                   '+${story.xpReward} XP',
                                   AppTheme.accentGold,
                                 ),
-                                if (isCompleted) ...[
-                                  const SizedBox(width: 6),
+                                if (isCompleted)
                                   _chip(
                                     Icons.check_circle_rounded,
                                     'Дууссан',
                                     const Color(0xFF4ADE80),
                                   ),
-                                ],
                               ],
                             ),
                           ],
@@ -162,7 +160,7 @@ class QuizJourneyCard extends StatelessWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: AppTheme.accentGold.withOpacity(0.1),
+                          color: AppTheme.accentGold.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(

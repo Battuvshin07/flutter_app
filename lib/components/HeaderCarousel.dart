@@ -90,12 +90,12 @@ class _HeaderCarouselState extends State<HeaderCarousel> {
                   decoration: BoxDecoration(
                     color: _currentPage == index
                         ? Colors.white
-                        : Colors.white.withOpacity(0.5),
+                        : Colors.white.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                     boxShadow: _currentPage == index
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 4,
                             )
                           ]
@@ -134,7 +134,7 @@ class _HeaderCarouselState extends State<HeaderCarousel> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.white.withOpacity(0.3),
+                  Colors.white.withValues(alpha: 0.3),
                 ],
               ),
             ),

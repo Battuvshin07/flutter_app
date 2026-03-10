@@ -120,7 +120,7 @@ class _StoryTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: const Color(0xFFA78BFA).withOpacity(0.12),
+                color: const Color(0xFFA78BFA).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(

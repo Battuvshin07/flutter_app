@@ -189,7 +189,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                                 final isSelected = p.id == _selectedPersonId;
                                 return Material(
                                   color: isSelected
-                                      ? AppTheme.accentGold.withOpacity(0.12)
+                                      ? AppTheme.accentGold.withValues(alpha: 0.12)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(12),
                                   child: InkWell(
@@ -370,7 +370,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         border: Border.all(
                           color: _selectedPersonId != null
-                              ? AppTheme.accentGold.withOpacity(0.5)
+                              ? AppTheme.accentGold.withValues(alpha: 0.5)
                               : AppTheme.cardBorder,
                         ),
                       ),
@@ -393,7 +393,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                                   style: AppTheme.caption.copyWith(
                                     fontSize: 11,
                                     color: _selectedPersonId != null
-                                        ? AppTheme.accentGold.withOpacity(0.8)
+                                        ? AppTheme.accentGold.withValues(alpha: 0.8)
                                         : AppTheme.textSecondary,
                                   ),
                                 ),
@@ -404,7 +404,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                                     color: selectedPerson != null
                                         ? AppTheme.textPrimary
                                         : AppTheme.textSecondary
-                                            .withOpacity(0.6),
+                                            .withValues(alpha: 0.6),
                                   ),
                                 ),
                               ],

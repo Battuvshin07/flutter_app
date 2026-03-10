@@ -118,7 +118,7 @@ class _EventTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: const Color(0xFF60A5FA).withOpacity(0.12),
+                color: const Color(0xFF60A5FA).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(

@@ -136,7 +136,7 @@ class _QuizScreenState extends State<QuizScreen>
                 shape: BoxShape.circle,
                 color: AppTheme.surfaceLight,
                 border: Border.all(
-                  color: AppTheme.accentGold.withOpacity(0.35),
+                  color: AppTheme.accentGold.withValues(alpha: 0.35),
                 ),
               ),
               child: const Icon(Icons.arrow_back_ios_new,
@@ -201,7 +201,7 @@ class _QuizScreenState extends State<QuizScreen>
                   height: 52,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.accentGold.withOpacity(0.12),
+                    color: AppTheme.accentGold.withValues(alpha: 0.12),
                   ),
                   child: const Icon(Icons.quiz_outlined,
                       color: AppTheme.accentGold, size: 28),
@@ -300,10 +300,10 @@ class _QuizScreenState extends State<QuizScreen>
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: accentColor.withOpacity(0.12),
+              color: accentColor.withValues(alpha: 0.12),
               boxShadow: [
                 BoxShadow(
-                  color: accentColor.withOpacity(0.3),
+                  color: accentColor.withValues(alpha: 0.3),
                   blurRadius: 30,
                   spreadRadius: 2,
                 ),
@@ -359,7 +359,7 @@ class _QuizScreenState extends State<QuizScreen>
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.textPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: AppTheme.cardBorder.withOpacity(0.6)),
+                side: BorderSide(color: AppTheme.cardBorder.withValues(alpha: 0.6)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),

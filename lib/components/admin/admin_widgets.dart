@@ -77,7 +77,7 @@ class AdminActionCard extends StatelessWidget {
       onTap: onTap,
       child: GlassCard(
         padding: const EdgeInsets.all(16),
-        borderColor: AppTheme.cardBorder.withOpacity(0.4),
+        borderColor: AppTheme.cardBorder.withValues(alpha: 0.4),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -85,9 +85,9 @@ class AdminActionCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.25)),
+                border: Border.all(color: color.withValues(alpha: 0.25)),
               ),
               child: Icon(icon, color: color, size: 26),
             ),
@@ -156,7 +156,7 @@ class AdminUserTile extends StatelessWidget {
             height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: roleColor.withOpacity(0.5), width: 2),
+              border: Border.all(color: roleColor.withValues(alpha: 0.5), width: 2),
               color: AppTheme.surfaceLight,
             ),
             child: ClipOval(
@@ -245,9 +245,9 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         text,
@@ -276,9 +276,9 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.35)),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
         ),
         child: Text(
           label,

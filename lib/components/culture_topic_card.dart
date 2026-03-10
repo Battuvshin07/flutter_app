@@ -34,11 +34,11 @@ class CultureTopicCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.12),
+                color: accentColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                 boxShadow: [
                   BoxShadow(
-                    color: accentColor.withOpacity(0.15),
+                    color: accentColor.withValues(alpha: 0.15),
                     blurRadius: 10,
                   ),
                 ],
@@ -68,7 +68,7 @@ class CultureTopicCard extends StatelessWidget {
             const SizedBox(width: 4),
             Icon(
               Icons.chevron_right_rounded,
-              color: AppTheme.textSecondary.withOpacity(0.45),
+              color: AppTheme.textSecondary.withValues(alpha: 0.45),
               size: 22,
             ),
           ],

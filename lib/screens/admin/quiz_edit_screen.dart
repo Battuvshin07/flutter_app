@@ -192,7 +192,7 @@ class _QuizEditScreenState extends State<QuizEditScreen> {
                           label: Text(d),
                           selected: isSelected,
                           onSelected: (_) => setState(() => _difficulty = d),
-                          selectedColor: color.withOpacity(0.25),
+                          selectedColor: color.withValues(alpha: 0.25),
                           backgroundColor: AppTheme.surface,
                           side: BorderSide(
                             color: isSelected ? color : AppTheme.cardBorder,
@@ -272,7 +272,7 @@ class _QuizEditScreenState extends State<QuizEditScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surface.withOpacity(0.5),
+        color: AppTheme.surface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.cardBorder),
       ),

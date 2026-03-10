@@ -34,7 +34,7 @@ class _HeroBannerState extends State<HeroBanner>
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             child: SizedBox(
               width: width,
-              height: 188,
+              height: 202,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -50,7 +50,7 @@ class _HeroBannerState extends State<HeroBanner>
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          AppTheme.background.withOpacity(0.85),
+                          AppTheme.background.withValues(alpha: 0.85),
                         ],
                         stops: const [0.2, 1.0],
                       ),

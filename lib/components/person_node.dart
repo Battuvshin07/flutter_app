@@ -95,19 +95,19 @@ class _PersonNodeState extends State<PersonNode>
                   border: Border.all(
                     color: widget.isSelected
                         ? AppTheme.accentGold
-                        : AppTheme.accentGold.withOpacity(0.45),
+                        : AppTheme.accentGold.withValues(alpha: 0.45),
                     width: widget.isSelected ? 3.5 : 2.5,
                   ),
                   boxShadow: [
                     if (widget.isSelected)
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.45),
+                        color: AppTheme.accentGold.withValues(alpha: 0.45),
                         blurRadius: 14,
                         spreadRadius: 2,
                       )
                     else
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.1),
+                        color: AppTheme.accentGold.withValues(alpha: 0.1),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),

@@ -449,15 +449,15 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
       children: [
         Expanded(
           child: Divider(
-              color: AppTheme.accentGold.withOpacity(0.25), thickness: 1),
+              color: AppTheme.accentGold.withValues(alpha: 0.25), thickness: 1),
         ),
         const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: AppTheme.accentGold.withOpacity(0.1),
+            color: AppTheme.accentGold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
           ),
           child: Text(
             label,
@@ -468,7 +468,7 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
         const SizedBox(width: 10),
         Expanded(
           child: Divider(
-              color: AppTheme.accentGold.withOpacity(0.25), thickness: 1),
+              color: AppTheme.accentGold.withValues(alpha: 0.25), thickness: 1),
         ),
       ],
     );

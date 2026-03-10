@@ -173,7 +173,7 @@ class _TitleSection extends StatelessWidget {
               GoldBadge(
                 text: event.date,
                 icon: Icons.calendar_today_rounded,
-                backgroundColor: AppTheme.accentGold.withOpacity(0.12),
+                backgroundColor: AppTheme.accentGold.withValues(alpha: 0.12),
                 textColor: AppTheme.accentGold,
                 fontSize: 12,
                 padding:
@@ -221,7 +221,7 @@ class _IllustrationCard extends StatelessWidget {
             color: AppTheme.surfaceLight,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(
-              color: AppTheme.accentGold.withOpacity(0.18),
+              color: AppTheme.accentGold.withValues(alpha: 0.18),
             ),
           ),
           child: Stack(
@@ -250,7 +250,7 @@ class _IllustrationCard extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        AppTheme.background.withOpacity(0.7),
+                        AppTheme.background.withValues(alpha: 0.7),
                       ],
                     ),
                   ),
@@ -265,10 +265,10 @@ class _IllustrationCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.55),
+                    color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: AppTheme.accentGold.withOpacity(0.35)),
+                        color: AppTheme.accentGold.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -303,7 +303,7 @@ class _IllustrationCard extends StatelessWidget {
           Icon(
             Icons.history_edu_rounded,
             size: 56,
-            color: AppTheme.accentGold.withOpacity(0.35),
+            color: AppTheme.accentGold.withValues(alpha: 0.35),
           ),
           const SizedBox(height: 10),
           Text(
@@ -358,13 +358,13 @@ class _ArticleContent extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.auto_stories_rounded,
-                    size: 18, color: AppTheme.accentGold.withOpacity(0.8)),
+                    size: 18, color: AppTheme.accentGold.withValues(alpha: 0.8)),
                 const SizedBox(width: 8),
                 Text('Түүхэн тойм', style: AppTheme.sectionTitle),
               ],
             ),
             Divider(
-              color: AppTheme.accentGold.withOpacity(0.15),
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
               thickness: 1,
               height: 20,
             ),
@@ -374,7 +374,7 @@ class _ArticleContent extends StatelessWidget {
               paragraphs.first,
               style: AppTheme.body.copyWith(
                 height: 1.7,
-                color: AppTheme.textPrimary.withOpacity(0.9),
+                color: AppTheme.textPrimary.withValues(alpha: 0.9),
               ),
             ),
 
@@ -449,7 +449,7 @@ class _RelatedEvents extends StatelessWidget {
               Icon(
                 Icons.event_note_rounded,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.8),
+                color: AppTheme.accentGold.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text('Холбогдсон үйл явдлууд', style: AppTheme.sectionTitle),
@@ -457,7 +457,7 @@ class _RelatedEvents extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_rounded,
                 size: 18,
-                color: AppTheme.accentGold.withOpacity(0.4),
+                color: AppTheme.accentGold.withValues(alpha: 0.4),
               ),
             ],
           ),
@@ -507,7 +507,7 @@ class _RelatedEventTile extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withOpacity(0.1),
+              color: AppTheme.accentGold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -534,7 +534,7 @@ class _RelatedEventTile extends StatelessWidget {
                   event.date,
                   style: AppTheme.caption.copyWith(
                     fontSize: 11,
-                    color: AppTheme.accentGold.withOpacity(0.7),
+                    color: AppTheme.accentGold.withValues(alpha: 0.7),
                   ),
                 ),
               ],

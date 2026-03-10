@@ -215,7 +215,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.accentGold.withOpacity(0.25),
+                      color: AppTheme.accentGold.withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -259,7 +259,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ),
           child: GlassCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            borderColor: AppTheme.crimson.withOpacity(0.4),
+            borderColor: AppTheme.crimson.withValues(alpha: 0.4),
             child: Row(
               children: [
                 Icon(Icons.warning_amber_rounded,
@@ -363,9 +363,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: color.withOpacity(0.25)),
+                  border: Border.all(color: color.withValues(alpha: 0.25)),
                 ),
                 child: Icon(icon, color: color, size: 20),
               ),
@@ -375,7 +375,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   onTap: onRefresh,
                   child: Icon(
                     Icons.refresh_rounded,
-                    color: AppTheme.textSecondary.withOpacity(0.5),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.5),
                     size: 18,
                   ),
                 ),
@@ -411,7 +411,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08 + 0.08 * _pulseController.value),
+            color: color.withValues(alpha: 0.08 + 0.08 * _pulseController.value),
             borderRadius: BorderRadius.circular(6),
           ),
         );
@@ -506,10 +506,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: config.color.withOpacity(0.12),
+                        color: config.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
                         border:
-                            Border.all(color: config.color.withOpacity(0.25)),
+                            Border.all(color: config.color.withValues(alpha: 0.25)),
                       ),
                       child: Icon(config.icon, color: config.color, size: 24),
                     ),
@@ -521,10 +521,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: config.color.withOpacity(0.1),
+                          color: config.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: config.color.withOpacity(0.2),
+                            color: config.color.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Text(
@@ -595,10 +595,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF34D399).withOpacity(0.12),
+                  color: const Color(0xFF34D399).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: const Color(0xFF34D399).withOpacity(0.25),
+                    color: const Color(0xFF34D399).withValues(alpha: 0.25),
                   ),
                 ),
                 child: const Icon(
@@ -642,7 +642,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Widget _buildBottomNav() {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface.withOpacity(0.95),
+        color: AppTheme.surface.withValues(alpha: 0.95),
         border: const Border(top: BorderSide(color: AppTheme.cardBorder)),
       ),
       child: SafeArea(

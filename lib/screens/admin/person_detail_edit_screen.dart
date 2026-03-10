@@ -27,7 +27,6 @@ class _PersonDetailEditScreenState extends State<PersonDetailEditScreen> {
   List<_SourceRow> _sourceRows = [];
 
   bool _isLoading = true;
-  PersonDetailModel? _existing;
 
   @override
   void initState() {
@@ -41,7 +40,6 @@ class _PersonDetailEditScreenState extends State<PersonDetailEditScreen> {
     final admin = Provider.of<AdminProvider>(context, listen: false);
     final detail = await admin.getPersonDetail(widget.personId);
     if (detail != null) {
-      _existing = detail;
       _longBioCtrl.text = detail.longBio;
       _achievementsCtrl.text = detail.achievements.join('\n');
       _timelineRows = detail.timeline

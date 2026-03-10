@@ -45,7 +45,7 @@ class GoldBadge extends StatelessWidget {
     return GoldBadge(
       text: '${_formatNumber(xp)} XP',
       icon: Icons.emoji_events_outlined,
-      backgroundColor: AppTheme.accentGold.withOpacity(0.15),
+      backgroundColor: AppTheme.accentGold.withValues(alpha: 0.15),
       textColor: AppTheme.accentGold,
       fontSize: 12,
     );
@@ -66,7 +66,7 @@ class GoldBadge extends StatelessWidget {
   factory GoldBadge.year(String year) {
     return GoldBadge(
       text: year,
-      backgroundColor: AppTheme.accentGold.withOpacity(0.15),
+      backgroundColor: AppTheme.accentGold.withValues(alpha: 0.15),
       textColor: AppTheme.accentGold,
       fontSize: 12,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -88,7 +88,7 @@ class GoldBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? AppTheme.accentGold.withOpacity(0.15);
+    final bg = backgroundColor ?? AppTheme.accentGold.withValues(alpha: 0.15);
     final fg = textColor ?? AppTheme.accentGold;
 
     return Container(

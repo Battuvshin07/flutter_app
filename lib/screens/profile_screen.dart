@@ -654,12 +654,16 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: [
           const Text('🔥', style: TextStyle(fontSize: 22)),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppTheme.captionBold.copyWith(
-              color: AppTheme.background,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
+          Flexible(
+            child: Text(
+              label,
+              style: AppTheme.captionBold.copyWith(
+                color: AppTheme.background,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

@@ -51,7 +51,7 @@ class TimelineEventCard extends StatelessWidget {
                 Icon(
                   Icons.person_outline,
                   size: 14,
-                  color: AppTheme.accentGold.withOpacity(0.7),
+                  color: AppTheme.accentGold.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
@@ -68,7 +68,7 @@ class TimelineEventCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 16,
-                  color: AppTheme.textSecondary.withOpacity(0.5),
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5),
                 ),
               ],
             ),

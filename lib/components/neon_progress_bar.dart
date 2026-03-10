@@ -47,7 +47,7 @@ class NeonProgressBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(height / 2),
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(0.55),
+                          color: color.withValues(alpha: 0.55),
                           blurRadius: 10,
                           spreadRadius: 1,
                         ),
@@ -65,7 +65,7 @@ class NeonProgressBar extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       color,
-                      color.withOpacity(0.75),
+                      color.withValues(alpha: 0.75),
                     ],
                   ),
                 ),

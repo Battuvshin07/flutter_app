@@ -90,7 +90,7 @@ class FeaturedList extends StatelessWidget {
                     color: AppTheme.surfaceLight,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     border: Border.all(
-                      color: AppTheme.accentGold.withOpacity(0.22),
+                      color: AppTheme.accentGold.withValues(alpha: 0.22),
                     ),
                   ),
                   child: Row(
@@ -202,7 +202,7 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
               const SizedBox(width: 4),
               Icon(
                 Icons.chevron_right_rounded,
-                color: AppTheme.textSecondary.withOpacity(0.5),
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
                 size: 20,
               ),
             ],
@@ -219,9 +219,9 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.14),
+        color: accent.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        border: Border.all(color: accent.withOpacity(0.25)),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppTheme.radiusSm - 1),

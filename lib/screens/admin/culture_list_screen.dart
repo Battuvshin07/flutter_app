@@ -112,7 +112,7 @@ class _CultureTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppTheme.accentGold.withOpacity(0.12),
+                color: AppTheme.accentGold.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(

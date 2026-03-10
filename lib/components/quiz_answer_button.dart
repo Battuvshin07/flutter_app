@@ -26,7 +26,7 @@ class QuizAnswerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     // Determine colours based on state
     Color borderColor = AppTheme.cardBorder;
-    Color bgColor = AppTheme.surface.withOpacity(0.6);
+    Color bgColor = AppTheme.surface.withValues(alpha: 0.6);
     Color letterBg = AppTheme.surfaceLight;
     Color letterFg = AppTheme.textSecondary;
     Color textColor = AppTheme.textPrimary;
@@ -36,16 +36,16 @@ class QuizAnswerButton extends StatelessWidget {
       if (isCorrect) {
         // Correct answer – green
         borderColor = AppTheme.xpGreen;
-        bgColor = AppTheme.xpGreen.withOpacity(0.12);
-        letterBg = AppTheme.xpGreen.withOpacity(0.25);
+        bgColor = AppTheme.xpGreen.withValues(alpha: 0.12);
+        letterBg = AppTheme.xpGreen.withValues(alpha: 0.25);
         letterFg = AppTheme.xpGreen;
         textColor = AppTheme.xpGreen;
         trailingIcon = Icons.check_circle_rounded;
       } else if (isSelected) {
         // Selected but wrong – crimson
         borderColor = AppTheme.crimson;
-        bgColor = AppTheme.crimson.withOpacity(0.12);
-        letterBg = AppTheme.crimson.withOpacity(0.25);
+        bgColor = AppTheme.crimson.withValues(alpha: 0.12);
+        letterBg = AppTheme.crimson.withValues(alpha: 0.25);
         letterFg = AppTheme.crimson;
         textColor = AppTheme.crimson;
         trailingIcon = Icons.cancel_rounded;
@@ -53,7 +53,7 @@ class QuizAnswerButton extends StatelessWidget {
     } else if (isSelected) {
       // Pre-reveal selected – gold accent
       borderColor = AppTheme.accentGold;
-      letterBg = AppTheme.accentGold.withOpacity(0.2);
+      letterBg = AppTheme.accentGold.withValues(alpha: 0.2);
       letterFg = AppTheme.accentGold;
     }
 
@@ -72,12 +72,12 @@ class QuizAnswerButton extends StatelessWidget {
           boxShadow: [
             if (isRevealed && isCorrect)
               BoxShadow(
-                color: AppTheme.xpGreen.withOpacity(0.25),
+                color: AppTheme.xpGreen.withValues(alpha: 0.25),
                 blurRadius: 12,
               ),
             if (isRevealed && isSelected && !isCorrect)
               BoxShadow(
-                color: AppTheme.crimson.withOpacity(0.2),
+                color: AppTheme.crimson.withValues(alpha: 0.2),
                 blurRadius: 12,
               ),
           ],

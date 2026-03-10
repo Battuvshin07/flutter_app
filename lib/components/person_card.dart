@@ -62,12 +62,12 @@ class _PersonCardState extends State<PersonCard> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppTheme.accentGold.withOpacity(0.7),
+                      color: AppTheme.accentGold.withValues(alpha: 0.7),
                       width: 2.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.2),
+                        color: AppTheme.accentGold.withValues(alpha: 0.2),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -110,7 +110,7 @@ class _PersonCardState extends State<PersonCard> {
                       Text(
                         person.description,
                         style: AppTheme.caption.copyWith(
-                          color: AppTheme.textSecondary.withOpacity(0.8),
+                          color: AppTheme.textSecondary.withValues(alpha: 0.8),
                           height: 1.35,
                         ),
                         maxLines: 2,
@@ -122,7 +122,7 @@ class _PersonCardState extends State<PersonCard> {
                 const SizedBox(width: 8),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: AppTheme.accentGold.withOpacity(0.5),
+                  color: AppTheme.accentGold.withValues(alpha: 0.5),
                   size: 22,
                 ),
               ],

@@ -152,9 +152,9 @@ class _AdminListScreenState extends State<AdminListScreen> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: config.color.withOpacity(0.12),
+              color: config.color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: config.color.withOpacity(0.25)),
+              border: Border.all(color: config.color.withValues(alpha: 0.25)),
             ),
             child: Icon(config.icon, color: config.color, size: 20),
           ),
@@ -194,7 +194,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: AppTheme.surface.withOpacity(0.7),
+        color: AppTheme.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.cardBorder),
       ),
@@ -207,7 +207,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
           border: InputBorder.none,
           icon: Icon(
             Icons.search_rounded,
-            color: config.color.withOpacity(0.7),
+            color: config.color.withValues(alpha: 0.7),
             size: 20,
           ),
           suffixIcon: _searchQuery.isNotEmpty
@@ -259,9 +259,9 @@ class _AdminListScreenState extends State<AdminListScreen> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: config.color.withOpacity(0.12),
+                  color: config.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  border: Border.all(color: config.color.withOpacity(0.2)),
+                  border: Border.all(color: config.color.withValues(alpha: 0.2)),
                 ),
                 child: Icon(config.icon, color: config.color, size: 22),
               ),
@@ -308,7 +308,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: AppTheme.crimson.withOpacity(0.08),
+                    color: AppTheme.crimson.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -323,7 +323,7 @@ class _AdminListScreenState extends State<AdminListScreen> {
               // ── Chevron ──
               Icon(
                 Icons.chevron_right_rounded,
-                color: config.color.withOpacity(0.5),
+                color: config.color.withValues(alpha: 0.5),
                 size: 20,
               ),
             ],

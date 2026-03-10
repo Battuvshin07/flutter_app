@@ -38,19 +38,19 @@ class CultureCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: isCompleted
-                  ? accentColor.withOpacity(0.45)
-                  : AppTheme.cardBorder.withOpacity(0.6),
+                  ? accentColor.withValues(alpha: 0.45)
+                  : AppTheme.cardBorder.withValues(alpha: 0.6),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
               if (isCompleted)
                 BoxShadow(
-                  color: accentColor.withOpacity(0.12),
+                  color: accentColor.withValues(alpha: 0.12),
                   blurRadius: 18,
                   spreadRadius: 1,
                 ),
@@ -111,12 +111,12 @@ class CultureCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: accentColor.withOpacity(0.28),
+          color: accentColor.withValues(alpha: 0.28),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.15),
+            color: accentColor.withValues(alpha: 0.15),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -137,7 +137,7 @@ class CultureCard extends StatelessWidget {
 
   Widget _iconFallback() {
     return Container(
-      color: accentColor.withOpacity(0.12),
+      color: accentColor.withValues(alpha: 0.12),
       child: Icon(icon, color: accentColor, size: 28),
     );
   }
@@ -149,8 +149,8 @@ class CultureCard extends StatelessWidget {
         height: 32,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppTheme.xpGreen.withOpacity(0.15),
-          border: Border.all(color: AppTheme.xpGreen.withOpacity(0.35)),
+          color: AppTheme.xpGreen.withValues(alpha: 0.15),
+          border: Border.all(color: AppTheme.xpGreen.withValues(alpha: 0.35)),
         ),
         child:
             const Icon(Icons.check_rounded, color: AppTheme.xpGreen, size: 18),
@@ -158,7 +158,7 @@ class CultureCard extends StatelessWidget {
     }
     return Icon(
       Icons.chevron_right_rounded,
-      color: AppTheme.textSecondary.withOpacity(0.5),
+      color: AppTheme.textSecondary.withValues(alpha: 0.5),
       size: 22,
     );
   }
