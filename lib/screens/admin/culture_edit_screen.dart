@@ -22,6 +22,21 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
   late final TextEditingController _descCtrl;
   late final TextEditingController _imageUrlCtrl;
   late final TextEditingController _orderCtrl;
+  late final TextEditingController _detailsCtrl;
+  String? _selectedIcon;
+
+  static const _iconOptions = [
+    'landscape',
+    'shield',
+    'route',
+    'temple_buddhist',
+    'edit_note',
+    'restaurant',
+    'history_edu',
+    'museum',
+    'anchor',
+    'star',
+  ];
 
   bool get _isEditing => widget.culture != null;
 
@@ -33,6 +48,8 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
     _imageUrlCtrl =
         TextEditingController(text: widget.culture?.coverImageUrl ?? '');
     _orderCtrl = TextEditingController(text: '${widget.culture?.order ?? 0}');
+    _detailsCtrl = TextEditingController(text: widget.culture?.details ?? '');
+    _selectedIcon = widget.culture?.icon;
   }
 
   @override
@@ -41,6 +58,7 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
     _descCtrl.dispose();
     _imageUrlCtrl.dispose();
     _orderCtrl.dispose();
+    _detailsCtrl.dispose();
     super.dispose();
   }
 
@@ -55,6 +73,9 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
       description: _descCtrl.text.trim(),
       coverImageUrl:
           _imageUrlCtrl.text.trim().isEmpty ? null : _imageUrlCtrl.text.trim(),
+      icon: _selectedIcon,
+      details:
+          _detailsCtrl.text.trim().isEmpty ? null : _detailsCtrl.text.trim(),
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       updatedBy: uid,
     );
@@ -123,6 +144,31 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
                     style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
                     decoration: adminInputDecoration(label: 'Эрэмбэ (order)'),
                     keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  // Icon dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedIcon,
+                    dropdownColor: AppTheme.surface,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: adminInputDecoration(label: 'Дүрс (icon)'),
+                    items: _iconOptions
+                        .map((ic) => DropdownMenuItem(
+                              value: ic,
+                              child: Text(ic,
+                                  style: AppTheme.body
+                                      .copyWith(color: AppTheme.textPrimary)),
+                            ))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedIcon = v),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _detailsCtrl,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: adminInputDecoration(
+                        label: 'Дэлгэрэнгүй агуулга (details)'),
+                    maxLines: 6,
                   ),
                   const SizedBox(height: 24),
                   AdminSaveButton(

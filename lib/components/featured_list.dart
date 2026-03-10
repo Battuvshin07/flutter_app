@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../data/models/culture_model.dart';
 import '../screens/culture_list_screen.dart';
 import '../screens/culture_detail_screen.dart';
 
@@ -34,7 +35,7 @@ class FeaturedList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
-        final all = provider.culture;
+        final all = provider.cultures;
         // Show up to 3 featured culture items
         final featured = all.length > 3 ? all.sublist(0, 3) : all;
 
@@ -67,8 +68,8 @@ class FeaturedList extends StatelessWidget {
                   final index = e.key;
                   final item = e.value;
                   final accent = _accentPalette[index % _accentPalette.length];
-                  final icon = _iconMap[item['icon'] as String?] ??
-                      Icons.info_outline_rounded;
+                  final icon =
+                      _iconMap[item.icon] ?? Icons.info_outline_rounded;
                   return _FeaturedCultureCard(
                     item: item,
                     accentColor: accent,
@@ -120,7 +121,7 @@ class FeaturedList extends StatelessWidget {
 
 // ── Individual culture card ────────────────────────────────────────
 class _FeaturedCultureCard extends StatefulWidget {
-  final Map<String, dynamic> item;
+  final CultureModel item;
   final Color accentColor;
   final IconData icon;
 
@@ -139,8 +140,8 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.item['title'] as String? ?? '';
-    final subtitle = widget.item['description'] as String? ?? '';
+    final title = widget.item.title;
+    final subtitle = widget.item.description;
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _scale = 0.97),

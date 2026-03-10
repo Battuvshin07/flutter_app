@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../components/culture_card.dart';
+import '../data/models/culture_model.dart';
 import 'culture_detail_screen.dart';
 
 /// FR-07: Redesigned Dribbble-level Culture List Screen.
 /// Features filter chips, progress-aware cards, and lock states.
+/// Cultures are streamed live from Firestore via AppProvider.
 class CultureListScreen extends StatefulWidget {
   const CultureListScreen({super.key});
 
@@ -37,15 +39,8 @@ class _CultureListScreenState extends State<CultureListScreen> {
     Color(0xFFCE93D8),
   ];
 
-  // Progress per culture id — mutable so completion updates the list
-  final Map<int, double> _progressMap = {
-    1: 0.40,
-    2: 0.25,
-    3: 0.0,
-    4: 0.80,
-    5: 0.60,
-    6: 0.15,
-  };
+  // Progress keyed by Firestore document ID (String)
+  final Map<String, double> _progressMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +162,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
   Widget _buildList() {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
-        final rawList = provider.culture;
+        final rawList = provider.cultures;
         if (rawList.isEmpty) {
           return Center(
             child: Column(
@@ -195,16 +190,15 @@ class _CultureListScreenState extends State<CultureListScreen> {
           itemCount: filtered.length,
           itemBuilder: (context, index) {
             final item = filtered[index];
-            final id = (item['id'] as num?)?.toInt() ?? (index + 1);
+            final id = item.id ?? '';
             final accent = _accentPalette[index % _accentPalette.length];
-            final icon =
-                _iconMap[item['icon'] as String?] ?? Icons.info_outline_rounded;
+            final icon = _iconMap[item.icon] ?? Icons.info_outline_rounded;
             final progress = _progressMap[id] ?? 0.0;
             final isCompleted = progress >= 1.0;
 
             return CultureCard(
-              title: item['title'] as String? ?? '',
-              subtitle: item['description'] as String? ?? '',
+              title: item.title,
+              subtitle: item.description,
               icon: icon,
               accentColor: accent,
               progress: progress,
@@ -218,18 +212,16 @@ class _CultureListScreenState extends State<CultureListScreen> {
   }
 
   // ── Filter logic ───────────────────────────────────────────────
-  List<Map<String, dynamic>> _applyFilter(List<Map<String, dynamic>> list) {
+  List<CultureModel> _applyFilter(List<CultureModel> list) {
     switch (_selectedFilter) {
       case 1: // Шинэ — not started
-        return list.where((e) {
-          final id = (e['id'] as num?)?.toInt();
-          return (_progressMap[id] ?? 0.0) == 0.0;
-        }).toList();
+        return list
+            .where((e) => (_progressMap[e.id ?? ''] ?? 0.0) == 0.0)
+            .toList();
       case 2: // Дууссан — 100 %
-        return list.where((e) {
-          final id = (e['id'] as num?)?.toInt();
-          return (_progressMap[id] ?? 0.0) >= 1.0;
-        }).toList();
+        return list
+            .where((e) => (_progressMap[e.id ?? ''] ?? 0.0) >= 1.0)
+            .toList();
       default:
         return list;
     }
@@ -237,10 +229,10 @@ class _CultureListScreenState extends State<CultureListScreen> {
 
   void _openDetail(
     BuildContext context,
-    Map<String, dynamic> item,
+    CultureModel item,
     Color accent,
     IconData icon,
-    int id,
+    String id,
   ) {
     Navigator.push(
       context,

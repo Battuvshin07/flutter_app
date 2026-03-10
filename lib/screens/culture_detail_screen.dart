@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../components/glass_card.dart';
+import '../data/models/culture_model.dart';
 
 /// Dribbble-level Culture Detail Screen.
-/// Hero banner → tabs (Тойм / Агуулга / Quiz) → gold CTA button.
+/// Hero banner → tabs (Тойм / Агуулга) → gold CTA button.
 class CultureDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> item;
+  final CultureModel item;
   final Color accentColor;
   final IconData icon;
   final double progress;
@@ -70,7 +71,7 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
 
   // ── Hero sliver ────────────────────────────────────────────────
   Widget _buildHeroSliver(BuildContext context) {
-    final title = widget.item['title'] as String? ?? '';
+    final title = widget.item.title;
 
     return SliverAppBar(
       expandedHeight: 264,
@@ -342,14 +343,14 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
 
 // ── Тойм tab ──────────────────────────────────────────────────────
 class _ToymTab extends StatelessWidget {
-  final Map<String, dynamic> item;
+  final CultureModel item;
   final Color accentColor;
 
   const _ToymTab({required this.item, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
-    final bullets = _bullets(item['id'] as int? ?? 0);
+    final bullets = _bullets(item.order);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
           AppTheme.pagePadding, 12, AppTheme.pagePadding, 100),
@@ -361,7 +362,7 @@ class _ToymTab extends StatelessWidget {
             glowIntensity: 0.05,
             padding: const EdgeInsets.all(18),
             child: Text(
-              item['description'] as String? ?? '',
+              item.description,
               style: AppTheme.body.copyWith(height: 1.8),
             ),
           ),
@@ -464,7 +465,7 @@ class _BulletItem extends StatelessWidget {
 
 // ── Агуулга tab ────────────────────────────────────────────────────
 class _AguurlagTab extends StatelessWidget {
-  final Map<String, dynamic> item;
+  final CultureModel item;
   final Color accentColor;
 
   const _AguurlagTab({required this.item, required this.accentColor});
@@ -479,7 +480,7 @@ class _AguurlagTab extends StatelessWidget {
         glowIntensity: 0.04,
         padding: const EdgeInsets.all(20),
         child: Text(
-          item['details'] as String? ?? '',
+          item.details ?? item.description,
           style: AppTheme.body.copyWith(height: 1.85),
         ),
       ),

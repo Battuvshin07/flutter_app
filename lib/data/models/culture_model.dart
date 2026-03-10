@@ -6,6 +6,8 @@ class CultureModel {
   final String title;
   final String description;
   final String? coverImageUrl;
+  final String? icon;
+  final String? details;
   final int order;
   final DateTime? updatedAt;
   final String? updatedBy;
@@ -15,6 +17,8 @@ class CultureModel {
     required this.title,
     required this.description,
     this.coverImageUrl,
+    this.icon,
+    this.details,
     this.order = 0,
     this.updatedAt,
     this.updatedBy,
@@ -27,6 +31,8 @@ class CultureModel {
       title: data['title'] ?? '',
       description: data['description'] ?? '',
       coverImageUrl: data['coverImageUrl'],
+      icon: data['icon'],
+      details: data['details'],
       order: data['order'] ?? 0,
       updatedAt: _parseTimestamp(data['updatedAt']),
       updatedBy: data['updatedBy'],
@@ -45,6 +51,8 @@ class CultureModel {
       'title': title,
       'description': description,
       'coverImageUrl': coverImageUrl,
+      'icon': icon,
+      'details': details,
       'order': order,
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': updatedBy,
@@ -56,6 +64,8 @@ class CultureModel {
     String? title,
     String? description,
     String? coverImageUrl,
+    String? icon,
+    String? details,
     int? order,
     DateTime? updatedAt,
     String? updatedBy,
@@ -65,6 +75,8 @@ class CultureModel {
       title: title ?? this.title,
       description: description ?? this.description,
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      icon: icon ?? this.icon,
+      details: details ?? this.details,
       order: order ?? this.order,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,
