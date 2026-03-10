@@ -158,32 +158,13 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                 ),
               ),
             ),
-            // Glowing icon
+            // Hero image or glowing icon
             Positioned(
-              top: 50,
+              top: 40,
               left: 0,
               right: 0,
               child: Center(
-                child: Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: widget.accentColor.withOpacity(0.12),
-                    border: Border.all(
-                      color: widget.accentColor.withOpacity(0.25),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: widget.accentColor.withOpacity(0.28),
-                        blurRadius: 36,
-                        spreadRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Icon(widget.icon, color: widget.accentColor, size: 52),
-                ),
+                child: _buildHeroVisual(),
               ),
             ),
             // Title + badges pinned to bottom
@@ -212,6 +193,59 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeroVisual() {
+    final hasImage = widget.item.coverImageUrl != null &&
+        widget.item.coverImageUrl!.trim().isNotEmpty;
+    if (hasImage) {
+      return Container(
+        width: 140,
+        height: 140,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: widget.accentColor.withOpacity(0.32),
+              blurRadius: 36,
+              spreadRadius: 6,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Image.network(
+            widget.item.coverImageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _glowingIcon(),
+          ),
+        ),
+      );
+    }
+    return _glowingIcon();
+  }
+
+  Widget _glowingIcon() {
+    return Container(
+      width: 110,
+      height: 110,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: widget.accentColor.withOpacity(0.12),
+        border: Border.all(
+          color: widget.accentColor.withOpacity(0.25),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: widget.accentColor.withOpacity(0.28),
+            blurRadius: 36,
+            spreadRadius: 8,
+          ),
+        ],
+      ),
+      child: Icon(widget.icon, color: widget.accentColor, size: 52),
     );
   }
 

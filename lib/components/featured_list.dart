@@ -174,19 +174,8 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
           ),
           child: Row(
             children: [
-              // Icon thumb
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: widget.accentColor.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  border: Border.all(
-                    color: widget.accentColor.withOpacity(0.25),
-                  ),
-                ),
-                child: Icon(widget.icon, color: widget.accentColor, size: 24),
-              ),
+              // Image / icon thumb
+              _buildThumb(widget.item, widget.accentColor, widget.icon),
               const SizedBox(width: 12),
               // Text
               Expanded(
@@ -219,6 +208,31 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildThumb(CultureModel item, Color accent, IconData icon) {
+    final hasImage =
+        item.coverImageUrl != null && item.coverImageUrl!.trim().isNotEmpty;
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+        border: Border.all(color: accent.withOpacity(0.25)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm - 1),
+        child: hasImage
+            ? Image.network(
+                item.coverImageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Icon(icon, color: accent, size: 24),
+              )
+            : Icon(icon, color: accent, size: 24),
       ),
     );
   }

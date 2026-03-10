@@ -203,6 +203,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
               accentColor: accent,
               progress: progress,
               isCompleted: isCompleted,
+              coverImageUrl: item.coverImageUrl,
               onTap: () => _openDetail(context, item, accent, icon, id),
             );
           },

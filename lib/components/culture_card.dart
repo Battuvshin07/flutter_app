@@ -10,6 +10,7 @@ class CultureCard extends StatelessWidget {
   final Color accentColor;
   final double progress;
   final bool isCompleted;
+  final String? coverImageUrl;
   final VoidCallback? onTap;
 
   const CultureCard({
@@ -20,6 +21,7 @@ class CultureCard extends StatelessWidget {
     required this.accentColor,
     this.progress = 0.0,
     this.isCompleted = false,
+    this.coverImageUrl,
     this.onTap,
   });
 
@@ -102,19 +104,12 @@ class CultureCard extends StatelessWidget {
   }
 
   Widget _buildImageArea() {
+    final hasImage = coverImageUrl != null && coverImageUrl!.trim().isNotEmpty;
     return Container(
       width: 62,
       height: 62,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accentColor.withOpacity(0.22),
-            accentColor.withOpacity(0.08),
-          ],
-        ),
         border: Border.all(
           color: accentColor.withOpacity(0.28),
           width: 1,
@@ -127,11 +122,23 @@ class CultureCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        icon,
-        color: accentColor,
-        size: 28,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: hasImage
+            ? Image.network(
+                coverImageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _iconFallback(),
+              )
+            : _iconFallback(),
       ),
+    );
+  }
+
+  Widget _iconFallback() {
+    return Container(
+      color: accentColor.withOpacity(0.12),
+      child: Icon(icon, color: accentColor, size: 28),
     );
   }
 
