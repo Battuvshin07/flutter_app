@@ -6,6 +6,7 @@ import '../models/person_detail_model.dart';
 import '../models/quiz_model.dart';
 import '../models/event_model.dart';
 import '../models/story_model.dart';
+import '../models/video_model.dart';
 
 /// Repository for all admin CRUD operations against Cloud Firestore.
 ///
@@ -285,5 +286,29 @@ class AdminRepository {
     } else {
       await _db.collection('progress').doc(id).delete();
     }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  VIDEOS — CRUD
+  // ══════════════════════════════════════════════════════════════
+
+  Stream<List<VideoModel>> watchVideos() {
+    return _db
+        .collection('videos')
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map((snap) => _safeParse(snap, VideoModel.fromFirestore));
+  }
+
+  Future<void> createVideo(VideoModel model) async {
+    await _db.collection('videos').add(model.toFirestore());
+  }
+
+  Future<void> updateVideo(VideoModel model) async {
+    await _db.collection('videos').doc(model.id).update(model.toFirestore());
+  }
+
+  Future<void> deleteVideo(String id) async {
+    await _db.collection('videos').doc(id).delete();
   }
 }

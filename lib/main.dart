@@ -13,6 +13,7 @@ import 'providers/story_quiz_provider.dart';
 import 'services/ai_service.dart';
 import 'screens/auth_gate.dart';
 
+import 'screens/history_video_screen.dart';
 import 'components/home_top_bar.dart';
 import 'components/hero_banner.dart';
 import 'components/daily_fact_card.dart';
@@ -90,30 +91,39 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           // ── Scrollable content ──
-          const CustomScrollView(
+          CustomScrollView(
             slivers: [
               // Top bar takes space
-              SliverToBoxAdapter(child: HomeTopBar()),
-              SliverToBoxAdapter(child: SizedBox(height: 8)),
+              const SliverToBoxAdapter(child: HomeTopBar()),
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
               // B) Hero banner
-              SliverToBoxAdapter(child: HeroBanner()),
-              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              SliverToBoxAdapter(
+                child: HeroBanner(
+                  onStartExploring: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HistoryVideoScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               // C) Daily fact
-              SliverToBoxAdapter(child: DailyFactCard()),
-              SliverToBoxAdapter(child: SizedBox(height: 16)),
+              const SliverToBoxAdapter(child: DailyFactCard()),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
               // D) Streak strip
-              SliverToBoxAdapter(child: StreakStrip()),
-              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              const SliverToBoxAdapter(child: StreakStrip()),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               // E) Explore grid
-              SliverToBoxAdapter(child: ExploreGrid()),
-              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              const SliverToBoxAdapter(child: ExploreGrid()),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               // F) Current journey quiz card
-              SliverToBoxAdapter(child: QuizJourneyCard()),
-              SliverToBoxAdapter(child: SizedBox(height: 20)),
+              const SliverToBoxAdapter(child: QuizJourneyCard()),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               // G) Featured list
-              SliverToBoxAdapter(child: FeaturedList()),
+              const SliverToBoxAdapter(child: FeaturedList()),
               // Bottom spacing for nav
-              SliverToBoxAdapter(child: SizedBox(height: 100)),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
 

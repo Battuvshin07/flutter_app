@@ -458,6 +458,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       _GridItem('quizzes', 'Тестүүд'),
       _GridItem('events', 'Үйл явдал'),
       _GridItem('stories', 'Түүхүүд'),
+      _GridItem('videos', 'Видео'),
     ];
 
     return SliverGrid(

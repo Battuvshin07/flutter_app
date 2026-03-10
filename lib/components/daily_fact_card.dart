@@ -1,8 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../data/models/culture_model.dart';
+import '../services/culture_service.dart';
 
 /// C) Daily Fact swipe card – PageView + dot indicator
-/// Card 358×84, radius 16, icon circle 32, text, "+10 XP" pill.
+/// Randomly picks 3 cultures daily (seed = YYYYMMDD) from Firestore.
 class DailyFactCard extends StatefulWidget {
   const DailyFactCard({super.key});
 
@@ -13,27 +16,32 @@ class DailyFactCard extends StatefulWidget {
 class _DailyFactCardState extends State<DailyFactCard> {
   final PageController _controller = PageController();
   int _current = 0;
+  late final Future<List<CultureModel>> _cultureFuture;
 
-  static const List<_Fact> _facts = [
-    _Fact(
-      text:
-          'Монголын эзэнт гүрэн бол түүхэн дэх хамгийн ТОМ тасралтгүй газар нутагтай эзэнт гүрэн — Солонгосоос Европ хүртэл тэлсэн!',
-      emoji: '🌍',
-      xp: 10,
-    ),
-    _Fact(
-      text:
-          'Чингис хаан олон улсын шуудангийн анхны системийг бүтээсэн — "Örtöö" буюу Өртөө.',
-      emoji: '📮',
-      xp: 10,
-    ),
-    _Fact(
-      text:
-          'Монголчууд хүйтэн, хуурай уур амьсгалд хадгалагдах "бортог" хэмээх хуурай махыг зохион бүтээсэн.',
-      emoji: '🥩',
-      xp: 10,
-    ),
-  ];
+  // Material icon name → emoji fallback for the circular badge
+  static const _emojiMap = {
+    'landscape': '🏕️',
+    'shield': '⚔️',
+    'route': '🛤️',
+    'temple_buddhist': '🕌',
+    'edit_note': '📜',
+    'local_dining': '🍖',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _cultureFuture = CultureService().getCultures();
+  }
+
+  /// Picks 3 cultures deterministically for today using a date-based seed.
+  List<CultureModel> _pickDailyThree(List<CultureModel> all) {
+    if (all.isEmpty) return [];
+    final today = DateTime.now();
+    final seed = today.year * 10000 + today.month * 100 + today.day;
+    final shuffled = List<CultureModel>.from(all)..shuffle(Random(seed));
+    return shuffled.take(3).toList();
+  }
 
   @override
   void dispose() {
@@ -43,46 +51,91 @@ class _DailyFactCardState extends State<DailyFactCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Section title ──
-          Row(
+    return FutureBuilder<List<CultureModel>>(
+      future: _cultureFuture,
+      builder: (context, snapshot) {
+        final facts = snapshot.hasData && snapshot.data!.isNotEmpty
+            ? _pickDailyThree(snapshot.data!)
+            : <CultureModel>[];
+        final count = facts.isEmpty ? 3 : facts.length;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Өдрийн баримт', style: AppTheme.sectionTitle),
-              const Spacer(),
-              // Dots indicator
+              // ── Section title + dots ──
               Row(
-                children: List.generate(
-                  _facts.length,
-                  (i) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    width: _current == i ? 16 : 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(left: 4),
-                    decoration: BoxDecoration(
-                      color: _current == i
-                          ? AppTheme.accentGold
-                          : AppTheme.surfaceLight,
-                      borderRadius: BorderRadius.circular(3),
+                children: [
+                  Text('Өдрийн баримт', style: AppTheme.sectionTitle),
+                  const Spacer(),
+                  Row(
+                    children: List.generate(
+                      count,
+                      (i) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        width: _current == i ? 16 : 6,
+                        height: 6,
+                        margin: const EdgeInsets.only(left: 4),
+                        decoration: BoxDecoration(
+                          color: _current == i
+                              ? AppTheme.accentGold
+                              : AppTheme.surfaceLight,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
+              ),
+              const SizedBox(height: AppTheme.spacing8),
+
+              // ── PageView cards ──
+              SizedBox(
+                height: 84,
+                child: facts.isEmpty
+                    ? _buildShimmerCard()
+                    : PageView.builder(
+                        controller: _controller,
+                        itemCount: facts.length,
+                        onPageChanged: (i) => setState(() => _current = i),
+                        itemBuilder: (_, i) => _buildFactCard(facts[i]),
+                      ),
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.spacing8),
+        );
+      },
+    );
+  }
 
-          // ── PageView cards ──
-          SizedBox(
-            height: 84,
-            child: PageView.builder(
-              controller: _controller,
-              itemCount: _facts.length,
-              onPageChanged: (i) => setState(() => _current = i),
-              itemBuilder: (context, i) => _buildFactCard(_facts[i]),
+  /// Placeholder shown while cultures are loading.
+  Widget _buildShimmerCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              height: 14,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
         ],
@@ -90,7 +143,8 @@ class _DailyFactCardState extends State<DailyFactCard> {
     );
   }
 
-  Widget _buildFactCard(_Fact fact) {
+  Widget _buildFactCard(CultureModel culture) {
+    final emoji = _emojiMap[culture.icon ?? ''] ?? '🌍';
     return Container(
       margin: const EdgeInsets.only(right: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -110,14 +164,14 @@ class _DailyFactCardState extends State<DailyFactCard> {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text(fact.emoji, style: const TextStyle(fontSize: 16)),
+              child: Text(emoji, style: const TextStyle(fontSize: 16)),
             ),
           ),
           const SizedBox(width: 10),
-          // Text
+          // Culture description
           Expanded(
             child: Text(
-              fact.text,
+              culture.description,
               style: AppTheme.caption.copyWith(
                 color: AppTheme.textPrimary,
                 height: 1.35,
@@ -126,32 +180,8 @@ class _DailyFactCardState extends State<DailyFactCard> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 8),
-          // XP pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.xpGreen.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-            ),
-            child: Text(
-              '+${fact.xp} XP',
-              style: AppTheme.chip.copyWith(
-                color: AppTheme.xpGreen,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
-}
-
-class _Fact {
-  final String text;
-  final String emoji;
-  final int xp;
-  const _Fact({required this.text, required this.emoji, required this.xp});
 }

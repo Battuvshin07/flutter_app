@@ -5,6 +5,7 @@ import '../../data/models/person_model.dart';
 import '../../data/models/quiz_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/story_model.dart';
+import '../../data/models/video_model.dart';
 import '../../theme/app_theme.dart';
 import 'culture_edit_screen.dart';
 import 'person_edit_screen.dart';
@@ -12,6 +13,7 @@ import 'person_detail_edit_screen.dart';
 import 'quiz_edit_screen.dart';
 import 'event_edit_screen.dart';
 import 'story_edit_screen.dart';
+import 'video_edit_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════
 //  Admin Collection Configuration
@@ -258,6 +260,38 @@ final Map<String, AdminCollectionConfig> adminCollections = {
       ];
     },
   ),
+
+  // ── Videos ────────────────────────────────────────────
+  'videos': AdminCollectionConfig(
+    key: 'videos',
+    title: 'Videos',
+    icon: Icons.play_circle_rounded,
+    color: const Color(0xFF60A5FA),
+    searchHint: 'Хайх... (гарчиг)',
+    emptyMessage: 'Видео олдсонгүй.\nШинээр нэмнэ үү.',
+    getItems: (p) => p.videos,
+    isLoaded: (p) => p.videosLoaded,
+    getItemTitle: (item) => (item as VideoModel).title,
+    getItemSubtitle: (item) {
+      final v = item as VideoModel;
+      return 'Ургэлжлэх: ${v.duration} • ID: ${v.youtubeId}';
+    },
+    getItemId: (item) => (item as VideoModel).id,
+    deleteItem: (p, id) => p.deleteVideo(id),
+    editScreenBuilder: (item) => VideoEditScreen(video: item as VideoModel),
+    createScreenBuilder: () => const VideoEditScreen(),
+    searchMatcher: (item, q) =>
+        (item as VideoModel).title.toLowerCase().contains(q),
+    badgeBuilder: (item) {
+      final v = item as VideoModel;
+      return [
+        _buildBadge(
+          v.isPublished ? 'Published' : 'Draft',
+          v.isPublished ? const Color(0xFF4ADE80) : AppTheme.textSecondary,
+        ),
+      ];
+    },
+  ),
 };
 
 // ── Helper badge builder ──────────────────────────────────────
@@ -265,9 +299,9 @@ Widget _buildBadge(String text, Color color) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.15),
+      color: color.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: color.withOpacity(0.3)),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
     ),
     child: Text(
       text,

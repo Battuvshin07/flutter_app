@@ -7,6 +7,7 @@ import '../data/models/person_detail_model.dart';
 import '../data/models/quiz_model.dart';
 import '../data/models/event_model.dart';
 import '../data/models/story_model.dart';
+import '../data/models/video_model.dart';
 
 /// State management provider for all admin CRUD operations.
 /// Uses ChangeNotifier (matching the project's existing Provider pattern).
@@ -43,6 +44,10 @@ class AdminProvider with ChangeNotifier {
   List<StoryModel> _stories = [];
   List<StoryModel> get stories => _stories;
 
+  // ── Videos ──
+  List<VideoModel> _videos = [];
+  List<VideoModel> get videos => _videos;
+
   // ── Progress (flat list for admin read) ──
   List<Map<String, dynamic>> _progress = [];
   List<Map<String, dynamic>> get progress => _progress;
@@ -70,6 +75,9 @@ class AdminProvider with ChangeNotifier {
   bool _storiesLoaded = false;
   bool get storiesLoaded => _storiesLoaded;
 
+  bool _videosLoaded = false;
+  bool get videosLoaded => _videosLoaded;
+
   /// True when all collection streams + user count have delivered at least once.
   bool get allStreamsLoaded =>
       _totalUsersLoaded &&
@@ -77,7 +85,8 @@ class AdminProvider with ChangeNotifier {
       _personsLoaded &&
       _quizzesLoaded &&
       _eventsLoaded &&
-      _storiesLoaded;
+      _storiesLoaded &&
+      _videosLoaded;
 
   /// True if any stream or the user count encountered an error.
   bool get hasStreamError => _totalUsersError != null;
@@ -88,6 +97,7 @@ class AdminProvider with ChangeNotifier {
   StreamSubscription? _quizzesSub;
   StreamSubscription? _eventsSub;
   StreamSubscription? _storiesSub;
+  StreamSubscription? _videosSub;
 
   AdminProvider() {
     _initStreams();
@@ -152,6 +162,18 @@ class AdminProvider with ChangeNotifier {
       onError: (e) {
         debugPrint('stories stream error: $e');
         _storiesLoaded = true;
+        notifyListeners();
+      },
+    );
+    _videosSub = _repo.watchVideos().listen(
+      (data) {
+        _videos = data;
+        _videosLoaded = true;
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('videos stream error: $e');
+        _videosLoaded = true;
         notifyListeners();
       },
     );
@@ -303,6 +325,22 @@ class AdminProvider with ChangeNotifier {
   }
 
   // ══════════════════════════════════════════════════════════════
+  //  VIDEOS
+  // ══════════════════════════════════════════════════════════════
+
+  Future<bool> createVideo(VideoModel model) async {
+    return _safeExecute(() => _repo.createVideo(model));
+  }
+
+  Future<bool> updateVideo(VideoModel model) async {
+    return _safeExecute(() => _repo.updateVideo(model));
+  }
+
+  Future<bool> deleteVideo(String id) async {
+    return _safeExecute(() => _repo.deleteVideo(id));
+  }
+
+  // ══════════════════════════════════════════════════════════════
   //  PROGRESS (read-only + admin reset)
   // ══════════════════════════════════════════════════════════════
 
@@ -357,6 +395,7 @@ class AdminProvider with ChangeNotifier {
     _quizzesSub?.cancel();
     _eventsSub?.cancel();
     _storiesSub?.cancel();
+    _videosSub?.cancel();
     super.dispose();
   }
 }
