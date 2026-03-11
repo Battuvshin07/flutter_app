@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../screens/history_journey_screen.dart';
 import '../screens/map_screen.dart';
+import '../screens/persons_screen.dart';
 import '../screens/profile_screen.dart';
 
 /// G) Floating bottom navigation bar
@@ -18,6 +19,7 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
 
   static const List<_NavItem> _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Нүүр'),
+    _NavItem(icon: Icons.people_rounded, label: 'Хүмүүс'),
     _NavItem(icon: Icons.explore_rounded, label: 'Судлах'),
     _NavItem(icon: Icons.map_rounded, label: 'Зураг'),
     _NavItem(icon: Icons.person_rounded, label: 'Профайл'),
@@ -30,12 +32,15 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
     Widget? screen;
     switch (index) {
       case 1:
-        screen = const HistoryJourneyScreen();
+        screen = const PersonsScreen();
         break;
       case 2:
-        screen = const MapScreen();
+        screen = const HistoryJourneyScreen();
         break;
       case 3:
+        screen = const MapScreen();
+        break;
+      case 4:
         screen = const ProfileScreen();
         break;
     }
@@ -87,7 +92,7 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
       behavior: HitTestBehavior.opaque,
       onTap: () => _onTap(index),
       child: SizedBox(
-        width: 64,
+        width: 56,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

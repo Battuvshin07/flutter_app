@@ -116,25 +116,6 @@ class HomeTopBar extends StatelessWidget {
               ),
 
               const Spacer(),
-
-              // ── Notification bell – NO badge ─────────────────────
-              GestureDetector(
-                onTap: () {},
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.cardBorder),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: AppTheme.textPrimary,
-                    size: 18,
-                  ),
-                ),
-              ),
             ],
           );
         },

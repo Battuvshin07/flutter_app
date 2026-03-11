@@ -4,8 +4,9 @@ import '../theme/app_theme.dart';
 import '../data/models/culture_model.dart';
 import '../services/culture_service.dart';
 
-/// C) Daily Fact swipe card – PageView + dot indicator
-/// Randomly picks 3 cultures daily (seed = YYYYMMDD) from Firestore.
+/// Daily Fact expandable card.
+/// Home screen → compact preview card.
+/// Tap → Hero-animated full-screen detail page.
 class DailyFactCard extends StatefulWidget {
   const DailyFactCard({super.key});
 
@@ -14,11 +15,8 @@ class DailyFactCard extends StatefulWidget {
 }
 
 class _DailyFactCardState extends State<DailyFactCard> {
-  final PageController _controller = PageController();
-  int _current = 0;
   late final Future<List<CultureModel>> _cultureFuture;
 
-  // Material icon name → emoji fallback for the circular badge
   static const _emojiMap = {
     'landscape': '🏕️',
     'shield': '⚔️',
@@ -34,74 +32,33 @@ class _DailyFactCardState extends State<DailyFactCard> {
     _cultureFuture = CultureService().getCultures();
   }
 
-  /// Picks 3 cultures deterministically for today using a date-based seed.
-  List<CultureModel> _pickDailyThree(List<CultureModel> all) {
-    if (all.isEmpty) return [];
+  CultureModel? _pickDaily(List<CultureModel> all) {
+    if (all.isEmpty) return null;
     final today = DateTime.now();
     final seed = today.year * 10000 + today.month * 100 + today.day;
     final shuffled = List<CultureModel>.from(all)..shuffle(Random(seed));
-    return shuffled.take(3).toList();
+    return shuffled.first;
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  String _emoji(CultureModel c) => _emojiMap[c.icon ?? ''] ?? '🌍';
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<CultureModel>>(
       future: _cultureFuture,
       builder: (context, snapshot) {
-        final facts = snapshot.hasData && snapshot.data!.isNotEmpty
-            ? _pickDailyThree(snapshot.data!)
-            : <CultureModel>[];
-        final count = facts.isEmpty ? 3 : facts.length;
-
+        final culture = snapshot.hasData ? _pickDaily(snapshot.data!) : null;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Section title + dots ──
-              Row(
-                children: [
-                  Text('Өдрийн баримт', style: AppTheme.sectionTitle),
-                  const Spacer(),
-                  Row(
-                    children: List.generate(
-                      count,
-                      (i) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: _current == i ? 16 : 6,
-                        height: 6,
-                        margin: const EdgeInsets.only(left: 4),
-                        decoration: BoxDecoration(
-                          color: _current == i
-                              ? AppTheme.accentGold
-                              : AppTheme.surfaceLight,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppTheme.spacing8),
-
-              // ── PageView cards ──
-              SizedBox(
-                height: 84,
-                child: facts.isEmpty
-                    ? _buildShimmerCard()
-                    : PageView.builder(
-                        controller: _controller,
-                        itemCount: facts.length,
-                        onPageChanged: (i) => setState(() => _current = i),
-                        itemBuilder: (_, i) => _buildFactCard(facts[i]),
-                      ),
-              ),
+              Text('Өдрийн баримт',
+                  style: AppTheme.sectionTitle.copyWith(fontSize: 20)),
+              const SizedBox(height: 12),
+              culture == null
+                  ? _buildShimmer()
+                  : _buildPreviewCard(context, culture),
             ],
           ),
         );
@@ -109,78 +66,299 @@ class _DailyFactCardState extends State<DailyFactCard> {
     );
   }
 
-  /// Placeholder shown while cultures are loading.
-  Widget _buildShimmerCard() {
+  // ── Compact preview card ───────────────────────────────────────
+  Widget _buildPreviewCard(BuildContext context, CultureModel culture) {
+    final tag = 'daily-fact-${culture.id}';
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 420),
+          reverseTransitionDuration: const Duration(milliseconds: 320),
+          pageBuilder: (_, animation, __) => FadeTransition(
+            opacity: animation,
+            child: _DailyFactDetailPage(
+              culture: culture,
+              emoji: _emoji(culture),
+              heroTag: tag,
+            ),
+          ),
+        ),
+      ),
+      child: Hero(
+        tag: tag,
+        flightShuttleBuilder: (_, anim, __, ___, ____) => Material(
+          color: Colors.transparent,
+          child: _CardShell(
+            culture: culture,
+            emoji: _emoji(culture),
+            preview: true,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: _CardShell(
+            culture: culture,
+            emoji: _emoji(culture),
+            preview: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Shimmer placeholder ────────────────────────────────────────
+  Widget _buildShimmer() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      height: 110,
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        gradient: LinearGradient(
+          colors: [AppTheme.surface, AppTheme.surfaceLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(color: AppTheme.cardBorder),
       ),
+      padding: const EdgeInsets.all(18),
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              color: AppTheme.accentGold.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 14),
           Expanded(
-            child: Container(
-              height: 14,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceLight,
-                borderRadius: BorderRadius.circular(4),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 14,
+                  width: 110,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildFactCard(CultureModel culture) {
-    final emoji = _emojiMap[culture.icon ?? ''] ?? '🌍';
+// ── Shared card shell (used both in preview & during Hero flight) ──
+class _CardShell extends StatelessWidget {
+  final CultureModel culture;
+  final String emoji;
+  final bool preview;
+
+  const _CardShell({
+    required this.culture,
+    required this.emoji,
+    required this.preview,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.cardBorder),
-      ),
-      child: Row(
-        children: [
-          // Emoji circle
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 16)),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Culture description
-          Expanded(
-            child: Text(
-              culture.description,
-              style: AppTheme.caption.copyWith(
-                color: AppTheme.textPrimary,
-                height: 1.35,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A2740), Color(0xFF0F1C30)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(
+          color: AppTheme.accentGold.withValues(alpha: 0.18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon circle
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.25)),
+            ),
+            child: Center(
+              child: Text(emoji, style: const TextStyle(fontSize: 22)),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  culture.title,
+                  style: AppTheme.sectionTitle.copyWith(fontSize: 15),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  culture.description,
+                  style: AppTheme.body.copyWith(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: AppTheme.textSecondary,
+                  ),
+                  maxLines: preview ? 2 : null,
+                  overflow: preview ? TextOverflow.ellipsis : null,
+                ),
+              ],
+            ),
+          ),
+          if (preview) ...[
+            const SizedBox(width: 8),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: AppTheme.accentGold.withValues(alpha: 0.6)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Full-screen detail page ────────────────────────────────────────
+class _DailyFactDetailPage extends StatelessWidget {
+  final CultureModel culture;
+  final String emoji;
+  final String heroTag;
+
+  const _DailyFactDetailPage({
+    required this.culture,
+    required this.emoji,
+    required this.heroTag,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Back button
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                    border: Border.all(color: AppTheme.cardBorder),
+                  ),
+                  child: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: AppTheme.textPrimary, size: 18),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Hero card (expanded)
+              Hero(
+                tag: heroTag,
+                child: Material(
+                  color: Colors.transparent,
+                  child: _CardShell(
+                    culture: culture,
+                    emoji: emoji,
+                    preview: false,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Section label
+              Row(
+                children: [
+                  Container(
+                    width: 3,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGold,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('Дэлгэрэнгүй', style: AppTheme.sectionTitle),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Full description
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  border: Border.all(color: AppTheme.cardBorder),
+                ),
+                child: Text(
+                  culture.description,
+                  style: AppTheme.body.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 15,
+                    height: 1.8,
+                  ),
+                ),
+              ),
+
+              // Extra details if present
+              if ((culture.details ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    border: Border.all(
+                        color: AppTheme.accentGold.withValues(alpha: 0.15)),
+                  ),
+                  child: Text(
+                    culture.details!,
+                    style: AppTheme.body.copyWith(
+                      color: AppTheme.textSecondary,
+                      fontSize: 14,
+                      height: 1.7,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

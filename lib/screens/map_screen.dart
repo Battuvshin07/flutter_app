@@ -291,56 +291,63 @@ class _MapScreenState extends State<MapScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bgDark,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Animated map view (3D globe or 2D flat map)
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _viewToggleCtrl,
-                builder: (context, child) => _buildAnimatedMapView(context),
-              ),
-            ),
-            // Top bar
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildTopBar(context),
-            ),
-            // Controls
-            Positioned(
-              right: 16,
-              bottom: 180,
-              child: _buildControlButtons(),
-            ),
-            // Legend
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildConquestLegend(),
-            ),
-            // Loading (only for 3D globe)
-            if (!_globeReady && _is3D)
-              Container(
-                color: _bgDark,
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: _empireRed),
-                      SizedBox(height: 16),
-                      Text('Loading Globe...',
-                          style:
-                              TextStyle(color: Colors.white70, fontSize: 14)),
-                    ],
-                  ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        // Edge-swipe back gesture-ийг блоклоно.
+        // Дээрх буцах товчны Navigator.pop() л ажилна.
+      },
+      child: Scaffold(
+        backgroundColor: _bgDark,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Animated map view (3D globe or 2D flat map)
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _viewToggleCtrl,
+                  builder: (context, child) => _buildAnimatedMapView(context),
                 ),
               ),
-          ],
+              // Top bar
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopBar(context),
+              ),
+              // Controls
+              Positioned(
+                right: 16,
+                bottom: 180,
+                child: _buildControlButtons(),
+              ),
+              // Legend
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildConquestLegend(),
+              ),
+              // Loading (only for 3D globe)
+              if (!_globeReady && _is3D)
+                Container(
+                  color: _bgDark,
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: _empireRed),
+                        SizedBox(height: 16),
+                        Text('Loading Globe...',
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -415,7 +422,7 @@ class _MapScreenState extends State<MapScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.maybePop(context),
+            onTap: () => Navigator.pop(context),
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(

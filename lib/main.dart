@@ -17,8 +17,6 @@ import 'screens/history_video_screen.dart';
 import 'components/home_top_bar.dart';
 import 'components/hero_banner.dart';
 import 'components/daily_fact_card.dart';
-import 'components/streak_strip.dart';
-import 'components/explore_grid.dart';
 import 'components/featured_list.dart';
 import 'components/home_bottom_nav.dart';
 import 'components/quiz_journey_card.dart';
@@ -111,12 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
               // C) Daily fact
               const SliverToBoxAdapter(child: DailyFactCard()),
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              // D) Streak strip
-              const SliverToBoxAdapter(child: StreakStrip()),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              // E) Explore grid
-              const SliverToBoxAdapter(child: ExploreGrid()),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
               // F) Current journey quiz card
               const SliverToBoxAdapter(child: QuizJourneyCard()),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
