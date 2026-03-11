@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
@@ -252,13 +251,11 @@ class _ProfileScreenState extends State<ProfileScreen>
           _buildAppBar(),
           const SizedBox(height: 20),
           _buildAvatarSection(),
-          const SizedBox(height: 24),
-          _buildStatsRow(),
           const SizedBox(height: 28),
           _buildAchievementsSection(),
           const SizedBox(height: 28),
-          _buildStudyProgressSection(),
-          const SizedBox(height: 28),
+          _buildPersonalInfoSection(),
+          const SizedBox(height: 20),
           _buildSettingsSection(),
           const SizedBox(height: 20),
         ],
@@ -292,20 +289,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const Spacer(),
           Text('Профайл', style: AppTheme.sectionTitle),
           const Spacer(),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: const Icon(
-              Icons.settings_rounded,
-              color: AppTheme.textSecondary,
-              size: 18,
-            ),
-          ),
+          const SizedBox(width: 40),
         ],
       ),
     );
@@ -377,10 +361,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 4),
         Text(
           user?.email ?? '',
-          style: AppTheme.caption.copyWith(color: AppTheme.accentGold),
+          style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
         ),
-        const SizedBox(height: 14),
-        _buildXpProgressBar(),
       ],
     );
   }
@@ -446,6 +428,101 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  // ── Personal Info ────────────────────────────────────────────────
+  Widget _buildPersonalInfoSection() {
+    final displayName = _currentUser?.effectiveName ?? 'Хэрэглэгч';
+    final email = _currentUser?.email ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'ХУВИЙН МЭДЭЭЛЭЛ',
+                style: AppTheme.caption.copyWith(
+                  color: AppTheme.textSecondary,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                ),
+                child: Text(
+                  'Засах',
+                  style: AppTheme.captionBold.copyWith(
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(color: AppTheme.cardBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'НЭР',
+                        style: AppTheme.caption.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontSize: 10,
+                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(displayName, style: AppTheme.body),
+                    ],
+                  ),
+                ),
+                const Divider(
+                    height: 1, thickness: 1, color: AppTheme.cardBorder),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ИМЭЙЛ',
+                        style: AppTheme.caption.copyWith(
+                          color: AppTheme.textSecondary,
+                          fontSize: 10,
+                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(email, style: AppTheme.body),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Stats Row ────────────────────────────────────────────────────
   Widget _buildStatsRow() {
     final user = _currentUser;
@@ -484,15 +561,6 @@ class _ProfileScreenState extends State<ProfileScreen>
               label: '$streakDays өдөр',
               suffix: '+',
               color: AppTheme.streakOrange,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Expanded(
-            child: _StatChip(
-              icon: '⭐',
-              label: '—',
-              suffix: 'байр',
-              color: AppTheme.accentGold,
             ),
           ),
         ],
@@ -555,7 +623,14 @@ class _ProfileScreenState extends State<ProfileScreen>
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-          child: Text('Амжилтууд', style: AppTheme.sectionTitle),
+          child: Text(
+            'АМЖИЛТУУД',
+            style: AppTheme.caption.copyWith(
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
         const SizedBox(height: 14),
         SizedBox(
@@ -672,156 +747,161 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   // ── Settings ─────────────────────────────────────────────────────
+  Widget _buildSettingsRow({
+    required IconData icon,
+    required String label,
+    required Widget trailing,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppTheme.accentGold, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(label, style: AppTheme.body)),
+            trailing,
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSettingsSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Admin Dashboard — only visible to admin / superAdmin
+          // Admin block — only for admins
           if (context.watch<AuthProvider>().isAdmin) ...[
-            _SettingsTile(
-              icon: Icons.admin_panel_settings_rounded,
-              label: 'Admin Dashboard',
-              trailing: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentGold.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'ADMIN',
-                  style: AppTheme.chip.copyWith(
-                    color: AppTheme.accentGold,
-                    fontSize: 10,
+            Text(
+              'ADMIN',
+              style: AppTheme.caption.copyWith(
+                color: AppTheme.textSecondary,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                border: Border.all(color: AppTheme.cardBorder),
+              ),
+              child: _buildSettingsRow(
+                icon: Icons.admin_panel_settings_rounded,
+                label: 'Admin Dashboard',
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'ADMIN',
+                    style: AppTheme.chip.copyWith(
+                      color: AppTheme.accentGold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
-              ),
-              onTap: () {
-                Navigator.push(
+                onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => const AdminGate(
                       child: AdminDashboardScreen(),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 24),
           ],
-          _SettingsTile(
-            icon: Icons.edit_rounded,
-            label: 'Профайл засах',
-            trailing: const Icon(
-              Icons.chevron_right_rounded,
+          Text(
+            'ТОХИРГОО',
+            style: AppTheme.caption.copyWith(
               color: AppTheme.textSecondary,
-              size: 20,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-              );
-            },
           ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.language_rounded,
-            label: 'Хэл',
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Монгол / English',
-                style: AppTheme.chip.copyWith(
-                  color: AppTheme.accentGold,
-                  fontSize: 10,
-                ),
-              ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(color: AppTheme.cardBorder),
             ),
-            onTap: () {},
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.dark_mode_rounded,
-            label: 'Харанхуй горим',
-            trailing: SizedBox(
-              height: 28,
-              child: Switch(
-                value: _darkMode,
-                onChanged: (v) => setState(() => _darkMode = v),
-                activeThumbColor: AppTheme.accentGold,
-                activeTrackColor: AppTheme.accentGold.withValues(alpha: 0.3),
-                inactiveThumbColor: AppTheme.textSecondary,
-                inactiveTrackColor: AppTheme.surfaceLight,
-              ),
-            ),
-            onTap: () => setState(() => _darkMode = !_darkMode),
-          ),
-          const SizedBox(height: 10),
-          _SettingsTile(
-            icon: Icons.logout_rounded,
-            label: 'Гарах',
-            trailing: const Icon(
-              Icons.chevron_right_rounded,
-              color: AppTheme.textSecondary,
-              size: 20,
-            ),
-            onTap: () => _showSignOutDialog(),
-          ),
-          // ── Debug: Seed fake data (debug builds only) ────────────
-          if (kDebugMode) ...[
-            const SizedBox(height: 10),
-            _SettingsTile(
-              icon: Icons.science_rounded,
-              label: '[Debug] Туршилтын өгөгдөл',
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.crimson.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'DEV',
-                  style: AppTheme.chip.copyWith(
-                    color: AppTheme.crimson,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              onTap: () async {
-                try {
-                  await UserService.seedDebugData();
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Туршилтын өгөгдөл амжилттай нэмэгдлээ!',
-                        style: AppTheme.caption
-                            .copyWith(color: AppTheme.textPrimary),
+            child: Column(
+              children: [
+                _buildSettingsRow(
+                  icon: Icons.language_rounded,
+                  label: 'Хэл',
+                  trailing: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGold.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Монгол / English',
+                      style: AppTheme.chip.copyWith(
+                        color: AppTheme.accentGold,
+                        fontSize: 10,
                       ),
-                      backgroundColor: AppTheme.surface,
-                      behavior: SnackBarBehavior.floating,
                     ),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Алдаа: $e',
-                          style: AppTheme.caption
-                              .copyWith(color: AppTheme.crimson)),
-                      backgroundColor: AppTheme.surface,
+                  ),
+                  onTap: () {},
+                ),
+                const Divider(
+                    height: 1, thickness: 1, color: AppTheme.cardBorder),
+                _buildSettingsRow(
+                  icon: Icons.dark_mode_rounded,
+                  label: 'Харанхуй горим',
+                  trailing: SizedBox(
+                    height: 28,
+                    child: Switch(
+                      value: _darkMode,
+                      onChanged: (v) => setState(() => _darkMode = v),
+                      activeThumbColor: AppTheme.accentGold,
+                      activeTrackColor:
+                          AppTheme.accentGold.withValues(alpha: 0.3),
+                      inactiveThumbColor: AppTheme.textSecondary,
+                      inactiveTrackColor: AppTheme.surfaceLight,
                     ),
-                  );
-                }
-              },
+                  ),
+                  onTap: () => setState(() => _darkMode = !_darkMode),
+                ),
+                const Divider(
+                    height: 1, thickness: 1, color: AppTheme.cardBorder),
+                _buildSettingsRow(
+                  icon: Icons.logout_rounded,
+                  label: 'Гарах',
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppTheme.textSecondary,
+                    size: 20,
+                  ),
+                  onTap: () => _showSignOutDialog(),
+                ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
