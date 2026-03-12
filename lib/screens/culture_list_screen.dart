@@ -115,17 +115,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
               style: AppTheme.h2.copyWith(fontSize: 20),
             ),
           ),
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.surfaceLight,
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: const Icon(Icons.search_rounded,
-                color: AppTheme.textSecondary, size: 20),
-          ),
+          const SizedBox(width: 38),
         ],
       ),
     );

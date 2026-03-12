@@ -3,27 +3,42 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import '../models/app_user.dart';
+import '../models/user_activity.dart';
+import '../repositories/user_repository.dart';
 
 /// Manages the current user's profile data in Firestore (users/{uid}).
 class ProfileProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  final UserRepository _repo = UserRepository();
 
+  AppUser? _user;
   String? _displayName;
   String? _photoUrl;
   String? _bio;
   String? _preferredLanguage;
   bool _isLoading = false;
   String? _error;
+  List<UserFavorite> _favorites = [];
+  List<UserHistory> _history = [];
 
   // ── Getters ──────────────────────────────────────────────────
+  AppUser? get user => _user;
   String? get displayName => _displayName;
   String? get photoUrl => _photoUrl;
   String? get bio => _bio;
   String? get preferredLanguage => _preferredLanguage;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  List<UserFavorite> get favorites => _favorites;
+  List<UserHistory> get history => _history;
+  int get totalXP => _user?.totalXP ?? 0;
+  int get level => _user?.level ?? 1;
+  int get storiesCompleted => _user?.storiesCompleted ?? 0;
+  int get quizzesCompleted => _user?.quizzesCompleted ?? 0;
+  bool get darkMode => _user?.darkMode ?? false;
 
   String? get _uid => _auth.currentUser?.uid;
 
@@ -37,18 +52,25 @@ class ProfileProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final doc = await _db.collection('users').doc(uid).get();
-      if (doc.exists) {
-        final data = doc.data()!;
-        _displayName =
-            data['displayName'] as String? ?? _auth.currentUser?.displayName;
-        _photoUrl = data['photoUrl'] as String? ?? _auth.currentUser?.photoURL;
-        _bio = data['bio'] as String?;
-        _preferredLanguage = data['preferredLanguage'] as String?;
+      _user = await _repo.getUser(uid);
+
+      if (_user != null) {
+        _displayName = _user!.displayName ?? _user!.name;
+        _photoUrl = _user!.photoUrl;
+        _bio = _user!.bio;
+        _preferredLanguage = _user!.preferredLanguage;
       } else {
         _displayName = _auth.currentUser?.displayName;
         _photoUrl = _auth.currentUser?.photoURL;
       }
+
+      // Load favorites & history in parallel
+      final results = await Future.wait([
+        _repo.getFavorites(uid),
+        _repo.getHistory(uid),
+      ]);
+      _favorites = results[0] as List<UserFavorite>;
+      _history = results[1] as List<UserHistory>;
     } catch (e) {
       _error = e.toString();
       debugPrint('ProfileProvider.loadProfile error: $e');

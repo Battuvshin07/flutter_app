@@ -19,9 +19,9 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
 
   static const List<_NavItem> _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Нүүр'),
-    _NavItem(icon: Icons.people_rounded, label: 'Хүмүүс'),
-    _NavItem(icon: Icons.explore_rounded, label: 'Судлах'),
-    _NavItem(icon: Icons.map_rounded, label: 'Зураг'),
+    _NavItem(icon: Icons.military_tech_rounded, label: 'Хүмүүс'),
+    _NavItem(icon: Icons.menu_book_rounded, label: 'Судлах'),
+    _NavItem(icon: Icons.public_rounded, label: 'Зураг'),
     _NavItem(icon: Icons.person_rounded, label: 'Профайл'),
   ];
 

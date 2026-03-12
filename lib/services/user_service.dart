@@ -6,6 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/app_user.dart';
+import '../models/user_activity.dart';
+import '../repositories/user_repository.dart';
+import '../services/achievement_service.dart';
 import '../utils/xp_helpers.dart' as xp;
 
 class UserService {
@@ -139,15 +142,13 @@ class UserService {
         'role': 'user',
         'isActive': true,
         'totalXP': 0,
-        'streakDays': 0,
-        'progress': <String, dynamic>{
-          'humans': 0.0,
-          'history': 0.0,
-          'map': 0.0,
-        },
+        'storiesCompleted': 0,
+        'quizzesCompleted': 0,
+        'darkMode': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'lastLogin': FieldValue.serverTimestamp(),
+        'lastActiveDate': FieldValue.serverTimestamp(),
       };
 
       if (!snap.exists) {
@@ -162,12 +163,9 @@ class UserService {
         }
 
         addIfMissing('totalXP', 0);
-        addIfMissing('streakDays', 0);
-        addIfMissing('progress', <String, dynamic>{
-          'humans': 0.0,
-          'history': 0.0,
-          'map': 0.0,
-        });
+        addIfMissing('storiesCompleted', 0);
+        addIfMissing('quizzesCompleted', 0);
+        addIfMissing('darkMode', false);
         addIfMissing('isActive', true);
         patch['updatedAt'] = FieldValue.serverTimestamp();
 
@@ -198,12 +196,8 @@ class UserService {
     // Update user doc with sample data
     batch.update(userRef, {
       'totalXP': 18400,
-      'streakDays': 7,
-      'progress': {
-        'humans': 0.85,
-        'history': 0.60,
-        'map': 0.92,
-      },
+      'storiesCompleted': 5,
+      'quizzesCompleted': 3,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
@@ -246,5 +240,199 @@ class UserService {
 
     await batch.commit();
     debugPrint('UserService.seedDebugData: seeded for uid=$uid');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Admin – user management
+  // ═══════════════════════════════════════════════════════════════
+
+  /// [Admin] Fetch all users ordered by createdAt desc.
+  /// [limit] caps the result set (default 100).
+  static Future<List<AppUser>> getAllUsers({int limit = 100}) async {
+    try {
+      final snap = await _db
+          .collection('users')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+      return snap.docs.map((d) => AppUser.fromFirestore(d)).toList();
+    } catch (e) {
+      debugPrint('UserService.getAllUsers error: $e');
+      return [];
+    }
+  }
+
+  /// [Admin] Stream all users in real time.
+  static Stream<List<AppUser>> watchAllUsers({int limit = 100}) {
+    return _db
+        .collection('users')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => AppUser.fromFirestore(d)).toList());
+  }
+
+  /// [Admin] Update a user's role.
+  /// [role] must be 'user' | 'admin' | 'superAdmin'.
+  static Future<void> setUserRole(String uid, String role) async {
+    assert(['user', 'admin', 'superAdmin'].contains(role));
+    try {
+      await _db.collection('users').doc(uid).update({
+        'role': role,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('UserService.setUserRole error: $e');
+      rethrow;
+    }
+  }
+
+  /// [Admin] Activate or deactivate a user account.
+  static Future<void> setUserActive(String uid,
+      {required bool isActive}) async {
+    try {
+      await _db.collection('users').doc(uid).update({
+        'isActive': isActive,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('UserService.setUserActive error: $e');
+      rethrow;
+    }
+  }
+
+  /// [Admin] Delete a user's Firestore document.
+  /// The Firebase Auth account must be removed separately via Admin SDK.
+  static Future<void> deleteUserDoc(String uid) async {
+    try {
+      await _db.collection('users').doc(uid).delete();
+    } catch (e) {
+      debugPrint('UserService.deleteUserDoc error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update profile fields for the current user.
+  /// Pass only the fields you want to change.
+  static Future<void> updateProfile(Map<String, dynamic> fields) async {
+    final uid = _uid;
+    if (uid == null) return;
+    try {
+      await _db.collection('users').doc(uid).set(
+        {...fields, 'updatedAt': FieldValue.serverTimestamp()},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      debugPrint('UserService.updateProfile error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update photo URL for the current user.
+  static Future<void> updatePhotoUrl(String photoUrl) async {
+    await updateProfile({'photoUrl': photoUrl});
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  XP & progression
+  // ═══════════════════════════════════════════════════════════════
+
+  static final UserRepository _repo = UserRepository();
+  static final AchievementService _achievementSvc = AchievementService();
+
+  /// Add XP and check for new achievement unlocks.
+  static Future<void> addExp(int amount) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.addExp(uid, amount);
+    // Re-fetch to check achievements with updated stats
+    final user = await getCurrentUser();
+    if (user != null) {
+      await _achievementSvc.checkAndUnlock(user);
+    }
+  }
+
+  /// Call when a story is completed. Increments counter, adds XP, checks achievements.
+  static Future<void> completeStory({int xpReward = 100}) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.incrementStoriesCompleted(uid);
+    await _repo.addExp(uid, xpReward);
+    final user = await getCurrentUser();
+    if (user != null) {
+      await _achievementSvc.checkAndUnlock(user);
+    }
+  }
+
+  /// Call when a quiz is completed. Increments counter, adds XP, checks achievements.
+  static Future<void> completeQuiz({int xpReward = 150}) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.incrementQuizzesCompleted(uid);
+    await _repo.addExp(uid, xpReward);
+    final user = await getCurrentUser();
+    if (user != null) {
+      await _achievementSvc.checkAndUnlock(user);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Favorites
+  // ═══════════════════════════════════════════════════════════════
+
+  static Future<void> saveFavorite(String storyId, String title) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.addFavorite(
+      uid,
+      UserFavorite(
+        id: storyId,
+        storyId: storyId,
+        title: title,
+        savedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  static Future<void> removeFavorite(String storyId) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.removeFavorite(uid, storyId);
+  }
+
+  static Future<bool> isFavorite(String storyId) async {
+    final uid = _uid;
+    if (uid == null) return false;
+    return _repo.isFavorite(uid, storyId);
+  }
+
+  static Future<List<UserFavorite>> getFavorites() async {
+    final uid = _uid;
+    if (uid == null) return [];
+    return _repo.getFavorites(uid);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  History (recently viewed)
+  // ═══════════════════════════════════════════════════════════════
+
+  static Future<void> trackViewed(String storyId, String title) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repo.trackViewed(
+      uid,
+      UserHistory(
+        id: storyId,
+        storyId: storyId,
+        title: title,
+        viewedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  static Future<List<UserHistory>> getHistory() async {
+    final uid = _uid;
+    if (uid == null) return [];
+    return _repo.getHistory(uid);
   }
 }

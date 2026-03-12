@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════════════
 //  StreakStrip – live Firestore data
-//   Left  : streakDays from users/{uid}
+//   Left  : storiesCompleted from users/{uid}
 //   Center: XP level progress bar from totalXP
 //   Right : count of unlocked achievements
 // ════════════════════════════════════════════════════════
@@ -59,7 +59,7 @@ class _StreakStripState extends State<StreakStrip>
       stream: UserService.watchCurrentUser(),
       builder: (context, userSnap) {
         final user = userSnap.data;
-        final streakDays = user?.streakDays ?? 0;
+        final storiesCompleted = user?.storiesCompleted ?? 0;
         final totalXP = user?.totalXP ?? 0;
         final progress = xp.levelProgress(totalXP);
 
@@ -89,14 +89,14 @@ class _StreakStripState extends State<StreakStrip>
                 ),
                 child: Row(
                   children: [
-                    // ── Streak ────────────────────────────────
+                    // ── Stories completed ─────────────────────
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('🔥', style: TextStyle(fontSize: 18)),
+                        const Text('📖', style: TextStyle(fontSize: 18)),
                         const SizedBox(width: 6),
                         Text(
-                          '$streakDays өдөр',
+                          '$storiesCompleted',
                           style: AppTheme.captionBold.copyWith(
                             color: AppTheme.streakOrange,
                           ),

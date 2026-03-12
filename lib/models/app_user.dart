@@ -4,6 +4,7 @@
 // ════════════════════════════════════════════════════════
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/xp_helpers.dart' as xp;
 
 // ── Achievement (users/{uid}/achievements/{id}) ───────────────────
 class AppAchievement {
@@ -57,12 +58,12 @@ class AppUser {
   final int totalXP;
   final bool isActive;
   final DateTime? lastLogin;
+  final DateTime? lastActiveDate;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final int streakDays;
-
-  /// Progress map: key = topic slug ('humans'|'history'|'map'), value 0.0–1.0
-  final Map<String, double> progress;
+  final int storiesCompleted;
+  final int quizzesCompleted;
+  final bool darkMode;
   final List<AppAchievement> achievements;
 
   const AppUser({
@@ -77,10 +78,12 @@ class AppUser {
     this.totalXP = 0,
     this.isActive = true,
     this.lastLogin,
+    this.lastActiveDate,
     this.createdAt,
     this.updatedAt,
-    this.streakDays = 0,
-    this.progress = const {},
+    this.storiesCompleted = 0,
+    this.quizzesCompleted = 0,
+    this.darkMode = false,
     this.achievements = const [],
   });
 
@@ -91,12 +94,6 @@ class AppUser {
     List<AppAchievement> achievements = const [],
   }) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-
-    // Parse nested progress map safely
-    final rawProgress = data['progress'] as Map<String, dynamic>? ?? {};
-    final progress = rawProgress.map(
-      (k, v) => MapEntry(k, (v as num? ?? 0).toDouble()),
-    );
 
     // Support both 'photoUrl' (new) and 'avatarUrl' (legacy)
     final photoUrl =
@@ -116,10 +113,12 @@ class AppUser {
       totalXP: (data['totalXP'] as num? ?? 0).toInt(),
       isActive: data['isActive'] as bool? ?? true,
       lastLogin: (data['lastLogin'] as Timestamp?)?.toDate(),
+      lastActiveDate: (data['lastActiveDate'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
-      streakDays: (data['streakDays'] as num? ?? 0).toInt(),
-      progress: progress,
+      storiesCompleted: (data['storiesCompleted'] as num? ?? 0).toInt(),
+      quizzesCompleted: (data['quizzesCompleted'] as num? ?? 0).toInt(),
+      darkMode: data['darkMode'] as bool? ?? false,
       achievements: achievements,
     );
   }
@@ -134,8 +133,9 @@ class AppUser {
         'preferredLanguage': preferredLanguage,
         'totalXP': totalXP,
         'isActive': isActive,
-        'streakDays': streakDays,
-        'progress': progress,
+        'storiesCompleted': storiesCompleted,
+        'quizzesCompleted': quizzesCompleted,
+        'darkMode': darkMode,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -150,10 +150,12 @@ class AppUser {
     int? totalXP,
     bool? isActive,
     DateTime? lastLogin,
+    DateTime? lastActiveDate,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? streakDays,
-    Map<String, double>? progress,
+    int? storiesCompleted,
+    int? quizzesCompleted,
+    bool? darkMode,
     List<AppAchievement>? achievements,
   }) =>
       AppUser(
@@ -168,14 +170,22 @@ class AppUser {
         totalXP: totalXP ?? this.totalXP,
         isActive: isActive ?? this.isActive,
         lastLogin: lastLogin ?? this.lastLogin,
+        lastActiveDate: lastActiveDate ?? this.lastActiveDate,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
-        streakDays: streakDays ?? this.streakDays,
-        progress: progress ?? this.progress,
+        storiesCompleted: storiesCompleted ?? this.storiesCompleted,
+        quizzesCompleted: quizzesCompleted ?? this.quizzesCompleted,
+        darkMode: darkMode ?? this.darkMode,
         achievements: achievements ?? this.achievements,
       );
 
   bool get isAdmin => role == 'admin' || role == 'superAdmin';
+
+  /// Current level derived from [totalXP].
+  int get level => xp.levelFromXP(totalXP);
+
+  /// Alias for [totalXP] — use when you want the field named `exp`.
+  int get exp => totalXP;
 
   /// Display name fallback chain: displayName → name → 'Хэрэглэгч'
   String get effectiveName =>
