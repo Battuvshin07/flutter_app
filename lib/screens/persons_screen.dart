@@ -95,20 +95,7 @@ class _PersonsScreenState extends State<PersonsScreen>
               style: AppTheme.h2.copyWith(fontSize: 19),
             ),
           ),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.surface,
-              border: Border.all(color: AppTheme.cardBorder),
-            ),
-            child: const Icon(
-              Icons.emoji_events_outlined,
-              color: AppTheme.accentGold,
-              size: 18,
-            ),
-          ),
+          const SizedBox(width: 36),
         ],
       ),
     );

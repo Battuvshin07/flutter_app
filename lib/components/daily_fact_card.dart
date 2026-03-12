@@ -17,15 +17,6 @@ class DailyFactCard extends StatefulWidget {
 class _DailyFactCardState extends State<DailyFactCard> {
   late final Future<List<CultureModel>> _cultureFuture;
 
-  static const _emojiMap = {
-    'landscape': '🏕️',
-    'shield': '⚔️',
-    'route': '🛤️',
-    'temple_buddhist': '🕌',
-    'edit_note': '📜',
-    'local_dining': '🍖',
-  };
-
   @override
   void initState() {
     super.initState();
@@ -39,8 +30,6 @@ class _DailyFactCardState extends State<DailyFactCard> {
     final shuffled = List<CultureModel>.from(all)..shuffle(Random(seed));
     return shuffled.first;
   }
-
-  String _emoji(CultureModel c) => _emojiMap[c.icon ?? ''] ?? '🌍';
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +67,6 @@ class _DailyFactCardState extends State<DailyFactCard> {
             opacity: animation,
             child: _DailyFactDetailPage(
               culture: culture,
-              emoji: _emoji(culture),
               heroTag: tag,
             ),
           ),
@@ -90,7 +78,6 @@ class _DailyFactCardState extends State<DailyFactCard> {
           color: Colors.transparent,
           child: _CardShell(
             culture: culture,
-            emoji: _emoji(culture),
             preview: true,
           ),
         ),
@@ -98,7 +85,6 @@ class _DailyFactCardState extends State<DailyFactCard> {
           color: Colors.transparent,
           child: _CardShell(
             culture: culture,
-            emoji: _emoji(culture),
             preview: true,
           ),
         ),
@@ -164,12 +150,10 @@ class _DailyFactCardState extends State<DailyFactCard> {
 // ── Shared card shell (used both in preview & during Hero flight) ──
 class _CardShell extends StatelessWidget {
   final CultureModel culture;
-  final String emoji;
   final bool preview;
 
   const _CardShell({
     required this.culture,
-    required this.emoji,
     required this.preview,
   });
 
@@ -198,28 +182,13 @@ class _CardShell extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon circle
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.25)),
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 22)),
-            ),
-          ),
-          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   culture.title,
-                  style: AppTheme.sectionTitle.copyWith(fontSize: 15),
+                  style: AppTheme.sectionTitle.copyWith(fontSize: 22),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -251,12 +220,10 @@ class _CardShell extends StatelessWidget {
 // ── Full-screen detail page ────────────────────────────────────────
 class _DailyFactDetailPage extends StatelessWidget {
   final CultureModel culture;
-  final String emoji;
   final String heroTag;
 
   const _DailyFactDetailPage({
     required this.culture,
-    required this.emoji,
     required this.heroTag,
   });
 
@@ -293,7 +260,6 @@ class _DailyFactDetailPage extends StatelessWidget {
                   color: Colors.transparent,
                   child: _CardShell(
                     culture: culture,
-                    emoji: emoji,
                     preview: false,
                   ),
                 ),

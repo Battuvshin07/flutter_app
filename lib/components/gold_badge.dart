@@ -55,7 +55,6 @@ class GoldBadge extends StatelessWidget {
   factory GoldBadge.eventCount(int count) {
     return GoldBadge(
       text: '$count үйл явдал',
-      icon: Icons.event_note_outlined,
       backgroundColor: const Color(0xFF1E2D45),
       textColor: const Color(0xFF64B5F6),
       fontSize: 10,
