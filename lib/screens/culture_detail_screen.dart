@@ -10,7 +10,7 @@ class CultureDetailScreen extends StatefulWidget {
   final Color accentColor;
   final IconData icon;
   final double progress;
-  final VoidCallback? onCompleted;
+  final Future<void> Function()? onCompleted;
 
   const CultureDetailScreen({
     super.key,
@@ -87,8 +87,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black.withValues(alpha: 0.45),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1), width: 1),
             ),
             child: const Icon(Icons.arrow_back_ios_new,
                 color: Colors.white, size: 17),
@@ -104,8 +104,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black.withValues(alpha: 0.45),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1), width: 1),
             ),
             child: const Icon(Icons.bookmark_border_rounded,
                 color: Colors.white, size: 19),
@@ -328,9 +328,9 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
         ),
       ),
       child: GestureDetector(
-        onTap: () {
-          widget.onCompleted?.call();
-          Navigator.pop(context);
+        onTap: () async {
+          await widget.onCompleted?.call();
+          if (context.mounted) Navigator.pop(context);
         },
         child: Container(
           height: 54,

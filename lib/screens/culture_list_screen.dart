@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
 import '../components/culture_card.dart';
 import '../data/models/culture_model.dart';
@@ -18,6 +19,7 @@ class CultureListScreen extends StatefulWidget {
 
 class _CultureListScreenState extends State<CultureListScreen> {
   int _selectedFilter = 0;
+  final CultureService _cultureService = CultureService();
 
   static const _filters = ['Бүх сэдэв', 'Шинэ', 'Дууссан'];
 
@@ -41,6 +43,19 @@ class _CultureListScreenState extends State<CultureListScreen> {
 
   // Progress keyed by Firestore document ID (String)
   final Map<String, double> _progressMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    final progress = await _cultureService.loadProgress();
+    if (mounted) {
+      setState(() => _progressMap.addAll(progress));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +184,8 @@ class _CultureListScreenState extends State<CultureListScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.history_edu_rounded,
-                    color: AppTheme.textSecondary.withValues(alpha: 0.28), size: 56),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.28),
+                    size: 56),
                 const SizedBox(height: 14),
                 Text('Соёлын мэдээлэл олдсонгүй', style: AppTheme.body),
               ],
@@ -243,8 +259,11 @@ class _CultureListScreenState extends State<CultureListScreen> {
           accentColor: accent,
           icon: icon,
           progress: _progressMap[id] ?? 0.0,
-          onCompleted: () {
-            setState(() => _progressMap[id] = 1.0);
+          onCompleted: () async {
+            await _cultureService.markCompleted(id);
+            if (mounted) {
+              setState(() => _progressMap[id] = 1.0);
+            }
           },
         ),
       ),

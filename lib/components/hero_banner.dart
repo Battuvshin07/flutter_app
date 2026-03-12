@@ -1,8 +1,9 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// B) Hero Banner Card – 358×188, radius 20
-/// Background illustration with gradient overlay, title, subtitle, CTA.
+/// Background illustration rotates daily across available images.
 class HeroBanner extends StatefulWidget {
   final VoidCallback? onStartExploring;
 
@@ -15,6 +16,19 @@ class HeroBanner extends StatefulWidget {
 class _HeroBannerState extends State<HeroBanner>
     with SingleTickerProviderStateMixin {
   double _scale = 1.0;
+
+  static const _images = [
+    'assets/images/pic_1.png',
+    'assets/images/pic_2.png',
+    'assets/images/pic_3.png',
+  ];
+
+  String get _dailyImage {
+    final today = DateTime.now();
+    final seed = today.year * 10000 + today.month * 100 + today.day;
+    final index = Random(seed).nextInt(_images.length);
+    return _images[index];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +53,7 @@ class _HeroBannerState extends State<HeroBanner>
                 fit: StackFit.expand,
                 children: [
                   Image.asset(
-                    'assets/images/pic_2.png',
+                    _dailyImage,
                     fit: BoxFit.cover,
                     cacheWidth: 720,
                   ),
