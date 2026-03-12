@@ -27,7 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     with TickerProviderStateMixin {
   late final AnimationController _progressController;
   late final AnimationController _accuracyController;
-  late final Animation<double> _xpAnimation;
   late final Stream<AppUser?> _userStream;
   bool _darkMode = true;
 
@@ -48,9 +47,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     _accuracyController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
-    );
-    _xpAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
     );
     _accuracyController.forward();
     _userStream = UserService.watchCurrentUser();
@@ -766,49 +762,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 //  REUSABLE SUB-WIDGETS
 // ══════════════════════════════════════════════════════════════════
 
-// ── Stat Chip ──────────────────────────────────────────────────────
-class _StatChip extends StatelessWidget {
-  final String icon;
-  final String label;
-  final String suffix;
-  final Color color;
-
-  const _StatChip({
-    required this.icon,
-    required this.label,
-    required this.suffix,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.cardBorder),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              '$label $suffix',
-              style: AppTheme.chip.copyWith(color: color, fontSize: 10),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ── Achievement Card (glassmorphism) ───────────────────────────────
 class _AchievementCard extends StatelessWidget {
   final IconData icon;
@@ -881,184 +834,4 @@ class _AchievementCard extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Animated Progress Row ──────────────────────────────────────────
-class _AnimatedProgressRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final Color color;
-  final AnimationController controller;
-
-  const _AnimatedProgressRow({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final animation = Tween<double>(begin: 0.0, end: value).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
-    );
-
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final percent = (animation.value * 100).toInt();
-        return Row(
-          children: [
-            SizedBox(
-              width: 80,
-              child: Text(
-                label,
-                style: AppTheme.caption,
-              ),
-            ),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: animation.value,
-                  minHeight: 8,
-                  backgroundColor: AppTheme.surfaceLight,
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 34,
-              child: Text(
-                '$percent%',
-                style: AppTheme.chip.copyWith(
-                  color: AppTheme.textPrimary,
-                  fontSize: 11,
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ── Accuracy Gauge ─────────────────────────────────────────────────
-class _AccuracyGauge extends StatelessWidget {
-  final AnimationController controller;
-
-  const _AccuracyGauge({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    final animation = Tween<double>(begin: 0.0, end: 0.85).animate(
-      CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
-    );
-
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final percent = (animation.value * 100).toInt();
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: AppTheme.cardBorder),
-          ),
-          child: Column(
-            children: [
-              Text(
-                '$percent%',
-                style: AppTheme.h2.copyWith(fontSize: 24),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 70,
-                height: 70,
-                child: CustomPaint(
-                  painter: _GaugePainter(
-                    progress: animation.value,
-                    trackColor: AppTheme.surfaceLight,
-                    progressColor: AppTheme.textPrimary,
-                    strokeWidth: 6,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.center_focus_strong_rounded,
-                      color: AppTheme.textSecondary,
-                      size: 22,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Нарийвчлал',
-                style: AppTheme.caption.copyWith(fontSize: 12),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ── Gauge Painter ──────────────────────────────────────────────────
-class _GaugePainter extends CustomPainter {
-  final double progress;
-  final Color trackColor;
-  final Color progressColor;
-  final double strokeWidth;
-
-  _GaugePainter({
-    required this.progress,
-    required this.trackColor,
-    required this.progressColor,
-    required this.strokeWidth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-    const startAngle = -math.pi * 0.75;
-    const totalAngle = math.pi * 1.5;
-
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      totalAngle,
-      false,
-      trackPaint,
-    );
-
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      totalAngle * progress,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_GaugePainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

@@ -278,6 +278,25 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              // Retry quiz button
+              SizedBox(
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: _openQuiz,
+                  icon: const Icon(Icons.replay_rounded),
+                  label: Text('Дахин судлах',
+                      style: AppTheme.button.copyWith(fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentGold,
+                    foregroundColor: AppTheme.background,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ],
         );

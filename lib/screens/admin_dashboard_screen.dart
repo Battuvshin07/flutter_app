@@ -154,25 +154,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             ),
           ),
           const Spacer(),
-          GestureDetector(
-            onTap: () {
-              Provider.of<AuthProvider>(context, listen: false).signOut();
-            },
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: AppTheme.textSecondary,
-                size: 20,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -411,7 +392,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08 + 0.08 * _pulseController.value),
+            color:
+                color.withValues(alpha: 0.08 + 0.08 * _pulseController.value),
             borderRadius: BorderRadius.circular(6),
           ),
         );
@@ -508,8 +490,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       decoration: BoxDecoration(
                         color: config.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
-                        border:
-                            Border.all(color: config.color.withValues(alpha: 0.25)),
+                        border: Border.all(
+                            color: config.color.withValues(alpha: 0.25)),
                       ),
                       child: Icon(config.icon, color: config.color, size: 24),
                     ),

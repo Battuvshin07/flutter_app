@@ -417,24 +417,28 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
           const SizedBox(height: 36),
 
           // Retry button (always visible)
-          if (!passed)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _retry(provider),
-                icon: const Icon(Icons.replay_rounded),
-                label: Text('Дахин оролдох', style: AppTheme.button),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentGold,
-                  foregroundColor: AppTheme.background,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                  ),
-                  elevation: 0,
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _retry(provider),
+              icon: const Icon(Icons.replay_rounded),
+              label: Text(
+                passed ? 'Дахин оролдох' : 'Дахин оролдох',
+                style: AppTheme.button,
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    passed ? AppTheme.surfaceLight : AppTheme.accentGold,
+                foregroundColor:
+                    passed ? AppTheme.textPrimary : AppTheme.background,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
+                elevation: 0,
               ),
             ),
+          ),
 
           if (passed)
             SizedBox(
