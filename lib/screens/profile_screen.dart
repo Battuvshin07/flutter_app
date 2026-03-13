@@ -468,28 +468,24 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     const achievementDefs = [
       (
-        icon: Icons.shield_rounded,
-        title: 'Эхлэл',
+        image: 'assets/images/achievements/icon1.png',
+        title: 'Аравтын ноён',
         requiredLevel: 2,
-        color: Color(0xFFFFD700)
       ),
       (
-        icon: Icons.military_tech_rounded,
-        title: 'Сурагч',
+        image: 'assets/images/achievements/icon2.png',
+        title: 'Зуутын ноён',
         requiredLevel: 4,
-        color: Color(0xFF4ADE80)
       ),
       (
-        icon: Icons.auto_awesome_rounded,
-        title: 'Баатар',
+        image: 'assets/images/achievements/icon3.png',
+        title: 'Мянгатын ноён',
         requiredLevel: 7,
-        color: Color(0xFF60A5FA)
       ),
       (
-        icon: Icons.emoji_events_rounded,
-        title: 'Хаан',
+        image: 'assets/images/achievements/icon4.png',
+        title: 'Түмтийн ноён',
         requiredLevel: 10,
-        color: Color(0xFFF472B6)
       ),
     ];
 
@@ -498,8 +494,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       final def = achievementDefs[i];
       final unlocked = level >= def.requiredLevel;
       cards.add(_AchievementCard(
-        icon: unlocked ? def.icon : Icons.lock_rounded,
-        color: unlocked ? def.color : AppTheme.textSecondary,
+        imagePath: def.image,
         title: unlocked ? def.title : 'Lvl ${def.requiredLevel}',
         isLocked: !unlocked,
       ));
@@ -747,21 +742,18 @@ class _ProfileScreenState extends State<ProfileScreen>
 
 // ── Achievement Card (glassmorphism) ───────────────────────────────
 class _AchievementCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
+  final String imagePath;
   final String title;
   final bool isLocked;
 
   const _AchievementCard({
-    required this.icon,
-    required this.color,
+    required this.imagePath,
     required this.title,
     this.isLocked = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final tileColor = isLocked ? AppTheme.textSecondary : color;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       child: BackdropFilter(
@@ -775,11 +767,15 @@ class _AchievementCard extends StatelessWidget {
                 : AppTheme.surface.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(
-              color: tileColor.withValues(alpha: isLocked ? 0.1 : 0.25),
+              color: isLocked
+                  ? AppTheme.textSecondary.withValues(alpha: 0.1)
+                  : AppTheme.accentGold.withValues(alpha: 0.25),
             ),
             boxShadow: [
               BoxShadow(
-                color: tileColor.withValues(alpha: 0.08),
+                color: isLocked
+                    ? AppTheme.textSecondary.withValues(alpha: 0.08)
+                    : AppTheme.accentGold.withValues(alpha: 0.15),
                 blurRadius: 16,
               ),
             ],
@@ -787,16 +783,28 @@ class _AchievementCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: tileColor.withValues(alpha: isLocked ? 0.06 : 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon,
-                    color: tileColor.withValues(alpha: isLocked ? 0.4 : 1.0),
-                    size: 26),
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: isLocked
+                    ? Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.lock_rounded,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                          size: 28,
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
               ),
               const SizedBox(height: 8),
               Text(

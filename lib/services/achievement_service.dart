@@ -6,11 +6,13 @@
 //  (story complete, quiz complete, XP change, streak update).
 // ════════════════════════════════════════════════════════════════
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/achievement_definition.dart';
 import '../models/app_user.dart';
 import '../repositories/achievement_repository.dart';
 import '../repositories/user_repository.dart';
+import '../main.dart' show navigatorKey;
+import '../components/achievement_unlock_dialog.dart';
 
 class AchievementService {
   AchievementService({
@@ -54,6 +56,9 @@ class AchievementService {
       }
 
       newlyUnlocked.add(def);
+
+      // Show notification popup
+      _showUnlockNotification(def);
     }
 
     if (newlyUnlocked.isNotEmpty) {
@@ -64,6 +69,38 @@ class AchievementService {
     }
 
     return newlyUnlocked;
+  }
+
+  void _showUnlockNotification(AchievementDefinition def) {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    // Map achievement ID to image path
+    String imagePath = 'assets/images/achievements/icon1.png';
+    switch (def.id) {
+      case 'level_2_starter':
+        imagePath = 'assets/images/achievements/icon1.png';
+        break;
+      case 'level_4_learner':
+        imagePath = 'assets/images/achievements/icon2.png';
+        break;
+      case 'level_7_hero':
+        imagePath = 'assets/images/achievements/icon3.png';
+        break;
+      case 'level_10_king':
+        imagePath = 'assets/images/achievements/icon4.png';
+        break;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AchievementUnlockDialog(
+        title: def.title,
+        imagePath: imagePath,
+        expReward: def.expReward,
+      ),
+    );
   }
 
   bool _isMet(AchievementDefinition def, AppUser user) {

@@ -21,6 +21,9 @@ import 'components/featured_list.dart';
 import 'components/home_bottom_nav.dart';
 import 'components/quiz_journey_card.dart';
 
+// Global navigator key for showing dialogs from anywhere
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -56,6 +59,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      navigatorKey: navigatorKey,
       home: const AuthGate(),
     );
   }
