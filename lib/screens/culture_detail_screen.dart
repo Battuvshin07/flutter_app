@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../components/glass_card.dart';
 import '../data/models/culture_model.dart';
+import 'culture_list_screen.dart';
 
 /// Dribbble-level Culture Detail Screen.
 /// Hero banner → tabs (Тойм / Агуулга) → gold CTA button.
@@ -314,6 +315,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
   // ── Golden CTA ─────────────────────────────────────────────────
   Widget _buildBottomCTA(BuildContext context) {
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    final isCompleted = widget.progress >= 1.0;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
           AppTheme.pagePadding, 14, AppTheme.pagePadding, bottomPad + 14),
@@ -328,45 +331,70 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
         ),
       ),
       child: GestureDetector(
-        onTap: () async {
-          await widget.onCompleted?.call();
-          if (context.mounted) Navigator.pop(context);
-        },
+        onTap: isCompleted
+            ? null
+            : () async {
+                await widget.onCompleted?.call();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CultureListScreen()),
+                    (_) => false,
+                  );
+                }
+              },
         child: Container(
           height: 54,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFFDAAB28),
-                Color(0xFFF4C84A),
-                Color(0xFFFFD97D),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+            gradient: isCompleted
+                ? LinearGradient(
+                    colors: [
+                      AppTheme.xpGreen.withValues(alpha: 0.3),
+                      AppTheme.xpGreen.withValues(alpha: 0.4),
+                      AppTheme.xpGreen.withValues(alpha: 0.3),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : const LinearGradient(
+                    colors: [
+                      Color(0xFFDAAB28),
+                      Color(0xFFF4C84A),
+                      Color(0xFFFFD97D),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
             borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.accentGold.withValues(alpha: 0.38),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
-              ),
-            ],
+            boxShadow: isCompleted
+                ? []
+                : [
+                    BoxShadow(
+                      color: AppTheme.accentGold.withValues(alpha: 0.38),
+                      blurRadius: 18,
+                      offset: const Offset(0, 7),
+                    ),
+                  ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Судалж дуусгах',
+                isCompleted ? 'Судлаж дууссан' : 'Судалж дуусгах',
                 style: AppTheme.button.copyWith(
                   fontSize: 16,
-                  color: AppTheme.background,
+                  color: isCompleted ? AppTheme.xpGreen : AppTheme.background,
                   letterSpacing: 0.3,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.check_circle_outline_rounded,
-                  color: AppTheme.background, size: 20),
+              Icon(
+                isCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.check_circle_outline_rounded,
+                color: isCompleted ? AppTheme.xpGreen : AppTheme.background,
+                size: 20,
+              ),
             ],
           ),
         ),

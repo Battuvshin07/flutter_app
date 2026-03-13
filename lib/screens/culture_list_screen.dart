@@ -5,6 +5,7 @@ import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
 import '../components/culture_card.dart';
 import '../data/models/culture_model.dart';
+import '../main.dart';
 import 'culture_detail_screen.dart';
 
 /// FR-07: Redesigned Dribbble-level Culture List Screen.
@@ -93,7 +94,11 @@ class _CultureListScreenState extends State<CultureListScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.maybePop(context),
+            onTap: () => Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (_) => false,
+            ),
             child: Container(
               width: 38,
               height: 38,

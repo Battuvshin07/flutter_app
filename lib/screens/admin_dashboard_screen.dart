@@ -569,7 +569,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       final achievements = [
         {
           'id': 'level_2_starter',
-          'title': 'Эхлэл',
+          'title': 'Аравтын ноён',
           'description': 'Level 2-д хүрлээ',
           'icon': 'shield',
           'expReward': 50,
@@ -579,7 +579,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         },
         {
           'id': 'level_4_learner',
-          'title': 'Сурагч',
+          'title': 'Зуутын ноён',
           'description': 'Level 4-д хүрлээ',
           'icon': 'medal',
           'expReward': 100,
@@ -589,7 +589,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         },
         {
           'id': 'level_7_hero',
-          'title': 'Баатар',
+          'title': 'Мянгатын ноён',
           'description': 'Level 7-д хүрлээ',
           'icon': 'star',
           'expReward': 200,
@@ -599,7 +599,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         },
         {
           'id': 'level_10_king',
-          'title': 'Хаан',
+          'title': 'Түмтийн ноён',
           'description': 'Level 10-д хүрлээ',
           'icon': 'trophy',
           'expReward': 500,

@@ -5,12 +5,35 @@ import '../theme/app_theme.dart';
 import '../data/models/culture_model.dart';
 import '../screens/culture_list_screen.dart';
 import '../screens/culture_detail_screen.dart';
+import '../services/culture_service.dart';
 
 /// G) Featured list – top 3 culture items from AppProvider.
 /// Each card navigates to CultureDetailScreen.
 /// "Дэлгэрэнгүй" footer navigates to CultureListScreen.
-class FeaturedList extends StatelessWidget {
+/// Filters out completed cultures to show only unfinished content.
+class FeaturedList extends StatefulWidget {
   const FeaturedList({super.key});
+
+  @override
+  State<FeaturedList> createState() => _FeaturedListState();
+}
+
+class _FeaturedListState extends State<FeaturedList> {
+  final CultureService _cultureService = CultureService();
+  Map<String, double> _progressMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    final progress = await _cultureService.loadProgress();
+    if (mounted) {
+      setState(() => _progressMap = progress);
+    }
+  }
 
   // Matches culture_list_screen.dart mappings
   static const _iconMap = {
@@ -36,8 +59,12 @@ class FeaturedList extends StatelessWidget {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
         final all = provider.cultures;
-        // Show up to 3 featured culture items
-        final featured = all.length > 3 ? all.sublist(0, 3) : all;
+        // Filter out completed cultures, then show up to 3 featured items
+        final uncompleted = all
+            .where((culture) => (_progressMap[culture.id ?? ''] ?? 0.0) < 1.0)
+            .toList();
+        final featured =
+            uncompleted.length > 3 ? uncompleted.sublist(0, 3) : uncompleted;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
@@ -70,10 +97,16 @@ class FeaturedList extends StatelessWidget {
                   final accent = _accentPalette[index % _accentPalette.length];
                   final icon =
                       _iconMap[item.icon] ?? Icons.info_outline_rounded;
+                  final progress = _progressMap[item.id ?? ''] ?? 0.0;
                   return _FeaturedCultureCard(
                     item: item,
                     accentColor: accent,
                     icon: icon,
+                    progress: progress,
+                    onCompleted: () async {
+                      await _cultureService.markCompleted(item.id ?? '');
+                      await _loadProgress();
+                    },
                   );
                 }),
               const SizedBox(height: 4),
@@ -124,11 +157,15 @@ class _FeaturedCultureCard extends StatefulWidget {
   final CultureModel item;
   final Color accentColor;
   final IconData icon;
+  final double progress;
+  final Future<void> Function()? onCompleted;
 
   const _FeaturedCultureCard({
     required this.item,
     required this.accentColor,
     required this.icon,
+    this.progress = 0.0,
+    this.onCompleted,
   });
 
   @override
@@ -154,6 +191,8 @@ class _FeaturedCultureCardState extends State<_FeaturedCultureCard> {
               item: widget.item,
               accentColor: widget.accentColor,
               icon: widget.icon,
+              progress: widget.progress,
+              onCompleted: widget.onCompleted,
             ),
           ),
         );

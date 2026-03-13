@@ -42,8 +42,7 @@ class _DailyFactCardState extends State<DailyFactCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Өдрийн баримт',
-                  style: AppTheme.sectionTitle.copyWith(fontSize: 20)),
+              Text('Өдрийн баримт', style: AppTheme.sectionTitle),
               const SizedBox(height: 12),
               culture == null
                   ? _buildShimmer()
