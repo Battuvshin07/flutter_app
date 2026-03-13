@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
 import '../components/admin/glass_card.dart';
 import '../providers/admin_provider.dart';
@@ -87,6 +88,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ),
                   sliver: _buildCategoryGrid(),
                 ),
+                SliverToBoxAdapter(child: _buildSeedAchievementsTile()),
                 SliverToBoxAdapter(child: _buildProgressTile()),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
@@ -555,6 +557,161 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   // ════════════════════════════════════════════════════════════════
   //  PROGRESS TILE — separate entry (not a typed collection)
   // ════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════
+  //  SEED ACHIEVEMENTS TILE — One-time setup button
+  // ════════════════════════════════════════════════════════════════
+  bool _isSeeding = false;
+
+  Future<void> _seedAchievements() async {
+    setState(() => _isSeeding = true);
+    try {
+      final db = FirebaseFirestore.instance;
+      final achievements = [
+        {
+          'id': 'level_2_starter',
+          'title': 'Эхлэл',
+          'description': 'Level 2-д хүрлээ',
+          'icon': 'shield',
+          'expReward': 50,
+          'conditionType': 'level',
+          'conditionValue': 2,
+          'sortOrder': 1,
+        },
+        {
+          'id': 'level_4_learner',
+          'title': 'Сурагч',
+          'description': 'Level 4-д хүрлээ',
+          'icon': 'medal',
+          'expReward': 100,
+          'conditionType': 'level',
+          'conditionValue': 4,
+          'sortOrder': 2,
+        },
+        {
+          'id': 'level_7_hero',
+          'title': 'Баатар',
+          'description': 'Level 7-д хүрлээ',
+          'icon': 'star',
+          'expReward': 200,
+          'conditionType': 'level',
+          'conditionValue': 7,
+          'sortOrder': 3,
+        },
+        {
+          'id': 'level_10_king',
+          'title': 'Хаан',
+          'description': 'Level 10-д хүрлээ',
+          'icon': 'trophy',
+          'expReward': 500,
+          'conditionType': 'level',
+          'conditionValue': 10,
+          'sortOrder': 4,
+        },
+      ];
+
+      final batch = db.batch();
+      for (final achievement in achievements) {
+        final docRef =
+            db.collection('achievements').doc(achievement['id'] as String);
+        batch.set(docRef, achievement);
+      }
+      await batch.commit();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('✅ ${achievements.length} амжилт амжилттай үүсгэгдлээ!'),
+          backgroundColor: const Color(0xFF34D399),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Алдаа гарлаа: $e'),
+          backgroundColor: AppTheme.crimson,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSeeding = false);
+    }
+  }
+
+  Widget _buildSeedAchievementsTile() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppTheme.pagePadding,
+        14,
+        AppTheme.pagePadding,
+        0,
+      ),
+      child: GestureDetector(
+        onTap: _isSeeding ? null : _seedAchievements,
+        child: GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          borderRadius: AppTheme.radiusMd,
+          opacity: _isSeeding ? 0.5 : 1.0,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGold.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppTheme.accentGold.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: _isSeeding
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.accentGold,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.emoji_events_rounded,
+                        color: AppTheme.accentGold,
+                        size: 24,
+                      ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Seed Achievements',
+                      style: AppTheme.captionBold.copyWith(fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Level амжилтууд үүсгэх (нэг удаа)',
+                      style: AppTheme.caption.copyWith(fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProgressTile() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(

@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
@@ -32,8 +31,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // Real-time user state
   AppUser? _currentUser;
-  List<AppAchievement> _achievements = [];
-  bool _achievementsLoaded = false;
   double _xpTarget = 0.0;
   bool _retryFlag = false;
 
@@ -103,13 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 if (xpChanged) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) _animateToUserXP(user.totalXP);
-                  });
-                }
-                // Load achievements once
-                if (!_achievementsLoaded) {
-                  _achievementsLoaded = true;
-                  UserService.loadAchievements(user.id).then((list) {
-                    if (mounted) setState(() => _achievements = list);
                   });
                 }
               }
@@ -215,7 +205,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             const SizedBox(height: 24),
             GestureDetector(
               onTap: () => setState(() {
-                _achievementsLoaded = false;
                 _retryFlag = !_retryFlag;
               }),
               child: Container(
@@ -475,52 +464,46 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ── Achievements ─────────────────────────────────────────────────
   Widget _buildAchievementsSection() {
-    // Map icon string to IconData
-    IconData iconFor(String icon) {
-      switch (icon) {
-        case 'shield':
-          return Icons.shield_rounded;
-        case 'medal':
-          return Icons.military_tech_rounded;
-        case 'star':
-          return Icons.auto_awesome_rounded;
-        default:
-          return Icons.emoji_events_rounded;
-      }
-    }
+    final level = UserService.levelFromXP(_currentUser?.totalXP ?? 0);
 
-    Color colorFor(int index) {
-      const colors = [
-        Color(0xFFFFD700),
-        Color(0xFF4ADE80),
-        Color(0xFF60A5FA),
-        Color(0xFFF472B6),
-      ];
-      return colors[index % colors.length];
-    }
+    const achievementDefs = [
+      (
+        icon: Icons.shield_rounded,
+        title: 'Эхлэл',
+        requiredLevel: 2,
+        color: Color(0xFFFFD700)
+      ),
+      (
+        icon: Icons.military_tech_rounded,
+        title: 'Сурагч',
+        requiredLevel: 4,
+        color: Color(0xFF4ADE80)
+      ),
+      (
+        icon: Icons.auto_awesome_rounded,
+        title: 'Баатар',
+        requiredLevel: 7,
+        color: Color(0xFF60A5FA)
+      ),
+      (
+        icon: Icons.emoji_events_rounded,
+        title: 'Хаан',
+        requiredLevel: 10,
+        color: Color(0xFFF472B6)
+      ),
+    ];
 
-    // Fill up to 4 slots; pad with locked placeholders
-    const displayCount = 4;
-    final realCount = _achievements.length.clamp(0, displayCount);
     final cards = <Widget>[];
-    for (int i = 0; i < displayCount; i++) {
-      if (i < realCount) {
-        final a = _achievements[i];
-        cards.add(_AchievementCard(
-          icon: iconFor(a.icon),
-          color: colorFor(i),
-          title: a.title,
-          isLocked: !a.unlocked,
-        ));
-      } else {
-        cards.add(const _AchievementCard(
-          icon: Icons.lock_rounded,
-          color: AppTheme.textSecondary,
-          title: 'Түлхгүй',
-          isLocked: true,
-        ));
-      }
-      if (i < displayCount - 1) cards.add(const SizedBox(width: 12));
+    for (int i = 0; i < achievementDefs.length; i++) {
+      final def = achievementDefs[i];
+      final unlocked = level >= def.requiredLevel;
+      cards.add(_AchievementCard(
+        icon: unlocked ? def.icon : Icons.lock_rounded,
+        color: unlocked ? def.color : AppTheme.textSecondary,
+        title: unlocked ? def.title : 'Lvl ${def.requiredLevel}',
+        isLocked: !unlocked,
+      ));
+      if (i < achievementDefs.length - 1) cards.add(const SizedBox(width: 12));
     }
 
     return Column(
