@@ -145,7 +145,7 @@ class _MapScreenState extends State<MapScreen>
         id: m.id,
         coordinates: GlobeCoordinates(m.lat, m.lon),
         label: m.nameMn,
-        isLabelVisible: true,
+        isLabelVisible: false,
         style: PointStyle(
           color: m.color,
           size: m.id == 'karakorum' ? 8 : 6,
@@ -300,6 +300,7 @@ class _MapScreenState extends State<MapScreen>
       child: Scaffold(
         backgroundColor: _bgDark,
         body: SafeArea(
+          bottom: false,
           child: Stack(
             children: [
               // Animated map view (3D globe or 2D flat map)
@@ -421,19 +422,6 @@ class _MapScreenState extends State<MapScreen>
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  color: Colors.white, size: 18),
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

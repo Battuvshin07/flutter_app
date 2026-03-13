@@ -5,9 +5,6 @@ import '../theme/app_theme.dart';
 import '../components/admin/glass_card.dart';
 import '../providers/admin_provider.dart';
 import '../providers/auth_provider.dart';
-import '../main.dart' show HomeScreen;
-import '../screens/persons_screen.dart';
-import '../screens/map_screen.dart';
 import 'admin/admin_list_screen.dart';
 import 'admin/admin_collection_config.dart';
 import 'admin/progress_list_screen.dart';
@@ -96,7 +93,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -115,11 +111,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                (_) => false,
-              );
+              Navigator.pop(context);
             },
             child: Container(
               width: 42,
@@ -770,97 +762,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  //  BOTTOM NAVIGATION
-  // ════════════════════════════════════════════════════════════════
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface.withValues(alpha: 0.95),
-        border: const Border(top: BorderSide(color: AppTheme.cardBorder)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.home_rounded, 'Нүүр', 0),
-              _navItem(Icons.explore_rounded, 'Судлах', 1),
-              _navItem(Icons.map_rounded, 'Газрын зураг', 2),
-              _navItem(
-                Icons.admin_panel_settings_rounded,
-                'Админ',
-                3,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, int index) {
-    const activeIndex = 3; // Admin tab is always active on this screen
-    final isActive = index == activeIndex;
-    return GestureDetector(
-      onTap: () {
-        if (index == activeIndex) return; // already here
-        switch (index) {
-          case 0:
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-              (_) => false,
-            );
-            break;
-          case 1:
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PersonsScreen()),
-            );
-            break;
-          case 2:
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MapScreen()),
-            );
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: isActive
-            ? BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.cardBorder),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isActive ? AppTheme.accentGold : AppTheme.textSecondary,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: AppTheme.chip.copyWith(
-                fontSize: 10,
-                color: isActive ? AppTheme.accentGold : AppTheme.textSecondary,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
         ),
       ),
     );

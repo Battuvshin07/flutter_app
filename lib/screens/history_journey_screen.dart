@@ -167,6 +167,7 @@ class _HistoryJourneyScreenState extends State<HistoryJourneyScreen>
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Consumer<JourneyProvider>(
             builder: (context, journey, _) {
               if (journey.isLoading && journey.stories.isEmpty) {
@@ -238,26 +239,6 @@ class _HistoryJourneyScreenState extends State<HistoryJourneyScreen>
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.surfaceLight,
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
-                ),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                color: AppTheme.accentGold,
-                size: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

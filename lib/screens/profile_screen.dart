@@ -89,6 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: StreamBuilder<AppUser?>(
             stream: _userStream,
             builder: (context, snapshot) {
@@ -252,31 +253,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppTheme.textPrimary,
-                size: 18,
-              ),
-            ),
-          ),
-          const Spacer(),
-          Text('Профайл', style: AppTheme.sectionTitle),
-          const Spacer(),
-          const SizedBox(width: 40),
-        ],
-      ),
+      child: Text('Профайл',
+          textAlign: TextAlign.center,
+          style: AppTheme.sectionTitle),
     );
   }
 

@@ -43,6 +43,7 @@ class _PersonsScreenState extends State<PersonsScreen>
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               _buildAppBar(context),
@@ -69,34 +70,10 @@ class _PersonsScreenState extends State<PersonsScreen>
         horizontal: AppTheme.pagePadding,
         vertical: 8,
       ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.surface,
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                color: AppTheme.accentGold,
-                size: 18,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              'Түүхэн хүмүүс',
-              textAlign: TextAlign.center,
-              style: AppTheme.h2.copyWith(fontSize: 19),
-            ),
-          ),
-          const SizedBox(width: 36),
-        ],
+      child: Text(
+        'Түүхэн хүмүүс',
+        textAlign: TextAlign.center,
+        style: AppTheme.h2.copyWith(fontSize: 19),
       ),
     );
   }

@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../screens/history_journey_screen.dart';
-import '../screens/map_screen.dart';
-import '../screens/persons_screen.dart';
-import '../screens/profile_screen.dart';
 
-/// G) Floating bottom navigation bar
-/// 358×64, radius 22, blur/glass effect, 4 items, active underline 24×3.
+/// G) Floating bottom navigation bar with animated bubble effect
+/// Persistent across all 5 routes with animated bubble indicator.
 class HomeBottomNav extends StatefulWidget {
-  const HomeBottomNav({super.key});
+  final int selectedIndex;
+  final ValueChanged<int> onTabSelected;
+
+  const HomeBottomNav({
+    super.key,
+    required this.selectedIndex,
+    required this.onTabSelected,
+  });
 
   @override
   State<HomeBottomNav> createState() => _HomeBottomNavState();
 }
 
-class _HomeBottomNavState extends State<HomeBottomNav> {
-  int _selected = 0;
+class _HomeBottomNavState extends State<HomeBottomNav>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _bubbleController;
+  late Animation<double> _bubbleAnimation;
+  double _bubblePosition = 0.0;
 
   static const List<_NavItem> _items = [
     _NavItem(icon: Icons.home_rounded, label: 'Нүүр'),
@@ -25,101 +31,173 @@ class _HomeBottomNavState extends State<HomeBottomNav> {
     _NavItem(icon: Icons.person_rounded, label: 'Профайл'),
   ];
 
-  void _onTap(int index) {
-    if (index == _selected) return;
-    setState(() => _selected = index);
+  @override
+  void initState() {
+    super.initState();
+    _bubbleController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _bubbleAnimation = CurvedAnimation(
+      parent: _bubbleController,
+      curve: Curves.easeInOutCubic,
+    );
+    _bubblePosition = widget.selectedIndex.toDouble();
+  }
 
-    Widget? screen;
-    switch (index) {
-      case 1:
-        screen = const PersonsScreen();
-        break;
-      case 2:
-        screen = const HistoryJourneyScreen();
-        break;
-      case 3:
-        screen = const MapScreen();
-        break;
-      case 4:
-        screen = const ProfileScreen();
-        break;
+  @override
+  void didUpdateWidget(HomeBottomNav oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedIndex != widget.selectedIndex) {
+      _animateBubble(widget.selectedIndex);
     }
-    if (screen != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => screen!),
-      ).then((_) {
-        if (mounted) setState(() => _selected = 0);
-      });
-    }
+  }
+
+  void _animateBubble(int newIndex) {
+    final oldPosition = _bubblePosition;
+    final newPosition = newIndex.toDouble();
+
+    _bubbleController.reset();
+    _bubbleAnimation = Tween<double>(
+      begin: oldPosition,
+      end: newPosition,
+    ).animate(CurvedAnimation(
+      parent: _bubbleController,
+      curve: Curves.easeInOutCubic,
+    ));
+
+    _bubbleController.forward().then((_) {
+      setState(() => _bubblePosition = newPosition);
+    });
+  }
+
+  @override
+  void dispose() {
+    _bubbleController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.of(context).padding.bottom;
-    return Padding(
-      padding: EdgeInsets.only(
+    return Container(
+      margin: const EdgeInsets.only(
         left: AppTheme.pagePadding,
         right: AppTheme.pagePadding,
-        bottom: bottomPad + 8,
+        bottom: 8,
       ),
-      child: Container(
-        height: 64,
-        decoration: BoxDecoration(
-          color: AppTheme.surface.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          border: Border.all(color: AppTheme.cardBorder),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(
-              _items.length,
-              (i) => _buildItem(_items[i], i),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom,
+      ),
+      height: 64 + MediaQuery.of(context).padding.bottom,
+      decoration: BoxDecoration(
+        color: AppTheme.surface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Stack(
+        children: [
+          // Animated bubble indicator
+          AnimatedBuilder(
+            animation: _bubbleAnimation,
+            builder: (context, child) {
+              final itemWidth = (MediaQuery.of(context).size.width -
+                      (AppTheme.pagePadding * 2)) /
+                  _items.length;
+              final position = _bubbleAnimation.value * itemWidth;
+
+              return CustomPaint(
+                size: Size.infinite,
+                painter: _BubblePainter(
+                  position: position,
+                  itemWidth: itemWidth,
+                  color: AppTheme.accentGold.withValues(alpha: 0.2),
+                ),
+              );
+            },
+          ),
+          // Navigation items
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(
+                _items.length,
+                (i) => _buildItem(_items[i], i),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildItem(_NavItem item, int index) {
-    final isActive = _selected == index;
+    final isActive = widget.selectedIndex == index;
     final color = isActive ? AppTheme.accentGold : AppTheme.textSecondary;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _onTap(index),
+      onTap: () => widget.onTabSelected(index),
       child: SizedBox(
         width: 56,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(item.icon, color: color, size: 22),
+            AnimatedScale(
+              scale: isActive ? 1.1 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(item.icon, color: color, size: 22),
+            ),
             const SizedBox(height: 4),
             Text(
               item.label,
               style: AppTheme.chip.copyWith(
                 color: color,
                 fontSize: 10,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Active underline
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isActive ? 24 : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold,
-                borderRadius: BorderRadius.circular(2),
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+/// Custom painter for animated bubble effect
+class _BubblePainter extends CustomPainter {
+  final double position;
+  final double itemWidth;
+  final Color color;
+
+  _BubblePainter({
+    required this.position,
+    required this.itemWidth,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    // Draw bubble circle
+    final center = Offset(position + itemWidth / 2, size.height / 2);
+    canvas.drawCircle(center, 28, paint);
+
+    // Draw glow effect
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.1)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+
+    canvas.drawCircle(center, 32, glowPaint);
+  }
+
+  @override
+  bool shouldRepaint(_BubblePainter oldDelegate) {
+    return oldDelegate.position != position || oldDelegate.color != color;
   }
 }
 
