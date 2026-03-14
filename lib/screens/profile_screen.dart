@@ -1,5 +1,7 @@
+import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../services/user_service.dart';
@@ -7,7 +9,6 @@ import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import 'admin_dashboard_screen.dart';
-import 'edit_profile_screen.dart';
 import 'auth_gate.dart';
 import '../components/admin_gate.dart';
 
@@ -34,6 +35,12 @@ class _ProfileScreenState extends State<ProfileScreen>
   double _xpTarget = 0.0;
   bool _retryFlag = false;
 
+  // Inline edit state
+  bool _isEditing = false;
+  bool _isSaving = false;
+  final TextEditingController _nameCtrl = TextEditingController();
+  Uint8List? _pickedImageBytes;
+
   @override
   void initState() {
     super.initState();
@@ -58,10 +65,63 @@ class _ProfileScreenState extends State<ProfileScreen>
   void dispose() {
     _progressController.dispose();
     _accuracyController.dispose();
+    _nameCtrl.dispose();
     super.dispose();
   }
 
-  // ── XP / Progress animation helper ──────────────────────────────
+  // ── Inline edit helpers ──────────────────────────────────────────
+  void _enterEditMode() {
+    _nameCtrl.text = _currentUser?.effectiveName ?? '';
+    _pickedImageBytes = null;
+    setState(() => _isEditing = true);
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _isEditing = false;
+      _pickedImageBytes = null;
+    });
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
+    );
+    if (xFile != null && mounted) {
+      final bytes = await xFile.readAsBytes();
+      setState(() => _pickedImageBytes = bytes);
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (_nameCtrl.text.trim().isEmpty) return;
+    setState(() => _isSaving = true);
+    final profile = Provider.of<ProfileProvider>(context, listen: false);
+    final success = await profile.updateProfile(
+      displayName: _nameCtrl.text.trim(),
+      avatarBytes: _pickedImageBytes,
+    );
+    if (!mounted) return;
+    setState(() {
+      _isSaving = false;
+      if (success) {
+        _isEditing = false;
+        _pickedImageBytes = null;
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Амжилттай хадгаллаа' : 'Алдаа гарлаа'),
+        backgroundColor: success ? const Color(0xFF4ADE80) : AppTheme.crimson,
+      ),
+    );
+  }
+
+  // ── Build ────────────────────────────────────────────────────────
   void _animateToUserXP(int totalXP) {
     final target = UserService.levelProgress(totalXP);
     if ((target - _xpTarget).abs() > 0.005) {
@@ -254,8 +314,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Text('Профайл',
-          textAlign: TextAlign.center,
-          style: AppTheme.sectionTitle),
+          textAlign: TextAlign.center, style: AppTheme.sectionTitle),
     );
   }
 
@@ -267,66 +326,104 @@ class _ProfileScreenState extends State<ProfileScreen>
     final photoUrl = user?.photoUrl;
     final initials = user?.initials ?? '?';
 
+    Widget avatarChild;
+    if (_isEditing && _pickedImageBytes != null) {
+      avatarChild = Image.memory(_pickedImageBytes!, fit: BoxFit.cover);
+    } else if (photoUrl?.isNotEmpty == true) {
+      avatarChild = Image.network(
+        photoUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildInitialsAvatar(initials),
+      );
+    } else {
+      avatarChild = _buildInitialsAvatar(initials);
+    }
+
+    final avatarCircle = Container(
+      width: 110,
+      height: 110,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppTheme.accentGold, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.25),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ClipOval(child: avatarChild),
+    );
+
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.accentGold, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentGold.withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    spreadRadius: 2,
+        GestureDetector(
+          onTap: _isEditing ? _pickImage : null,
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              avatarCircle,
+              if (_isEditing)
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold,
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: AppTheme.background, width: 2),
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: (photoUrl?.isNotEmpty == true)
-                    ? Image.network(
-                        photoUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _buildInitialsAvatar(initials),
-                      )
-                    : _buildInitialsAvatar(initials),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentGold.withValues(alpha: 0.4),
-                    blurRadius: 8,
+                  child: const Icon(Icons.camera_alt_rounded,
+                      color: AppTheme.background, size: 16),
+                )
+              else
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentGold.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Text(
-                'Level $level',
-                style: AppTheme.chip.copyWith(
-                  color: AppTheme.background,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
+                  child: Text(
+                    'Level $level',
+                    style: AppTheme.chip.copyWith(
+                      color: AppTheme.background,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
+            ],
+          ),
+        ),
+        if (_isEditing) ...[
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: _pickImage,
+            child: Text(
+              'Зураг солих',
+              style: AppTheme.captionBold.copyWith(
+                color: AppTheme.accentGold,
+                fontSize: 13,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(displayName, style: AppTheme.h2),
-        const SizedBox(height: 4),
-        Text(
-          user?.email ?? '',
-          style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
-        ),
+          ),
+        ] else ...[
+          const SizedBox(height: 14),
+          Text(displayName, style: AppTheme.h2),
+          const SizedBox(height: 4),
+          Text(
+            user?.email ?? '',
+            style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+          ),
+        ],
       ],
     );
   }
@@ -368,14 +465,13 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
-                ),
+                onTap: _isEditing ? _cancelEdit : _enterEditMode,
                 child: Text(
-                  'Засах',
+                  _isEditing ? 'Болих' : 'Засах',
                   style: AppTheme.captionBold.copyWith(
-                    color: AppTheme.accentGold,
+                    color: _isEditing
+                        ? AppTheme.textSecondary
+                        : AppTheme.accentGold,
                   ),
                 ),
               ),
@@ -391,9 +487,10 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Name row
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -406,16 +503,50 @@ class _ProfileScreenState extends State<ProfileScreen>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(displayName, style: AppTheme.body),
+                      const SizedBox(height: 6),
+                      if (_isEditing)
+                        TextField(
+                          controller: _nameCtrl,
+                          style: AppTheme.body
+                              .copyWith(color: AppTheme.textPrimary),
+                          cursorColor: AppTheme.accentGold,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            filled: true,
+                            fillColor: AppTheme.surfaceLight,
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.cardBorder),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.cardBorder),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                              borderSide: const BorderSide(
+                                  color: AppTheme.accentGold, width: 1.5),
+                            ),
+                          ),
+                        )
+                      else
+                        Text(displayName, style: AppTheme.body),
                     ],
                   ),
                 ),
                 const Divider(
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
+                // Email row — always read-only
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -436,6 +567,57 @@ class _ProfileScreenState extends State<ProfileScreen>
               ],
             ),
           ),
+          // Save button — only in edit mode
+          if (_isEditing) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.accentGold, Color(0xFFFFE08A)],
+                  ),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentGold.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMd),
+                    ),
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppTheme.background,
+                          ),
+                        )
+                      : Text(
+                          'Хадгалах',
+                          style: AppTheme.captionBold.copyWith(
+                            color: AppTheme.background,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -469,15 +651,28 @@ class _ProfileScreenState extends State<ProfileScreen>
     ];
 
     final cards = <Widget>[];
-    for (int i = 0; i < achievementDefs.length; i++) {
-      final def = achievementDefs[i];
+
+    // Most recently unlocked = highest requiredLevel (strict unlock order).
+    // Show unlocked first (descending level), then locked (ascending level).
+    final unlockedDefs = achievementDefs
+        .where((d) => level >= d.requiredLevel)
+        .toList()
+      ..sort((a, b) => b.requiredLevel.compareTo(a.requiredLevel));
+    final lockedDefs = achievementDefs
+        .where((d) => level < d.requiredLevel)
+        .toList()
+      ..sort((a, b) => a.requiredLevel.compareTo(b.requiredLevel));
+    final sorted = [...unlockedDefs, ...lockedDefs];
+
+    for (int i = 0; i < sorted.length; i++) {
+      final def = sorted[i];
       final unlocked = level >= def.requiredLevel;
       cards.add(_AchievementCard(
         imagePath: def.image,
         title: unlocked ? def.title : 'Lvl ${def.requiredLevel}',
         isLocked: !unlocked,
       ));
-      if (i < achievementDefs.length - 1) cards.add(const SizedBox(width: 12));
+      if (i < sorted.length - 1) cards.add(const SizedBox(width: 12));
     }
 
     return Column(

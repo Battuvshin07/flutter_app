@@ -22,7 +22,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
   int _selectedFilter = 0;
   final CultureService _cultureService = CultureService();
 
-  static const _filters = ['Бүх сэдэв', 'Шинэ', 'Дууссан'];
+  static const _filters = ['Бүх сэдэв', 'Дууссан'];
 
   static const _iconMap = {
     'landscape': Icons.landscape_rounded,
@@ -226,11 +226,7 @@ class _CultureListScreenState extends State<CultureListScreen> {
   // ── Filter logic ───────────────────────────────────────────────
   List<CultureModel> _applyFilter(List<CultureModel> list) {
     switch (_selectedFilter) {
-      case 1: // Шинэ — not started
-        return list
-            .where((e) => (_progressMap[e.id ?? ''] ?? 0.0) == 0.0)
-            .toList();
-      case 2: // Дууссан — 100 %
+      case 1: // Дууссан — 100 %
         return list
             .where((e) => (_progressMap[e.id ?? ''] ?? 0.0) >= 1.0)
             .toList();
