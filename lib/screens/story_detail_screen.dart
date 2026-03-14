@@ -26,11 +26,12 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
     setState(() => _marking = false);
   }
 
-  void _openQuiz() {
+  void _openQuiz({bool isReview = false}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => StoryQuizScreen(story: widget.story),
+        builder: (_) =>
+            StoryQuizScreen(story: widget.story, isReview: isReview),
       ),
     );
   }
@@ -237,7 +238,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               SizedBox(
                 height: 54,
                 child: ElevatedButton.icon(
-                  onPressed: _openQuiz,
+                  onPressed: () => _openQuiz(),
                   icon: const Icon(Icons.quiz_rounded),
                   label: Text('Шалгалт өгөх',
                       style: AppTheme.button.copyWith(fontSize: 16)),
@@ -283,7 +284,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               SizedBox(
                 height: 54,
                 child: ElevatedButton.icon(
-                  onPressed: _openQuiz,
+                  onPressed: () => _openQuiz(isReview: true),
                   icon: const Icon(Icons.replay_rounded),
                   label: Text('Дахин судлах',
                       style: AppTheme.button.copyWith(fontSize: 16)),

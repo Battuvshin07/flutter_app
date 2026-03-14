@@ -13,8 +13,10 @@ import '../components/quiz_answer_button.dart';
 /// User must score ≥70 % to pass, unlock the next story and earn XP.
 class StoryQuizScreen extends StatefulWidget {
   final Story story;
+  final bool isReview;
 
-  const StoryQuizScreen({super.key, required this.story});
+  const StoryQuizScreen(
+      {super.key, required this.story, this.isReview = false});
 
   @override
   State<StoryQuizScreen> createState() => _StoryQuizScreenState();
@@ -416,36 +418,31 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
 
           const SizedBox(height: 36),
 
-          // Retry button (always visible)
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _retry(provider),
-              icon: const Icon(Icons.replay_rounded),
-              label: Text(
-                passed ? 'Дахин оролдох' : 'Дахин оролдох',
-                style: AppTheme.button,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    passed ? AppTheme.surfaceLight : AppTheme.accentGold,
-                foregroundColor:
-                    passed ? AppTheme.textPrimary : AppTheme.background,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          if (widget.isReview) ...[
+            // Дахин судалж байгаа → Дахин оролдох + Буцах
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _retry(provider),
+                icon: const Icon(Icons.replay_rounded),
+                label: Text('Дахин оролдох', style: AppTheme.button),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentGold,
+                  foregroundColor: AppTheme.background,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
               ),
             ),
-          ),
-
-          if (passed)
+          ] else ...[
+            // Анх удаа → Үргэлжлүүлэх + Буцах
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Pop both quiz and detail screen back to journey
                   Navigator.of(context)
                     ..pop()
                     ..pop();
@@ -463,6 +460,7 @@ class _StoryQuizScreenState extends State<StoryQuizScreen>
                 ),
               ),
             ),
+          ],
 
           const SizedBox(height: 12),
           SizedBox(
