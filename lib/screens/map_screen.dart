@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_earth_globe/flutter_earth_globe.dart';
 import 'package:flutter_earth_globe/flutter_earth_globe_controller.dart';
@@ -32,6 +33,7 @@ class _MapScreenState extends State<MapScreen>
   bool _showEmpire = true;
   bool _globeReady = false;
   String? _selectedMarkerId;
+  late final Map<String, double> _stemHeights;
 
   /// true = 3D globe, false = 2D flat map
   bool _is3D = true;
@@ -46,8 +48,37 @@ class _MapScreenState extends State<MapScreen>
   @override
   void initState() {
     super.initState();
+    _stemHeights = _computeStemHeights(EmpireTerritory.markers);
     _initGlobe();
     _initViewToggleAnimation();
+  }
+
+  /// Computes per-marker stem heights based on geographic clustering.
+  /// Markers sorted south→north; each marker checks proximity to those
+  /// already processed. If close, its stem = tallest neighbor's stem + step,
+  /// so stacked labels rise above one another.
+  static Map<String, double> _computeStemHeights(List<ConquestMarker> markers) {
+    const baseStem = 12.0;
+    const step = 22.0;
+    const threshold = 20.0; // degrees in both lat and lon
+
+    final sorted = List.of(markers)..sort((a, b) => a.lat.compareTo(b.lat));
+    final heights = <String, double>{};
+
+    for (int i = 0; i < sorted.length; i++) {
+      double maxNearbyStem = 0;
+      for (int j = 0; j < i; j++) {
+        final dx = (sorted[i].lon - sorted[j].lon).abs();
+        final dy = (sorted[i].lat - sorted[j].lat).abs();
+        if (dx < threshold && dy < threshold) {
+          maxNearbyStem = max(maxNearbyStem, heights[sorted[j].id]!);
+        }
+      }
+      heights[sorted[i].id] =
+          maxNearbyStem > 0 ? maxNearbyStem + step : baseStem;
+    }
+
+    return heights;
   }
 
   void _initViewToggleAnimation() {
@@ -95,7 +126,7 @@ class _MapScreenState extends State<MapScreen>
       zoom: 0.4,
       minZoom: -0.5,
       maxZoom: 3.0,
-      isRotating: true,
+      isRotating: false,
       isBackgroundFollowingSphereRotation: true,
       surface: Image.asset('assets/maps/earth_texture.png').image,
       background: Image.asset('assets/maps/stars_bg.jpg').image,
@@ -140,6 +171,16 @@ class _MapScreenState extends State<MapScreen>
   }
 
   void _addConquestMarkers() {
+    // Moderate altitudes — just enough to visually separate the dots.
+    // Label separation is handled by variable stem heights instead.
+    const altitudes = <String, double>{
+      'karakorum': 0.05,
+      'beijing': 0.08,
+      'samarkand': 0.05,
+      'baghdad': 0.05,
+      'moscow': 0.10,
+      'golden_horde': 0.07,
+    };
     for (final m in EmpireTerritory.markers) {
       _globeCtrl.addPoint(Point(
         id: m.id,
@@ -148,8 +189,8 @@ class _MapScreenState extends State<MapScreen>
         isLabelVisible: false,
         style: PointStyle(
           color: m.color,
-          size: m.id == 'karakorum' ? 8 : 6,
-          altitude: 0.05,
+          size: m.id == 'karakorum' ? 5 : 3,
+          altitude: altitudes[m.id] ?? 0.05,
           transitionDuration: 600,
         ),
         labelBuilder: (context, point, isHovering, isVisible) {
@@ -186,30 +227,54 @@ class _MapScreenState extends State<MapScreen>
   }
 
   Widget? _buildPointLabel(ConquestMarker m, bool isHovering) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: (isHovering ? _cardBg : _bgDark).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: m.color.withValues(alpha: 0.5), width: 1),
-        boxShadow: [
-          BoxShadow(color: m.color.withValues(alpha: 0.3), blurRadius: 6),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(m.nameMn,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700)),
-          Text(m.year,
-              style: TextStyle(
-                  color: m.color, fontSize: 8, fontWeight: FontWeight.w600)),
-        ],
-      ),
+    final stemH = _stemHeights[m.id] ?? 12.0;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: (isHovering ? _cardBg : _bgDark).withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: m.color.withValues(alpha: 0.5), width: 1),
+            boxShadow: [
+              BoxShadow(color: m.color.withValues(alpha: 0.3), blurRadius: 6),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(m.nameMn,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700)),
+              Text(m.year,
+                  style: TextStyle(
+                      color: m.color,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        // Stem — height varies per marker to stack overlapping labels
+        Container(
+          width: 1.5,
+          height: stemH,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                m.color.withValues(alpha: 0.9),
+                m.color.withValues(alpha: 0.2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(1),
+          ),
+        ),
+      ],
     );
   }
 
@@ -237,13 +302,6 @@ class _MapScreenState extends State<MapScreen>
         _globeCtrl.removePointConnection('border-$i');
       }
     }
-  }
-
-  void _resetGlobe() {
-    _globeCtrl.resetRotation();
-    _globeCtrl.setZoom(0.4);
-    _globeCtrl.stopRotation();
-    setState(() => _selectedMarkerId = null);
   }
 
   void _zoom2D({required bool zoomIn}) {
@@ -502,12 +560,6 @@ class _MapScreenState extends State<MapScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_is3D)
-          _controlBtn(
-              icon: Icons.restart_alt,
-              tooltip: 'Reset Rotation',
-              onTap: _resetGlobe),
-        if (_is3D) const SizedBox(height: 10),
         _controlBtn(
             icon: _showEmpire ? Icons.visibility : Icons.visibility_off,
             tooltip: 'Toggle Empire',

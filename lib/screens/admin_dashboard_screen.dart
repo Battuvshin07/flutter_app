@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import 'admin/admin_list_screen.dart';
 import 'admin/admin_collection_config.dart';
 import 'admin/progress_list_screen.dart';
+import '../main.dart' show HomeScreen;
 
 // ══════════════════════════════════════════════════════════════════
 //  ADMIN DASHBOARD SCREEN — Modern Grid Layout
@@ -111,7 +112,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pop(context);
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const HomeScreen(initialIndex: 4),
+                  ),
+                );
+              }
             },
             child: Container(
               width: 42,

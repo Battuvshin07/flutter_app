@@ -74,14 +74,15 @@ class MyApp extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int initialIndex;
+  const HomeScreen({super.key, this.initialIndex = 0});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
   static const List<NavItem> _navItems = [
     NavItem(icon: Icons.home_rounded, label: 'Нүүр'),
@@ -94,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AppProvider>(context, listen: false).loadAllData();
       Provider.of<JourneyProvider>(context, listen: false).init();
