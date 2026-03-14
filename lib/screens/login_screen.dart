@@ -171,6 +171,73 @@ class _LoginScreenState extends State<LoginScreen> {
                                   : Text('Нэвтрэх', style: AppTheme.button),
                             ),
                           ),
+
+                          const SizedBox(height: 16),
+
+                          // Divider
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: AppTheme.textSecondary
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(
+                                  'эсвэл',
+                                  style: AppTheme.caption
+                                      .copyWith(color: AppTheme.textSecondary),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: AppTheme.textSecondary
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Google Sign-In button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: OutlinedButton.icon(
+                              onPressed: auth.isLoading
+                                  ? null
+                                  : () => context
+                                      .read<AuthProvider>()
+                                      .signInWithGoogle(),
+                              icon: Image.network(
+                                'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                                height: 20,
+                                width: 20,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.g_mobiledata,
+                                  size: 24,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              label: Text(
+                                'Google-ээр нэвтрэх',
+                                style: AppTheme.button
+                                    .copyWith(color: AppTheme.textPrimary),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: AppTheme.cardBorder),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusMd),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

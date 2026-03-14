@@ -127,6 +127,8 @@ class JourneyProvider with ChangeNotifier {
 
     try {
       final existing = _progress[storyId];
+      final alreadyStudied = existing?.studied ?? false;
+
       final data = UserStoryProgress(
         storyId: storyId,
         studied: true,
@@ -134,12 +136,25 @@ class JourneyProvider with ChangeNotifier {
         xpEarned: existing?.xpEarned ?? 0,
       );
 
-      await _db
-          .collection('users')
-          .doc(uid)
-          .collection('progress')
-          .doc(storyId)
-          .set(data.toFirestore(), SetOptions(merge: true));
+      final batch = _db.batch();
+
+      // Update progress doc
+      batch.set(
+        _db.collection('users').doc(uid).collection('progress').doc(storyId),
+        data.toFirestore(),
+        SetOptions(merge: true),
+      );
+
+      // Increment storiesCompleted only if this is the first time
+      if (!alreadyStudied) {
+        batch.set(
+          _db.collection('users').doc(uid),
+          {'storiesCompleted': FieldValue.increment(1)},
+          SetOptions(merge: true),
+        );
+      }
+
+      await batch.commit();
 
       _progress[storyId] = data;
       notifyListeners();

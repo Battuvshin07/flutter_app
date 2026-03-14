@@ -17,6 +17,9 @@ dependencies:
   cloud_functions: ^4.6.0
   firebase_storage: ^11.6.0
 
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+
   # Image Picking
   image_picker: ^1.0.0
 

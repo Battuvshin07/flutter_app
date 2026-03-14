@@ -143,8 +143,6 @@ class UserService {
         'isActive': true,
         'totalXP': 0,
         'storiesCompleted': 0,
-        'quizzesCompleted': 0,
-        'darkMode': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'lastLogin': FieldValue.serverTimestamp(),
@@ -164,8 +162,6 @@ class UserService {
 
         addIfMissing('totalXP', 0);
         addIfMissing('storiesCompleted', 0);
-        addIfMissing('quizzesCompleted', 0);
-        addIfMissing('darkMode', false);
         addIfMissing('isActive', true);
         patch['updatedAt'] = FieldValue.serverTimestamp();
 
@@ -197,7 +193,6 @@ class UserService {
     batch.update(userRef, {
       'totalXP': 18400,
       'storiesCompleted': 5,
-      'quizzesCompleted': 3,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 

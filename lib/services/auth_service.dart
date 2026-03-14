@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'user_service.dart';
 
 /// Firebase Authentication service.
@@ -41,12 +42,9 @@ class AuthService {
         'isActive': true,
         'avatarUrl': '',
         'photoUrl': null,
-        'bio': null,
         'preferredLanguage': 'mn',
         'totalXP': 0,
         'storiesCompleted': 0,
-        'quizzesCompleted': 0,
-        'darkMode': false,
         'lastLogin': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -83,7 +81,57 @@ class AuthService {
 
   /// Sign out the current user.
   Future<void> signOut() async {
+    await GoogleSignIn().signOut();
     await _auth.signOut();
+  }
+
+  /// Sign in with Google account.
+  /// Creates or updates Firestore user doc on success.
+  Future<User?> signInWithGoogle() async {
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return null; // User cancelled
+
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final userCredential = await _auth.signInWithCredential(credential);
+    final user = userCredential.user;
+
+    if (user != null) {
+      final docRef = _db.doc('users/${user.uid}');
+      final doc = await docRef.get();
+
+      if (doc.exists) {
+        // Existing user — update last login
+        await docRef.update({
+          'lastLogin': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        // New user — create Firestore profile
+        await docRef.set({
+          'uid': user.uid,
+          'name': user.displayName ?? '',
+          'displayName': user.displayName ?? '',
+          'email': user.email ?? '',
+          'role': 'user',
+          'isActive': true,
+          'avatarUrl': '',
+          'photoUrl': user.photoURL,
+          'preferredLanguage': 'mn',
+          'totalXP': 0,
+          'storiesCompleted': 0,
+          'lastLogin': FieldValue.serverTimestamp(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    return user;
   }
 
   /// Send a password reset email.

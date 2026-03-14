@@ -128,6 +128,33 @@ class AuthProvider with ChangeNotifier {
     await _authService.signOut();
   }
 
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = await _authService.signInWithGoogle();
+      if (user == null) {
+        // User cancelled the Google sign-in flow
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _error = _mapAuthError(e.code);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _error = 'Google нэвтрэлт амжилтгүй: ${e.toString()}';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();
