@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../services/user_service.dart';
+import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -28,7 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   late final AnimationController _progressController;
   late final AnimationController _accuracyController;
   late final Stream<AppUser?> _userStream;
-  bool _darkMode = true;
 
   // Real-time user state
   AppUser? _currentUser;
@@ -300,6 +300,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 28),
           _buildAchievementsSection(),
           const SizedBox(height: 28),
+          _buildStatisticsSection(),
+          const SizedBox(height: 28),
           _buildPersonalInfoSection(),
           const SizedBox(height: 20),
           _buildSettingsSection(),
@@ -439,6 +441,79 @@ class _ProfileScreenState extends State<ProfileScreen>
           color: AppTheme.accentGold,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+
+  // ── Statistics ───────────────────────────────────────────────────
+  String _formatLastActive(DateTime? dt) {
+    if (dt == null) return '–';
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return 'Одоо';
+    if (diff.inHours < 24) return '${diff.inHours}ц өмнө';
+    if (diff.inDays == 1) return 'Өчигдөр';
+    return '${diff.inDays}өдрийн өмнө';
+  }
+
+  Widget _buildStatisticsSection() {
+    final user = _currentUser;
+    final storiesCount = user?.storiesCompleted ?? 0;
+    final lastActive = user?.lastActiveDate ?? user?.lastLogin;
+
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'СТАТИСТИК',
+            style: AppTheme.caption.copyWith(
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<Map<String, double>>(
+            future: CultureService().loadProgress(),
+            builder: (context, snapshot) {
+              final cultureCount = snapshot.hasData
+                  ? snapshot.data!.values.where((v) => v == 1.0).length
+                  : 0;
+              return Row(
+                children: [
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.menu_book_rounded,
+                      value: '$storiesCount',
+                      label: 'Түүх',
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.account_balance_rounded,
+                      value: '$cultureCount',
+                      label: 'Соёл',
+                      color: const Color(0xFF60A5FA),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.schedule_rounded,
+                      value: _formatLastActive(lastActive),
+                      label: 'Сүүлд идэвхтэй',
+                      color: const Color(0xFF4ADE80),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -830,25 +905,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 const Divider(
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
-                  icon: Icons.dark_mode_rounded,
-                  label: 'Харанхуй горим',
-                  trailing: SizedBox(
-                    height: 28,
-                    child: Switch(
-                      value: _darkMode,
-                      onChanged: (v) => setState(() => _darkMode = v),
-                      activeThumbColor: AppTheme.accentGold,
-                      activeTrackColor:
-                          AppTheme.accentGold.withValues(alpha: 0.3),
-                      inactiveThumbColor: AppTheme.textSecondary,
-                      inactiveTrackColor: AppTheme.surfaceLight,
-                    ),
-                  ),
-                  onTap: () => setState(() => _darkMode = !_darkMode),
-                ),
-                const Divider(
-                    height: 1, thickness: 1, color: AppTheme.cardBorder),
-                _buildSettingsRow(
                   icon: Icons.logout_rounded,
                   label: 'Гарах',
                   trailing: const Icon(
@@ -913,6 +969,71 @@ class _ProfileScreenState extends State<ProfileScreen>
 // ══════════════════════════════════════════════════════════════════
 //  REUSABLE SUB-WIDGETS
 // ══════════════════════════════════════════════════════════════════
+
+// ── Stat Tile ──────────────────────────────────────────────────────
+class _StatTile extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+
+  const _StatTile({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: AppTheme.h2.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTheme.caption.copyWith(
+              color: AppTheme.textSecondary,
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 // ── Achievement Card (glassmorphism) ───────────────────────────────
 class _AchievementCard extends StatelessWidget {
