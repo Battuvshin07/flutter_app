@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -38,6 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   // Inline edit state
   bool _isEditing = false;
   bool _isSaving = false;
+  bool _isDeleting = false;
   final TextEditingController _nameCtrl = TextEditingController();
   Uint8List? _pickedImageBytes;
 
@@ -373,8 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold,
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: AppTheme.background, width: 2),
+                    border: Border.all(color: AppTheme.background, width: 2),
                   ),
                   child: const Icon(Icons.camera_alt_rounded,
                       color: AppTheme.background, size: 16),
@@ -461,8 +464,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final lastActive = user?.lastActiveDate ?? user?.lastLogin;
 
     return Padding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -564,8 +566,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 // Name row
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -594,14 +596,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                             border: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.circular(AppTheme.radiusSm),
-                              borderSide: const BorderSide(
-                                  color: AppTheme.cardBorder),
+                              borderSide:
+                                  const BorderSide(color: AppTheme.cardBorder),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.circular(AppTheme.radiusSm),
-                              borderSide: const BorderSide(
-                                  color: AppTheme.cardBorder),
+                              borderSide:
+                                  const BorderSide(color: AppTheme.cardBorder),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius:
@@ -620,8 +622,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 // Email row — always read-only
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -668,8 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.radiusMd),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                   ),
                   child: _isSaving
@@ -781,6 +782,204 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   // ── Settings ─────────────────────────────────────────────────────
+
+  /// Email/password-аар нэвтэрсэн эсэхийг шалгана.
+  bool get _isPasswordUser =>
+      FirebaseAuth.instance.currentUser?.providerData
+          .any((p) => p.providerId == 'password') ??
+      false;
+
+  /// Нууц үг солих — reset email явуулна.
+  Future<void> _sendPasswordReset() async {
+    final email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return;
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$email руу нууц үг сэргээх имэйл илгээлээ'),
+          backgroundColor: const Color(0xFF4ADE80),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Имэйл илгээхэд алдаа гарлаа'),
+          backgroundColor: AppTheme.crimson,
+        ),
+      );
+    }
+  }
+
+  void _showPasswordResetConfirm() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
+        title: Text('Нууц үг солих', style: AppTheme.sectionTitle),
+        content: Text(
+          '${FirebaseAuth.instance.currentUser?.email ?? ''} хаяг руу нууц үг сэргээх холбоос илгээх үү?',
+          style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Болих',
+                style: AppTheme.captionBold
+                    .copyWith(color: AppTheme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _sendPasswordReset();
+            },
+            child: Text('Илгээх',
+                style:
+                    AppTheme.captionBold.copyWith(color: AppTheme.accentGold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAppAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppTheme.accentGold.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: AppTheme.accentGold.withValues(alpha: 0.3)),
+              ),
+              child: const Icon(Icons.shield_outlined,
+                  color: AppTheme.accentGold, size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text('Монголын Түүх', style: AppTheme.sectionTitle),
+            const SizedBox(height: 4),
+            Text(
+              'Хувилбар 1.0.0',
+              style:
+                  AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '13-р зууны Монголын эзэнт гүрний түүхийг интерактив аргаар судлах боловсролын аппликейшн.',
+              style:
+                  AppTheme.body.copyWith(color: AppTheme.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Хаах',
+                style: AppTheme.captionBold
+                    .copyWith(color: AppTheme.accentGold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      // Re-authenticate based on provider
+      final isGoogle = user.providerData
+          .any((p) => p.providerId == 'google.com');
+
+      if (isGoogle) {
+        final googleUser = await GoogleSignIn().signIn();
+        if (googleUser == null) {
+          setState(() => _isDeleting = false);
+          return;
+        }
+        final googleAuth = await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await user.reauthenticateWithCredential(credential);
+      }
+      // email/password users: session шинэ байх тул шууд устгана
+
+      // Firestore doc устгах
+      await FirebaseFirestore.instance.doc('users/${user.uid}').delete();
+      // Firebase Auth account устгах
+      await user.delete();
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() => _isDeleting = false);
+      if (!mounted) return;
+      final msg = e.code == 'requires-recent-login'
+          ? 'Дахин нэвтэрч орсны дараа данс устгана уу'
+          : 'Алдаа: ${e.message}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppTheme.crimson),
+      );
+    } catch (_) {
+      setState(() => _isDeleting = false);
+    }
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
+        title: Text('Данс устгах', style: AppTheme.sectionTitle),
+        content: Text(
+          'Та дансаа бүрмөсөн устгахдаа итгэлтэй байна уу?\n\nБүх мэдээлэл, явц, амжилтууд устах болно. Энэ үйлдлийг буцаах боломжгүй.',
+          style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Болих',
+                style: AppTheme.captionBold
+                    .copyWith(color: AppTheme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteAccount();
+            },
+            child: Text('Устгах',
+                style: AppTheme.captionBold
+                    .copyWith(color: AppTheme.crimson)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingsRow({
     required IconData icon,
     required String label,
@@ -902,6 +1101,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   onTap: () {},
                 ),
+                if (_isPasswordUser) ...[
+                  const Divider(
+                      height: 1, thickness: 1, color: AppTheme.cardBorder),
+                  _buildSettingsRow(
+                    icon: Icons.lock_reset_rounded,
+                    label: 'Нууц үг солих',
+                    trailing: const Icon(Icons.chevron_right_rounded,
+                        color: AppTheme.textSecondary, size: 20),
+                    onTap: _showPasswordResetConfirm,
+                  ),
+                ],
+                const Divider(
+                    height: 1, thickness: 1, color: AppTheme.cardBorder),
+                _buildSettingsRow(
+                  icon: Icons.info_outline_rounded,
+                  label: 'Апп тухай',
+                  trailing: const Icon(Icons.chevron_right_rounded,
+                      color: AppTheme.textSecondary, size: 20),
+                  onTap: _showAppAboutDialog,
+                ),
                 const Divider(
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
@@ -916,6 +1135,71 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 24),
+          // ── Account section ───────────────────────────────────────
+          Text(
+            'АККАУНТ',
+            style: AppTheme.caption.copyWith(
+              color: AppTheme.textSecondary,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(
+                  color: AppTheme.crimson.withValues(alpha: 0.2)),
+            ),
+            child: _isDeleting
+                ? const Padding(
+                    padding: EdgeInsets.all(18),
+                    child: Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.crimson,
+                        ),
+                      ),
+                    ),
+                  )
+                : GestureDetector(
+                    onTap: _showDeleteAccountDialog,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppTheme.crimson.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.delete_forever_rounded,
+                                color: AppTheme.crimson, size: 18),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Данс устгах',
+                              style:
+                                  AppTheme.body.copyWith(color: AppTheme.crimson),
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: AppTheme.crimson, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),
