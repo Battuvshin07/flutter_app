@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 
@@ -20,6 +19,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String _language = 'mn';
   Uint8List? _pickedImageBytes;
   String? _currentPhotoUrl;
+  String? _selectedAvatarAsset;
+
+  static const _profileAvatars = [
+    'assets/images/profile/profile1.png',
+    'assets/images/profile/profile2.png',
+    'assets/images/profile/profile3.png',
+    'assets/images/profile/profile4.png',
+    'assets/images/profile/profile5.png',
+  ];
 
   @override
   void initState() {
@@ -29,6 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioCtrl = TextEditingController(text: profile.bio ?? '');
     _language = profile.preferredLanguage ?? 'mn';
     _currentPhotoUrl = profile.photoUrl;
+    _selectedAvatarAsset = profile.avatarAsset;
   }
 
   @override
@@ -38,18 +47,76 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final xFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
+  void _showAvatarPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Профайл зураг сонгох', style: AppTheme.sectionTitle),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _profileAvatars.map((path) {
+                  final isSelected = _selectedAvatarAsset == path;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedAvatarAsset = path;
+                        _pickedImageBytes = null;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.accentGold
+                              : AppTheme.cardBorder,
+                          width: isSelected ? 3 : 1.5,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.accentGold
+                                      .withValues(alpha: 0.45),
+                                  blurRadius: 10,
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(path, fit: BoxFit.cover),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-    if (xFile != null) {
-      final bytes = await xFile.readAsBytes();
-      setState(() => _pickedImageBytes = bytes);
-    }
   }
 
   Future<void> _save() async {
@@ -61,6 +128,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       bio: _bioCtrl.text.trim(),
       preferredLanguage: _language,
       avatarBytes: _pickedImageBytes,
+      avatarAsset: _selectedAvatarAsset,
     );
 
     if (!mounted) return;
@@ -225,7 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildAvatarPicker() {
     return Center(
       child: GestureDetector(
-        onTap: _pickImage,
+        onTap: _showAvatarPicker,
         child: Stack(
           alignment: Alignment.bottomRight,
           children: [
@@ -253,7 +321,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppTheme.background, width: 2),
               ),
-              child: const Icon(Icons.camera_alt_rounded,
+              child: const Icon(Icons.grid_view_rounded,
                   color: AppTheme.background, size: 16),
             ),
           ],
@@ -266,6 +334,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_pickedImageBytes != null) {
       return Image.memory(_pickedImageBytes!, fit: BoxFit.cover);
     }
+    if (_selectedAvatarAsset != null) {
+      return Image.asset(_selectedAvatarAsset!, fit: BoxFit.cover);
+    }
     if (_currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty) {
       return Image.network(
         _currentPhotoUrl!,
@@ -273,11 +344,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         errorBuilder: (_, __, ___) => _defaultAvatar(),
       );
     }
-    return Image.asset(
-      'assets/images/pic_2.png',
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _defaultAvatar(),
-    );
+    return _defaultAvatar();
   }
 
   Widget _defaultAvatar() {

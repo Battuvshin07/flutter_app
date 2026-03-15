@@ -59,5 +59,6 @@ flutter:
   assets:
     - assets/images/
     - assets/images/achievements/
+    - assets/images/profile/
     - assets/data/
     - assets/maps/

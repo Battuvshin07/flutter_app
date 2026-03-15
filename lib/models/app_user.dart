@@ -53,6 +53,7 @@ class AppUser {
   final String email;
   final String role; // 'user' | 'admin' | 'superAdmin'
   final String? photoUrl;
+  final String? avatarAsset; // e.g. 'assets/images/profile/profile1.png'
   final String? bio;
   final String preferredLanguage; // 'mn' | 'en' | 'ru'
   final int totalXP;
@@ -73,6 +74,7 @@ class AppUser {
     this.displayName,
     this.role = 'user',
     this.photoUrl,
+    this.avatarAsset,
     this.bio,
     this.preferredLanguage = 'mn',
     this.totalXP = 0,
@@ -108,6 +110,7 @@ class AppUser {
       email: data['email'] as String? ?? '',
       role: data['role'] as String? ?? 'user',
       photoUrl: (photoUrl?.isEmpty ?? true) ? null : photoUrl,
+      avatarAsset: data['avatarAsset'] as String?,
       bio: data['bio'] as String?,
       preferredLanguage: data['preferredLanguage'] as String? ?? 'mn',
       totalXP: (data['totalXP'] as num? ?? 0).toInt(),
@@ -129,6 +132,7 @@ class AppUser {
         'email': email,
         'role': role,
         'photoUrl': photoUrl,
+        'avatarAsset': avatarAsset,
         'bio': bio,
         'preferredLanguage': preferredLanguage,
         'totalXP': totalXP,
@@ -145,6 +149,7 @@ class AppUser {
     String? email,
     String? role,
     String? photoUrl,
+    String? avatarAsset,
     String? bio,
     String? preferredLanguage,
     int? totalXP,
@@ -165,6 +170,7 @@ class AppUser {
         email: email ?? this.email,
         role: role ?? this.role,
         photoUrl: photoUrl ?? this.photoUrl,
+        avatarAsset: avatarAsset ?? this.avatarAsset,
         bio: bio ?? this.bio,
         preferredLanguage: preferredLanguage ?? this.preferredLanguage,
         totalXP: totalXP ?? this.totalXP,

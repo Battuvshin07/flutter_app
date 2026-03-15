@@ -2,6 +2,7 @@
 //  UserService – Firestore + Firebase Auth user layer
 // ════════════════════════════════════════════════════════
 
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -13,6 +14,14 @@ import '../utils/xp_helpers.dart' as xp;
 
 class UserService {
   UserService._(); // static-only
+
+  static const _profileAvatars = [
+    'assets/images/profile/profile1.png',
+    'assets/images/profile/profile2.png',
+    'assets/images/profile/profile3.png',
+    'assets/images/profile/profile4.png',
+    'assets/images/profile/profile5.png',
+  ];
 
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -143,6 +152,8 @@ class UserService {
         'isActive': true,
         'totalXP': 0,
         'storiesCompleted': 0,
+        'avatarAsset':
+            _profileAvatars[Random().nextInt(_profileAvatars.length)],
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'lastLogin': FieldValue.serverTimestamp(),
@@ -163,6 +174,8 @@ class UserService {
         addIfMissing('totalXP', 0);
         addIfMissing('storiesCompleted', 0);
         addIfMissing('isActive', true);
+        addIfMissing('avatarAsset',
+            _profileAvatars[Random().nextInt(_profileAvatars.length)]);
         patch['updatedAt'] = FieldValue.serverTimestamp();
 
         if (patch.isNotEmpty) {

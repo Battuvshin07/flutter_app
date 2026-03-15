@@ -17,6 +17,7 @@ class ProfileProvider with ChangeNotifier {
   AppUser? _user;
   String? _displayName;
   String? _photoUrl;
+  String? _avatarAsset;
   String? _bio;
   String? _preferredLanguage;
   bool _isLoading = false;
@@ -28,6 +29,7 @@ class ProfileProvider with ChangeNotifier {
   AppUser? get user => _user;
   String? get displayName => _displayName;
   String? get photoUrl => _photoUrl;
+  String? get avatarAsset => _avatarAsset;
   String? get bio => _bio;
   String? get preferredLanguage => _preferredLanguage;
   bool get isLoading => _isLoading;
@@ -57,6 +59,7 @@ class ProfileProvider with ChangeNotifier {
       if (_user != null) {
         _displayName = _user!.displayName ?? _user!.name;
         _photoUrl = _user!.photoUrl;
+        _avatarAsset = _user!.avatarAsset;
         _bio = _user!.bio;
         _preferredLanguage = _user!.preferredLanguage;
       } else {
@@ -86,6 +89,7 @@ class ProfileProvider with ChangeNotifier {
     String? bio,
     String? preferredLanguage,
     Uint8List? avatarBytes,
+    String? avatarAsset, // e.g. 'assets/images/profile/profile2.png'
   }) async {
     final uid = _uid;
     if (uid == null) return false;
@@ -96,37 +100,56 @@ class ProfileProvider with ChangeNotifier {
 
     try {
       String? newPhotoUrl = _photoUrl;
+      String? newAvatarAsset = _avatarAsset;
 
-      // Upload avatar to Firebase Storage if new bytes provided
       if (avatarBytes != null) {
-        final ref = _storage.ref().child('users/$uid/avatar.jpg');
-        await ref.putData(
-          avatarBytes,
-          SettableMetadata(contentType: 'image/jpeg'),
-        );
-        newPhotoUrl = await ref.getDownloadURL();
+        // Gallery-аас авсан зураг → Storage-д оруулна, preset-ийг цэвэрлэнэ
+        newAvatarAsset = null;
+        try {
+          final ref = _storage.ref().child('users/$uid/avatar.jpg');
+          await ref.putData(
+            avatarBytes,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+          newPhotoUrl = await ref.getDownloadURL();
+        } catch (storageError) {
+          debugPrint('ProfileProvider: avatar upload failed: $storageError');
+        }
+      } else if (avatarAsset != null) {
+        // Preset зураг сонгосон → photoUrl цэвэрлэнэ
+        newAvatarAsset = avatarAsset;
+        newPhotoUrl = null;
       }
 
       final data = <String, dynamic>{
         'displayName': displayName,
         'bio': bio ?? '',
         'preferredLanguage': preferredLanguage ?? 'mn',
+        'avatarAsset': newAvatarAsset,
         'updatedAt': FieldValue.serverTimestamp(),
       };
       if (newPhotoUrl != null) {
         data['photoUrl'] = newPhotoUrl;
+      } else if (avatarAsset != null) {
+        // preset сонгоход photoUrl-ийг устгана
+        data['photoUrl'] = null;
       }
 
       await _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
 
-      // Sync with Firebase Auth profile
-      await _auth.currentUser?.updateDisplayName(displayName);
-      if (newPhotoUrl != null) {
-        await _auth.currentUser?.updatePhotoURL(newPhotoUrl);
+      // Sync with Firebase Auth profile (optional — failure нь хадгалахад нөлөөлөхгүй)
+      try {
+        await _auth.currentUser?.updateDisplayName(displayName);
+        if (newPhotoUrl != null) {
+          await _auth.currentUser?.updatePhotoURL(newPhotoUrl);
+        }
+      } catch (authError) {
+        debugPrint('ProfileProvider: Auth profile sync failed: $authError');
       }
 
       _displayName = displayName;
       _photoUrl = newPhotoUrl;
+      _avatarAsset = newAvatarAsset;
       _bio = bio;
       _preferredLanguage = preferredLanguage;
 

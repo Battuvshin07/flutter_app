@@ -1,10 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../services/user_service.dart';
@@ -41,9 +38,17 @@ class _ProfileScreenState extends State<ProfileScreen>
   // Inline edit state
   bool _isEditing = false;
   bool _isSaving = false;
-  bool _isDeleting = false;
   final TextEditingController _nameCtrl = TextEditingController();
   Uint8List? _pickedImageBytes;
+  String? _selectedAvatarAsset;
+
+  static const _profileAvatars = [
+    'assets/images/profile/profile1.png',
+    'assets/images/profile/profile2.png',
+    'assets/images/profile/profile3.png',
+    'assets/images/profile/profile4.png',
+    'assets/images/profile/profile5.png',
+  ];
 
   @override
   void initState() {
@@ -77,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   void _enterEditMode() {
     _nameCtrl.text = _currentUser?.effectiveName ?? '';
     _pickedImageBytes = null;
+    _selectedAvatarAsset = _currentUser?.avatarAsset;
     setState(() => _isEditing = true);
   }
 
@@ -84,21 +90,78 @@ class _ProfileScreenState extends State<ProfileScreen>
     setState(() {
       _isEditing = false;
       _pickedImageBytes = null;
+      _selectedAvatarAsset = null;
     });
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final xFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 80,
+  void _showAvatarPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Профайл зураг сонгох', style: AppTheme.sectionTitle),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _profileAvatars.map((path) {
+                  final current = _selectedAvatarAsset ?? _currentUser?.avatarAsset;
+                  final isSelected = current == path;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedAvatarAsset = path);
+                      Navigator.pop(ctx);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.accentGold
+                              : AppTheme.cardBorder,
+                          width: isSelected ? 3 : 1.5,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.accentGold
+                                      .withValues(alpha: 0.45),
+                                  blurRadius: 10,
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: ClipOval(
+                        child: Image.asset(path, fit: BoxFit.cover),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-    if (xFile != null && mounted) {
-      final bytes = await xFile.readAsBytes();
-      setState(() => _pickedImageBytes = bytes);
-    }
   }
 
   Future<void> _saveProfile() async {
@@ -108,6 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final success = await profile.updateProfile(
       displayName: _nameCtrl.text.trim(),
       avatarBytes: _pickedImageBytes,
+      avatarAsset: _selectedAvatarAsset,
     );
     if (!mounted) return;
     setState(() {
@@ -333,8 +397,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     final initials = user?.initials ?? '?';
 
     Widget avatarChild;
+    final editingAsset = _isEditing ? _selectedAvatarAsset : null;
+    final savedAsset = user?.avatarAsset;
     if (_isEditing && _pickedImageBytes != null) {
       avatarChild = Image.memory(_pickedImageBytes!, fit: BoxFit.cover);
+    } else if (editingAsset != null) {
+      avatarChild = Image.asset(editingAsset, fit: BoxFit.cover);
+    } else if (savedAsset != null) {
+      avatarChild = Image.asset(savedAsset, fit: BoxFit.cover);
     } else if (photoUrl?.isNotEmpty == true) {
       avatarChild = Image.network(
         photoUrl!,
@@ -365,7 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Column(
       children: [
         GestureDetector(
-          onTap: _isEditing ? _pickImage : null,
+          onTap: _isEditing ? _showAvatarPicker : null,
           child: Stack(
             alignment: Alignment.bottomRight,
             children: [
@@ -379,7 +449,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     shape: BoxShape.circle,
                     border: Border.all(color: AppTheme.background, width: 2),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded,
+                  child: const Icon(Icons.grid_view_rounded,
                       color: AppTheme.background, size: 16),
                 )
               else
@@ -411,7 +481,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (_isEditing) ...[
           const SizedBox(height: 10),
           GestureDetector(
-            onTap: _pickImage,
+            onTap: _showAvatarPicker,
             child: Text(
               'Зураг солих',
               style: AppTheme.captionBold.copyWith(
@@ -873,14 +943,12 @@ class _ProfileScreenState extends State<ProfileScreen>
             const SizedBox(height: 4),
             Text(
               'Хувилбар 1.0.0',
-              style:
-                  AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 12),
             Text(
               '13-р зууны Монголын эзэнт гүрний түүхийг интерактив аргаар судлах боловсролын аппликейшн.',
-              style:
-                  AppTheme.body.copyWith(color: AppTheme.textSecondary),
+              style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -889,91 +957,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Хаах',
-                style: AppTheme.captionBold
-                    .copyWith(color: AppTheme.accentGold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteAccount() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    setState(() => _isDeleting = true);
-
-    try {
-      // Re-authenticate based on provider
-      final isGoogle = user.providerData
-          .any((p) => p.providerId == 'google.com');
-
-      if (isGoogle) {
-        final googleUser = await GoogleSignIn().signIn();
-        if (googleUser == null) {
-          setState(() => _isDeleting = false);
-          return;
-        }
-        final googleAuth = await googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-        await user.reauthenticateWithCredential(credential);
-      }
-      // email/password users: session шинэ байх тул шууд устгана
-
-      // Firestore doc устгах
-      await FirebaseFirestore.instance.doc('users/${user.uid}').delete();
-      // Firebase Auth account устгах
-      await user.delete();
-
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-        (route) => false,
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() => _isDeleting = false);
-      if (!mounted) return;
-      final msg = e.code == 'requires-recent-login'
-          ? 'Дахин нэвтэрч орсны дараа данс устгана уу'
-          : 'Алдаа: ${e.message}';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: AppTheme.crimson),
-      );
-    } catch (_) {
-      setState(() => _isDeleting = false);
-    }
-  }
-
-  void _showDeleteAccountDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg)),
-        title: Text('Данс устгах', style: AppTheme.sectionTitle),
-        content: Text(
-          'Та дансаа бүрмөсөн устгахдаа итгэлтэй байна уу?\n\nБүх мэдээлэл, явц, амжилтууд устах болно. Энэ үйлдлийг буцаах боломжгүй.',
-          style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Болих',
-                style: AppTheme.captionBold
-                    .copyWith(color: AppTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _deleteAccount();
-            },
-            child: Text('Устгах',
-                style: AppTheme.captionBold
-                    .copyWith(color: AppTheme.crimson)),
+                style:
+                    AppTheme.captionBold.copyWith(color: AppTheme.accentGold)),
           ),
         ],
       ),
@@ -1135,71 +1120,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-          // ── Account section ───────────────────────────────────────
-          Text(
-            'АККАУНТ',
-            style: AppTheme.caption.copyWith(
-              color: AppTheme.textSecondary,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              border: Border.all(
-                  color: AppTheme.crimson.withValues(alpha: 0.2)),
-            ),
-            child: _isDeleting
-                ? const Padding(
-                    padding: EdgeInsets.all(18),
-                    child: Center(
-                      child: SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppTheme.crimson,
-                        ),
-                      ),
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: _showDeleteAccountDialog,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: AppTheme.crimson.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.delete_forever_rounded,
-                                color: AppTheme.crimson, size: 18),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Данс устгах',
-                              style:
-                                  AppTheme.body.copyWith(color: AppTheme.crimson),
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right_rounded,
-                              color: AppTheme.crimson, size: 20),
-                        ],
-                      ),
-                    ),
-                  ),
           ),
         ],
       ),
