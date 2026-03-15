@@ -9,6 +9,9 @@ class Story {
   final int xpReward;
   final String? quizId;
   final String? imageUrl;
+  final List<String> quickFacts;
+  final String? didYouKnow;
+  final List<Map<String, String>> timeline;
 
   Story({
     required this.id,
@@ -18,6 +21,9 @@ class Story {
     required this.xpReward,
     this.quizId,
     this.imageUrl,
+    this.quickFacts = const [],
+    this.didYouKnow,
+    this.timeline = const [],
   });
 
   factory Story.fromFirestore(DocumentSnapshot doc) {
@@ -30,6 +36,11 @@ class Story {
       xpReward: (d['xpReward'] ?? 100) as int,
       quizId: d['quizId'] as String?,
       imageUrl: d['imageUrl'] as String?,
+      quickFacts: List<String>.from(d['quickFacts'] ?? []),
+      didYouKnow: d['didYouKnow'] as String?,
+      timeline: (d['timeline'] as List<dynamic>? ?? [])
+          .map((e) => Map<String, String>.from(e as Map))
+          .toList(),
     );
   }
 
@@ -40,6 +51,9 @@ class Story {
         'xpReward': xpReward,
         'quizId': quizId,
         'imageUrl': imageUrl,
+        'quickFacts': quickFacts,
+        'didYouKnow': didYouKnow,
+        'timeline': timeline,
       };
 }
 

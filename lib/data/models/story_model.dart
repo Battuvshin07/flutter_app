@@ -8,9 +8,12 @@ class StoryModel {
   final String content;
   final int order;
   final int xpReward;
-  final String? quizId; // reference to quizzes/{quizId}
+  final String? quizId;
   final bool isPublished;
   final String? imageUrl;
+  final List<String> quickFacts;
+  final String? didYouKnow;
+  final List<Map<String, String>> timeline;
   final DateTime? updatedAt;
   final String? updatedBy;
 
@@ -24,6 +27,9 @@ class StoryModel {
     this.quizId,
     this.isPublished = false,
     this.imageUrl,
+    this.quickFacts = const [],
+    this.didYouKnow,
+    this.timeline = const [],
     this.updatedAt,
     this.updatedBy,
   });
@@ -40,6 +46,11 @@ class StoryModel {
       quizId: data['quizId'],
       isPublished: data['isPublished'] ?? false,
       imageUrl: data['imageUrl'],
+      quickFacts: List<String>.from(data['quickFacts'] ?? []),
+      didYouKnow: data['didYouKnow'] as String?,
+      timeline: (data['timeline'] as List<dynamic>? ?? [])
+          .map((e) => Map<String, String>.from(e as Map))
+          .toList(),
       updatedAt: _parseTimestamp(data['updatedAt']),
       updatedBy: data['updatedBy'],
     );
@@ -62,6 +73,9 @@ class StoryModel {
       'quizId': quizId,
       'isPublished': isPublished,
       'imageUrl': imageUrl,
+      'quickFacts': quickFacts,
+      'didYouKnow': didYouKnow,
+      'timeline': timeline,
       'updatedAt': FieldValue.serverTimestamp(),
       'updatedBy': updatedBy,
     };
@@ -77,6 +91,9 @@ class StoryModel {
     String? quizId,
     bool? isPublished,
     String? imageUrl,
+    List<String>? quickFacts,
+    String? didYouKnow,
+    List<Map<String, String>>? timeline,
     DateTime? updatedAt,
     String? updatedBy,
   }) {
@@ -90,6 +107,9 @@ class StoryModel {
       quizId: quizId ?? this.quizId,
       isPublished: isPublished ?? this.isPublished,
       imageUrl: imageUrl ?? this.imageUrl,
+      quickFacts: quickFacts ?? this.quickFacts,
+      didYouKnow: didYouKnow ?? this.didYouKnow,
+      timeline: timeline ?? this.timeline,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,
     );
