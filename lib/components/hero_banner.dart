@@ -72,26 +72,8 @@ class _HeroBannerState extends State<HeroBanner>
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // ── "NEW" badge ──
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentGold,
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.radiusFull),
-                          ),
-                          child: Text(
-                            'ШИНЭ: Судлах Түүхүүд',
-                            style: AppTheme.chip.copyWith(
-                              color: AppTheme.background,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
                         Text(
                           'Монголын Эзэнт\nГүрнийг нээ',
                           style:

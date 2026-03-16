@@ -37,6 +37,7 @@ class HomeTopBar extends StatelessWidget {
           final xpInto = xp.xpIntoCurrentLevel(totalXP);
           final xpNeeded = xp.xpNeededForNextLevel(totalXP);
           final photoUrl = user?.photoUrl;
+          final avatarAsset = user?.avatarAsset;
           final _displayName =
               FirebaseAuth.instance.currentUser?.displayName ?? '';
           final initials = user?.initials ??
@@ -46,6 +47,23 @@ class HomeTopBar extends StatelessWidget {
           final isLoading =
               snapshot.connectionState == ConnectionState.waiting &&
                   user == null;
+
+          Widget avatarChild;
+          if (photoUrl?.isNotEmpty == true) {
+            avatarChild = Image.network(
+              photoUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _InitialsCircle(initials: initials),
+            );
+          } else if (avatarAsset?.isNotEmpty == true) {
+            avatarChild = Image.asset(
+              avatarAsset!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _InitialsCircle(initials: initials),
+            );
+          } else {
+            avatarChild = _InitialsCircle(initials: initials);
+          }
 
           return Row(
             children: [
@@ -57,16 +75,7 @@ class HomeTopBar extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: AppTheme.accentGold, width: 2),
                 ),
-                child: ClipOval(
-                  child: (photoUrl?.isNotEmpty == true)
-                      ? Image.network(
-                          photoUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _InitialsCircle(initials: initials),
-                        )
-                      : _InitialsCircle(initials: initials),
-                ),
+                child: ClipOval(child: avatarChild),
               ),
 
               const Spacer(),

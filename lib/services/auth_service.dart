@@ -138,4 +138,38 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     await _auth.sendPasswordResetEmail(email: email);
   }
+
+  /// Change password for email/password users.
+  /// 1. Re-authenticates with [currentPassword].
+  /// 2. Updates Firebase Auth password to [newPassword].
+  /// 3. Stamps `updatedAt` in the Firestore user doc.
+  ///
+  /// Throws [FirebaseAuthException] on wrong password or weak password.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'Нэвтэрсэн хэрэглэгч олдсонгүй.',
+      );
+    }
+
+    // Re-authenticate before the sensitive operation.
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+
+    // Update the password in Firebase Auth.
+    await user.updatePassword(newPassword);
+
+    // Reflect the change in the Firestore profile document.
+    await _db.doc('users/${user.uid}').update({
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

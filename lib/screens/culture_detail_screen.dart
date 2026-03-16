@@ -96,23 +96,6 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withValues(alpha: 0.45),
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1), width: 1),
-            ),
-            child: const Icon(Icons.bookmark_border_rounded,
-                color: Colors.white, size: 19),
-          ),
-        ),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
         titlePadding: EdgeInsets.zero,
@@ -338,7 +321,8 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                 if (context.mounted) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const CultureListScreen()),
+                    MaterialPageRoute(
+                        builder: (_) => const CultureListScreen()),
                     (_) => false,
                   );
                 }

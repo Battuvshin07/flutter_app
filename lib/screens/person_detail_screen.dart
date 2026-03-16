@@ -148,23 +148,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
               style: AppTheme.h2.copyWith(fontSize: 19),
             ),
           ),
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.surface,
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: const Icon(
-                Icons.bookmark_border_rounded,
-                color: AppTheme.accentGold,
-                size: 18,
-              ),
-            ),
-          ),
+          const SizedBox(width: 36),
         ],
       ),
     );
@@ -330,7 +314,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.star_rounded,
-                        size: 14, color: AppTheme.accentGold.withValues(alpha: 0.7)),
+                        size: 14,
+                        color: AppTheme.accentGold.withValues(alpha: 0.7)),
                     const SizedBox(width: 8),
                     Expanded(
                       child:
@@ -433,7 +418,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.link_rounded,
-                        size: 14, color: AppTheme.accentGold.withValues(alpha: 0.7)),
+                        size: 14,
+                        color: AppTheme.accentGold.withValues(alpha: 0.7)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
+import '../services/auth_service.dart';
 import '../services/user_service.dart';
 import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
@@ -864,172 +865,279 @@ class _ProfileScreenState extends State<ProfileScreen>
           .any((p) => p.providerId == 'password') ??
       false;
 
-  /// Нууц үг солих — reset email явуулна.
-  Future<void> _sendPasswordReset() async {
-    final email = FirebaseAuth.instance.currentUser?.email;
-    if (email == null) return;
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$email руу нууц үг сэргээх имэйл илгээлээ'),
-          backgroundColor: const Color(0xFF4ADE80),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Имэйл илгээхэд алдаа гарлаа'),
-          backgroundColor: AppTheme.crimson,
-        ),
-      );
-    }
-  }
+  void _showChangePasswordSheet() {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool showCurrent = false;
+    bool showNew = false;
+    bool showConfirm = false;
+    bool isLoading = false;
+    String? errorMsg;
 
-  void _showPasswordResetConfirm() {
-    final email = FirebaseAuth.instance.currentUser?.email ?? '';
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        padding: EdgeInsets.fromLTRB(
-          24,
-          20,
-          24,
-          24 + MediaQuery.of(ctx).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.cardBorder,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Lock icon
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2A2010), Color(0xFF3A2E10)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          InputDecoration fieldDecoration({
+            required String label,
+            required bool obscureToggle,
+            required VoidCallback onToggle,
+          }) =>
+              InputDecoration(
+                labelText: label,
+                labelStyle:
+                    AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+                filled: true,
+                fillColor: AppTheme.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.cardBorder),
                 ),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.cardBorder),
                 ),
-              ),
-              child: const Icon(
-                Icons.lock_reset_rounded,
-                color: AppTheme.accentGold,
-                size: 30,
-              ),
-            ),
-            const SizedBox(height: 16),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: AppTheme.accentGold.withValues(alpha: 0.7)),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureToggle
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
+                    color: AppTheme.textSecondary,
+                  ),
+                  onPressed: onToggle,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              );
 
-            // Title
-            Text('Нууц үг солих', style: AppTheme.sectionTitle),
-            const SizedBox(height: 10),
+          Future<void> submit() async {
+            final current = currentCtrl.text.trim();
+            final newPw = newCtrl.text.trim();
+            final confirm = confirmCtrl.text.trim();
 
-            // Description
-            Text(
-              'Доорх хаяг руу нууц үг сэргээх холбоос илгээх үү?',
-              style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
+            if (current.isEmpty || newPw.isEmpty || confirm.isEmpty) {
+              setSheetState(() => errorMsg = 'Бүх талбарыг бөглөнө үү.');
+              return;
+            }
+            if (newPw.length < 6) {
+              setSheetState(
+                  () => errorMsg = 'Шинэ нууц үг хамгийн багадаа 6 тэмдэгт.');
+              return;
+            }
+            if (newPw != confirm) {
+              setSheetState(() => errorMsg = 'Шинэ нууц үг таарахгүй байна.');
+              return;
+            }
 
-            // Email chip
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppTheme.background,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.cardBorder),
+            setSheetState(() {
+              isLoading = true;
+              errorMsg = null;
+            });
+
+            try {
+              await AuthService().changePassword(
+                currentPassword: current,
+                newPassword: newPw,
+              );
+
+              if (!ctx.mounted) return;
+              Navigator.pop(ctx);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Нууц үг амжилттай солигдлоо'),
+                  backgroundColor: Color(0xFF4ADE80),
+                ),
+              );
+            } on FirebaseAuthException catch (e) {
+              String msg;
+              if (e.code == 'wrong-password' ||
+                  e.code == 'invalid-credential') {
+                msg = 'Одоогийн нууц үг буруу байна.';
+              } else if (e.code == 'weak-password') {
+                msg = 'Шинэ нууц үг хэт энгийн байна.';
+              } else {
+                msg = 'Алдаа гарлаа. Дахин оролдоно уу.';
+              }
+              setSheetState(() {
+                isLoading = false;
+                errorMsg = msg;
+              });
+            }
+          }
+
+          return Padding(
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
-              child: Row(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.email_outlined,
-                      size: 16, color: AppTheme.accentGold),
-                  const SizedBox(width: 8),
-                  Text(
-                    email,
-                    style: AppTheme.captionBold
-                        .copyWith(color: AppTheme.textPrimary),
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardBorder,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Icon
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2A2010), Color(0xFF3A2E10)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: AppTheme.accentGold.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.lock_reset_rounded,
+                      color: AppTheme.accentGold,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Text('Нууц үг солих', style: AppTheme.sectionTitle),
+                  const SizedBox(height: 20),
+
+                  // Current password
+                  TextField(
+                    controller: currentCtrl,
+                    obscureText: !showCurrent,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: fieldDecoration(
+                      label: 'Одоогийн нууц үг',
+                      obscureToggle: showCurrent,
+                      onToggle: () =>
+                          setSheetState(() => showCurrent = !showCurrent),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // New password
+                  TextField(
+                    controller: newCtrl,
+                    obscureText: !showNew,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: fieldDecoration(
+                      label: 'Шинэ нууц үг (доод тал 6 тэмдэгт)',
+                      obscureToggle: showNew,
+                      onToggle: () => setSheetState(() => showNew = !showNew),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Confirm password
+                  TextField(
+                    controller: confirmCtrl,
+                    obscureText: !showConfirm,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: fieldDecoration(
+                      label: 'Шинэ нууц үг давтах',
+                      obscureToggle: showConfirm,
+                      onToggle: () =>
+                          setSheetState(() => showConfirm = !showConfirm),
+                    ),
+                  ),
+
+                  // Error message
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      errorMsg!,
+                      style: AppTheme.caption.copyWith(color: AppTheme.crimson),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed:
+                              isLoading ? null : () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textSecondary,
+                            side: const BorderSide(color: AppTheme.cardBorder),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text('Болих',
+                              style: AppTheme.button
+                                  .copyWith(color: AppTheme.textSecondary)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFD4A017), Color(0xFFF0C040)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: AppTheme.background,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppTheme.background,
+                                    ),
+                                  )
+                                : Text('Хадгалах', style: AppTheme.button),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 28),
-
-            // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textSecondary,
-                      side: const BorderSide(color: AppTheme.cardBorder),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: Text('Болих',
-                        style: AppTheme.button
-                            .copyWith(color: AppTheme.textSecondary)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFD4A017), Color(0xFFF0C040)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _sendPasswordReset();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        foregroundColor: AppTheme.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text('Илгээх', style: AppTheme.button),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          );
+        },
       ),
-    );
+    ).whenComplete(() {
+      currentCtrl.dispose();
+      newCtrl.dispose();
+      confirmCtrl.dispose();
+    });
   }
 
   // ── Info bottom sheet helper ────────────────────────────────────
@@ -1568,7 +1676,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     label: 'Нууц үг солих',
                     trailing: const Icon(Icons.chevron_right_rounded,
                         color: AppTheme.textSecondary, size: 20),
-                    onTap: _showPasswordResetConfirm,
+                    onTap: _showChangePasswordSheet,
                   ),
                 ],
               ],

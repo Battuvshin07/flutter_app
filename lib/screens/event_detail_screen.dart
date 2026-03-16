@@ -63,16 +63,9 @@ class EventDetailScreen extends StatelessWidget {
 //  APP BAR
 // ══════════════════════════════════════════════════════════════════
 
-class _AppBar extends StatefulWidget {
+class _AppBar extends StatelessWidget {
   final Event event;
   const _AppBar({required this.event});
-
-  @override
-  State<_AppBar> createState() => _AppBarState();
-}
-
-class _AppBarState extends State<_AppBar> {
-  bool _bookmarked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +98,7 @@ class _AppBarState extends State<_AppBar> {
           // Title
           Expanded(
             child: Text(
-              widget.event.title,
+              event.title,
               textAlign: TextAlign.center,
               style: AppTheme.h2.copyWith(fontSize: 17),
               maxLines: 2,
@@ -113,26 +106,7 @@ class _AppBarState extends State<_AppBar> {
             ),
           ),
 
-          // Bookmark button
-          GestureDetector(
-            onTap: () => setState(() => _bookmarked = !_bookmarked),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.surface,
-                border: Border.all(color: AppTheme.cardBorder),
-              ),
-              child: Icon(
-                _bookmarked
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_border_rounded,
-                color: AppTheme.accentGold,
-                size: 18,
-              ),
-            ),
-          ),
+          const SizedBox(width: 36),
         ],
       ),
     );
@@ -358,7 +332,8 @@ class _ArticleContent extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.auto_stories_rounded,
-                    size: 18, color: AppTheme.accentGold.withValues(alpha: 0.8)),
+                    size: 18,
+                    color: AppTheme.accentGold.withValues(alpha: 0.8)),
                 const SizedBox(width: 8),
                 Text('Түүхэн тойм', style: AppTheme.sectionTitle),
               ],
