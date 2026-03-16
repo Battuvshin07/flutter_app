@@ -24,6 +24,7 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
   late final TextEditingController _orderCtrl;
   late final TextEditingController _detailsCtrl;
   String? _selectedIcon;
+  String? _imageUrl;
 
   static const _iconOptions = [
     'landscape',
@@ -50,6 +51,7 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
     _orderCtrl = TextEditingController(text: '${widget.culture?.order ?? 0}');
     _detailsCtrl = TextEditingController(text: widget.culture?.details ?? '');
     _selectedIcon = widget.culture?.icon;
+    _imageUrl = widget.culture?.coverImageUrl;
   }
 
   @override
@@ -132,11 +134,17 @@ class _CultureEditScreenState extends State<CultureEditScreen> {
                     maxLines: 4,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _imageUrlCtrl,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration:
-                        adminInputDecoration(label: 'Зургийн URL (optional)'),
+                  ImagePickerField(
+                    label: 'Зураг (optional)',
+                    currentUrl: _imageUrl,
+                    storagePath:
+                        'cultures/${widget.culture?.id ?? 'new_${DateTime.now().millisecondsSinceEpoch}'}/cover.jpg',
+                    onChanged: (url) {
+                      setState(() {
+                        _imageUrl = url;
+                        _imageUrlCtrl.text = url ?? '';
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

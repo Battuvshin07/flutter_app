@@ -176,16 +176,29 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         ],
       ),
       child: ClipOval(
-        child: hasImage
-            ? Image.asset(
-                person.imageUrl!,
-                fit: BoxFit.cover,
-                width: 130,
-                height: 130,
-                errorBuilder: (_, __, ___) => _buildInitials(),
-              )
-            : _buildInitials(),
+        child:
+            hasImage ? _buildPortraitImage(person.imageUrl!) : _buildInitials(),
       ),
+    );
+  }
+
+  Widget _buildPortraitImage(String url) {
+    final isNetwork = url.startsWith('http');
+    if (isNetwork) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        width: 130,
+        height: 130,
+        errorBuilder: (_, __, ___) => _buildInitials(),
+      );
+    }
+    return Image.asset(
+      url,
+      fit: BoxFit.cover,
+      width: 130,
+      height: 130,
+      errorBuilder: (_, __, ___) => _buildInitials(),
     );
   }
 

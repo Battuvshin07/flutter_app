@@ -29,6 +29,7 @@ class _StoryEditScreenState extends State<StoryEditScreen> {
 
   bool _isPublished = false;
   String? _selectedQuizId;
+  String? _imageUrl;
 
   // Quick facts – dynamic list of controllers
   late List<TextEditingController> _quickFactCtrls;
@@ -51,6 +52,7 @@ class _StoryEditScreenState extends State<StoryEditScreen> {
         TextEditingController(text: widget.story?.didYouKnow ?? '');
     _isPublished = widget.story?.isPublished ?? false;
     _selectedQuizId = widget.story?.quizId;
+    _imageUrl = widget.story?.imageUrl;
 
     // Initialize quick facts controllers
     final facts = widget.story?.quickFacts ?? [];
@@ -371,11 +373,17 @@ class _StoryEditScreenState extends State<StoryEditScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _imageUrlCtrl,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration:
-                        adminInputDecoration(label: 'Зургийн URL (optional)'),
+                  ImagePickerField(
+                    label: 'Зураг (optional)',
+                    currentUrl: _imageUrl,
+                    storagePath:
+                        'stories/${widget.story?.id ?? 'new_${DateTime.now().millisecondsSinceEpoch}'}/cover.jpg',
+                    onChanged: (url) {
+                      setState(() {
+                        _imageUrl = url;
+                        _imageUrlCtrl.text = url ?? '';
+                      });
+                    },
                   ),
                   const SizedBox(height: 24),
 

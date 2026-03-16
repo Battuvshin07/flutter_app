@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/profile_provider.dart';
+import '../services/image_upload_service.dart';
 
 /// Edit Profile screen – updates users/{uid} in Firestore.
 class EditProfileScreen extends StatefulWidget {
@@ -70,7 +72,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 20),
               Text('Профайл зураг сонгох', style: AppTheme.sectionTitle),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              // ── Gallery / Camera buttons ──
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _pickImageFromSource(ImageSource.gallery);
+                      },
+                      icon: const Icon(Icons.photo_library_rounded, size: 20),
+                      label: const Text('Галерей'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accentGold,
+                        side: const BorderSide(color: AppTheme.accentGold),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _pickImageFromSource(ImageSource.camera);
+                      },
+                      icon: const Icon(Icons.camera_alt_rounded, size: 20),
+                      label: const Text('Камер'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accentGold,
+                        side: const BorderSide(color: AppTheme.accentGold),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Divider(color: AppTheme.cardBorder.withValues(alpha: 0.5)),
+              const SizedBox(height: 12),
+              // ── Preset avatars ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: _profileAvatars.map((path) {
@@ -117,6 +165,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final bytes = await ImageUploadService.pickImage(source: source);
+    if (bytes == null || !mounted) return;
+    setState(() {
+      _pickedImageBytes = bytes;
+      _selectedAvatarAsset = null;
+    });
   }
 
   Future<void> _save() async {
@@ -321,7 +378,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppTheme.background, width: 2),
               ),
-              child: const Icon(Icons.grid_view_rounded,
+              child: const Icon(Icons.camera_alt_rounded,
                   color: AppTheme.background, size: 16),
             ),
           ],

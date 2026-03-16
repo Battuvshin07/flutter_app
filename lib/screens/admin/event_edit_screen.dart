@@ -26,6 +26,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
   late final TextEditingController _imageUrlCtrl;
 
   String? _selectedPersonId;
+  String? _imageUrl;
 
   bool get _isEditing => widget.event != null;
 
@@ -39,6 +40,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
     _imageUrlCtrl =
         TextEditingController(text: widget.event?.coverImageUrl ?? '');
     _selectedPersonId = widget.event?.personId;
+    _imageUrl = widget.event?.coverImageUrl;
   }
 
   @override
@@ -189,7 +191,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
                                 final isSelected = p.id == _selectedPersonId;
                                 return Material(
                                   color: isSelected
-                                      ? AppTheme.accentGold.withValues(alpha: 0.12)
+                                      ? AppTheme.accentGold
+                                          .withValues(alpha: 0.12)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(12),
                                   child: InkWell(
@@ -393,7 +396,8 @@ class _EventEditScreenState extends State<EventEditScreen> {
                                   style: AppTheme.caption.copyWith(
                                     fontSize: 11,
                                     color: _selectedPersonId != null
-                                        ? AppTheme.accentGold.withValues(alpha: 0.8)
+                                        ? AppTheme.accentGold
+                                            .withValues(alpha: 0.8)
                                         : AppTheme.textSecondary,
                                   ),
                                 ),
@@ -429,11 +433,16 @@ class _EventEditScreenState extends State<EventEditScreen> {
                         adminInputDecoration(label: 'Байршил (optional)'),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _imageUrlCtrl,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration:
-                        adminInputDecoration(label: 'Зургийн URL (optional)'),
+                  ImagePickerField(
+                    label: 'Зураг (optional)',
+                    currentUrl: _imageUrl,
+                    storagePath: 'events/${widget.event?.id ?? 'new_${DateTime.now().millisecondsSinceEpoch}'}/cover.jpg',
+                    onChanged: (url) {
+                      setState(() {
+                        _imageUrl = url;
+                        _imageUrlCtrl.text = url ?? '';
+                      });
+                    },
                   ),
                   const SizedBox(height: 24),
                   AdminSaveButton(

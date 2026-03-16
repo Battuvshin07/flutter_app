@@ -109,7 +109,7 @@ class _PersonsScreenState extends State<PersonsScreen>
         splashFactory: NoSplash.splashFactory,
         tabs: const [
           Tab(child: Center(child: Text('Жагсаалт'))),
-          Tab(child: Center(child: Text('Гэр бүлийн мод'))),
+          Tab(child: Center(child: Text('Ургийн мод'))),
         ],
       ),
     );

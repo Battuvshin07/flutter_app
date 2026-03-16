@@ -30,6 +30,8 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
   late final TextEditingController _tagsCtrl;
   String? _fatherId;
 
+  String? _avatarUrl;
+
   // ── Person detail fields ───────────────────────────────────────
   late final TextEditingController _longBioCtrl;
   late final TextEditingController _achievementsCtrl;
@@ -50,6 +52,7 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
     _shortBioCtrl = TextEditingController(text: widget.person?.shortBio ?? '');
     _avatarUrlCtrl =
         TextEditingController(text: widget.person?.avatarUrl ?? '');
+    _avatarUrl = widget.person?.avatarUrl;
     _titleCtrl = TextEditingController(text: widget.person?.title ?? '');
     _fatherId = widget.person?.fatherId;
     _tagsCtrl =
@@ -264,11 +267,17 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _avatarUrlCtrl,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration:
-                        adminInputDecoration(label: 'Avatar URL (optional)'),
+                  ImagePickerField(
+                    label: 'Avatar зураг (optional)',
+                    currentUrl: _avatarUrl,
+                    storagePath:
+                        'persons/${widget.person?.id ?? 'new_${DateTime.now().millisecondsSinceEpoch}'}/avatar.jpg',
+                    onChanged: (url) {
+                      setState(() {
+                        _avatarUrl = url;
+                        _avatarUrlCtrl.text = url ?? '';
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -457,7 +466,8 @@ class _PersonEditScreenState extends State<PersonEditScreen> {
           decoration: BoxDecoration(
             color: AppTheme.accentGold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
+            border:
+                Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
           ),
           child: Text(
             label,

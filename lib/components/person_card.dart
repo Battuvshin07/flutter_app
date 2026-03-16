@@ -75,14 +75,7 @@ class _PersonCardState extends State<PersonCard> {
                   ),
                   child: ClipOval(
                     child: hasImage
-                        ? Image.asset(
-                            person.imageUrl!,
-                            fit: BoxFit.cover,
-                            width: 56,
-                            height: 56,
-                            errorBuilder: (_, __, ___) =>
-                                _buildInitials(initials),
-                          )
+                        ? _buildAvatar(person.imageUrl!, 56, initials)
                         : _buildInitials(initials),
                   ),
                 ),
@@ -130,6 +123,26 @@ class _PersonCardState extends State<PersonCard> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar(String url, double size, String initials) {
+    final isNetwork = url.startsWith('http');
+    if (isNetwork) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        errorBuilder: (_, __, ___) => _buildInitials(initials),
+      );
+    }
+    return Image.asset(
+      url,
+      fit: BoxFit.cover,
+      width: size,
+      height: size,
+      errorBuilder: (_, __, ___) => _buildInitials(initials),
     );
   }
 

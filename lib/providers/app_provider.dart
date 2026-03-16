@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/data_service.dart';
 import '../services/culture_service.dart';
 import '../models/person.dart';
@@ -17,11 +18,15 @@ class AppProvider with ChangeNotifier {
   StreamSubscription<List<CultureModel>>? _culturesSub;
   List<CultureModel> _cultures = [];
 
+  // Merged persons: local JSON + Firestore avatarUrl
+  List<Person> _mergedPersons = [];
+
   int get selectedNavIndex => _selectedNavIndex;
   bool get isLoading => _isLoading;
   DataService get dataService => _dataService;
 
-  List<Person> get persons => _dataService.persons;
+  List<Person> get persons =>
+      _mergedPersons.isNotEmpty ? _mergedPersons : _dataService.persons;
   List<Event> get events => _dataService.events;
   List<Quiz> get quizzes => _dataService.quizzes;
 
@@ -61,12 +66,46 @@ class AppProvider with ChangeNotifier {
 
     try {
       await _dataService.loadAll();
+      await _mergeFirestoreAvatars();
     } catch (e) {
       debugPrint('Error loading data: $e');
     }
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Fetch avatarUrl from Firestore persons and merge into local Person list.
+  Future<void> _mergeFirestoreAvatars() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('persons')
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      // Build name → avatarUrl map from Firestore
+      final avatarMap = <String, String>{};
+      for (final doc in snap.docs) {
+        final name = doc.data()['name'] as String?;
+        final avatarUrl = doc.data()['avatarUrl'] as String?;
+        if (name != null && avatarUrl != null && avatarUrl.isNotEmpty) {
+          avatarMap[name] = avatarUrl;
+        }
+      }
+
+      // Merge: update imageUrl on local Person if Firestore has avatarUrl
+      _mergedPersons = _dataService.persons.map((p) {
+        final firestoreUrl = avatarMap[p.name];
+        if (firestoreUrl != null) {
+          return p.copyWith(imageUrl: firestoreUrl);
+        }
+        return p;
+      }).toList();
+    } catch (e) {
+      debugPrint('AppProvider._mergeFirestoreAvatars error: $e');
+      // Fall back to local data without merging
+      _mergedPersons = [];
+    }
   }
 
   List<Event> getEventsForPerson(int personId) {
