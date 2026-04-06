@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../data/models/video_model.dart';
 import '../services/video_service.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
 
 /// Full-featured cinematic YouTube video screen.
@@ -27,7 +28,6 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
   YoutubePlayerController? _controller;
   int _currentIndex = 0;
   bool _isFullscreen = false;
-  bool _isLiked = false;
   bool _isSaved = false;
 
   @override
@@ -46,12 +46,20 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
         });
         if (wasEmpty && videos.isNotEmpty) {
           _initPlayer(videos[_currentIndex].youtubeId);
+          _checkSavedStatus();
         }
       },
       onError: (_) {
         if (mounted) setState(() => _loaded = true);
       },
     );
+  }
+
+  void _checkSavedStatus() async {
+    if (_playlist.isEmpty) return;
+    final videoId = _playlist[_currentIndex].youtubeId;
+    final saved = await UserService.isVideoSaved(videoId);
+    if (mounted) setState(() => _isSaved = saved);
   }
 
   void _initPlayer(String videoId) {
@@ -86,6 +94,61 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
     if (index == _currentIndex || _controller == null) return;
     setState(() => _currentIndex = index);
     _controller!.load(_playlist[index].youtubeId);
+    _checkSavedStatus();
+  }
+
+  Future<void> _toggleSaveVideo() async {
+    final video = _playlist[_currentIndex];
+    try {
+      if (_isSaved) {
+        await UserService.removeSavedVideo(video.youtubeId);
+        if (mounted) {
+          setState(() => _isSaved = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Видео хадгалалтаас хасагдлаа'),
+              backgroundColor: AppTheme.surface,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        await UserService.saveVideo(video.youtubeId, video.title);
+        if (mounted) {
+          setState(() => _isSaved = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Видео амжилттай хадгалагдлаа'),
+              backgroundColor: AppTheme.accentGold,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Алдаа гарлаа: $e'),
+            backgroundColor: AppTheme.crimson,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _shareVideo() {
+    final video = _playlist[_currentIndex];
+    final youtubeLink = 'https://www.youtube.com/watch?v=${video.youtubeId}';
+    Clipboard.setData(ClipboardData(text: youtubeLink));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Link copied'),
+        backgroundColor: AppTheme.accentGold,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -262,16 +325,6 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
         Row(
           children: [
             _ActionChip(
-                icon: _isLiked
-                    ? Icons.thumb_up_alt_rounded
-                    : Icons.thumb_up_alt_outlined,
-                label: 'Таалагдсан',
-                accent: _isLiked ? accent : AppTheme.textSecondary,
-                active: _isLiked,
-                activeColor: accent,
-                onTap: () => setState(() => _isLiked = !_isLiked)),
-            const SizedBox(width: 10),
-            _ActionChip(
                 icon: _isSaved
                     ? Icons.bookmark_rounded
                     : Icons.bookmark_border_rounded,
@@ -279,12 +332,13 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
                 accent: _isSaved ? AppTheme.accentGold : AppTheme.textSecondary,
                 active: _isSaved,
                 activeColor: AppTheme.accentGold,
-                onTap: () => setState(() => _isSaved = !_isSaved)),
+                onTap: _toggleSaveVideo),
             const SizedBox(width: 10),
-            const _ActionChip(
+            _ActionChip(
                 icon: Icons.share_outlined,
                 label: 'Хуваалцах',
-                accent: AppTheme.textSecondary),
+                accent: AppTheme.textSecondary,
+                onTap: _shareVideo),
           ],
         ),
       ],

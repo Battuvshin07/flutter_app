@@ -178,16 +178,17 @@ class _PremiumBottomNavState extends State<PremiumBottomNav>
                 size: 22,
               ),
             ),
-            const SizedBox(height: 3),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive ? widget.activeColor : widget.inactiveColor,
+            if (!isActive) ...[
+              const SizedBox(height: 3),
+              Text(
+                widget.items[index].label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: widget.inactiveColor,
+                ),
               ),
-              child: Text(widget.items[index].label),
-            ),
+            ],
           ],
         ),
       ),

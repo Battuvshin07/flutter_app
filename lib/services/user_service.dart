@@ -421,6 +421,75 @@ class UserService {
   }
 
   // ═══════════════════════════════════════════════════════════════
+  //  Saved Videos
+  // ═══════════════════════════════════════════════════════════════
+
+  static Future<void> saveVideo(String videoId, String title) async {
+    final uid = _uid;
+    if (uid == null) return;
+    try {
+      await _db
+          .collection('users')
+          .doc(uid)
+          .collection('savedVideos')
+          .doc(videoId)
+          .set({
+        'videoId': videoId,
+        'title': title,
+        'savedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('UserService.saveVideo error: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> removeSavedVideo(String videoId) async {
+    final uid = _uid;
+    if (uid == null) return;
+    try {
+      await _db
+          .collection('users')
+          .doc(uid)
+          .collection('savedVideos')
+          .doc(videoId)
+          .delete();
+    } catch (e) {
+      debugPrint('UserService.removeSavedVideo error: $e');
+      rethrow;
+    }
+  }
+
+  static Future<bool> isVideoSaved(String videoId) async {
+    final uid = _uid;
+    if (uid == null) return false;
+    try {
+      final doc = await _db
+          .collection('users')
+          .doc(uid)
+          .collection('savedVideos')
+          .doc(videoId)
+          .get();
+      return doc.exists;
+    } catch (e) {
+      debugPrint('UserService.isVideoSaved error: $e');
+      return false;
+    }
+  }
+
+  static Stream<List<String>> watchSavedVideos() {
+    final uid = _uid;
+    if (uid == null) return Stream.value([]);
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('savedVideos')
+        .orderBy('savedAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => d.id).toList());
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   //  History (recently viewed)
   // ═══════════════════════════════════════════════════════════════
 

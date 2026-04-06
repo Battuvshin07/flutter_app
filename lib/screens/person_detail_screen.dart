@@ -236,21 +236,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (person.birthDate != null) GoldBadge.birth(person.birthDate!),
-            if (person.birthDate != null && person.deathDate != null) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(
-                  Icons.emoji_events_outlined,
-                  size: 16,
-                  color: AppTheme.accentGold.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
+            if (person.birthDate != null && person.deathDate != null)
+              const SizedBox(width: 8),
             if (person.deathDate != null) GoldBadge.death(person.deathDate!),
           ],
         ),
-        const SizedBox(height: 10),
-        GoldBadge.xp(12450),
       ],
     );
   }

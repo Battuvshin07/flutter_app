@@ -10,6 +10,7 @@ import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/language_provider.dart';
 import 'admin_dashboard_screen.dart';
 import 'auth_gate.dart';
 import '../components/admin_gate.dart';
@@ -866,10 +867,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       false;
 
   void _showChangePasswordSheet() {
-    final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
-    bool showCurrent = false;
     bool showNew = false;
     bool showConfirm = false;
     bool isLoading = false;
@@ -920,11 +919,10 @@ class _ProfileScreenState extends State<ProfileScreen>
               );
 
           Future<void> submit() async {
-            final current = currentCtrl.text.trim();
             final newPw = newCtrl.text.trim();
             final confirm = confirmCtrl.text.trim();
 
-            if (current.isEmpty || newPw.isEmpty || confirm.isEmpty) {
+            if (newPw.isEmpty || confirm.isEmpty) {
               setSheetState(() => errorMsg = 'Бүх талбарыг бөглөнө үү.');
               return;
             }
@@ -945,7 +943,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
             try {
               await AuthService().changePassword(
-                currentPassword: current,
+                currentPassword: '', // Empty since we don't need it
                 newPassword: newPw,
               );
 
@@ -1023,20 +1021,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                   Text('Нууц үг солих', style: AppTheme.sectionTitle),
                   const SizedBox(height: 20),
-
-                  // Current password
-                  TextField(
-                    controller: currentCtrl,
-                    obscureText: !showCurrent,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration: fieldDecoration(
-                      label: 'Одоогийн нууц үг',
-                      obscureToggle: showCurrent,
-                      onToggle: () =>
-                          setSheetState(() => showCurrent = !showCurrent),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
 
                   // New password
                   TextField(
@@ -1134,7 +1118,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
       ),
     ).whenComplete(() {
-      currentCtrl.dispose();
       newCtrl.dispose();
       confirmCtrl.dispose();
     });
@@ -1579,6 +1562,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildSettingsSection() {
+    final lang = context.watch<LanguageProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
@@ -1603,7 +1587,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               child: _buildSettingsRow(
                 icon: Icons.admin_panel_settings_rounded,
-                label: 'Admin Dashboard',
+                label: lang.tr('admin_dashboard'),
                 trailing: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1612,7 +1596,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'ADMIN',
+                    lang.tr('admin_access'),
                     style: AppTheme.chip.copyWith(
                       color: AppTheme.accentGold,
                       fontSize: 10,
@@ -1632,7 +1616,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             const SizedBox(height: 24),
           ],
           Text(
-            'ТОХИРГОО',
+            lang.tr('settings').toUpperCase(),
             style: AppTheme.caption.copyWith(
               color: AppTheme.textSecondary,
               letterSpacing: 1.2,
@@ -1650,7 +1634,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 _buildSettingsRow(
                   icon: Icons.language_rounded,
-                  label: 'Хэл',
+                  label: lang.tr('language'),
                   trailing: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1659,21 +1643,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Монгол / English',
+                      lang.isMongolian ? 'Монгол' : 'English',
                       style: AppTheme.chip.copyWith(
                         color: AppTheme.accentGold,
                         fontSize: 10,
                       ),
                     ),
                   ),
-                  onTap: () {},
+                  onTap: () => lang.toggleLanguage(),
                 ),
                 if (_isPasswordUser) ...[
                   const Divider(
                       height: 1, thickness: 1, color: AppTheme.cardBorder),
                   _buildSettingsRow(
                     icon: Icons.lock_reset_rounded,
-                    label: 'Нууц үг солих',
+                    label: lang.tr('change_password'),
                     trailing: const Icon(Icons.chevron_right_rounded,
                         color: AppTheme.textSecondary, size: 20),
                     onTap: _showChangePasswordSheet,
@@ -1688,13 +1672,14 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildAboutSection() {
+    final lang = context.watch<LanguageProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ABOUT',
+            lang.tr('support').toUpperCase(),
             style: AppTheme.caption.copyWith(
               color: AppTheme.textSecondary,
               letterSpacing: 1.2,
@@ -1712,7 +1697,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 _buildSettingsRow(
                   icon: Icons.help_outline_rounded,
-                  label: 'Help',
+                  label: lang.tr('help'),
                   trailing: const Icon(Icons.chevron_right_rounded,
                       color: AppTheme.textSecondary, size: 20),
                   onTap: _showHelpSheet,
@@ -1721,7 +1706,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
                   icon: Icons.description_outlined,
-                  label: 'Terms of Service',
+                  label: lang.tr('terms_of_service'),
                   trailing: const Icon(Icons.chevron_right_rounded,
                       color: AppTheme.textSecondary, size: 20),
                   onTap: _showTermsSheet,
@@ -1730,7 +1715,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
                   icon: Icons.privacy_tip_outlined,
-                  label: 'Privacy Policy',
+                  label: lang.tr('privacy_policy'),
                   trailing: const Icon(Icons.chevron_right_rounded,
                       color: AppTheme.textSecondary, size: 20),
                   onTap: _showPrivacySheet,
@@ -1739,7 +1724,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
                   icon: Icons.info_outline_rounded,
-                  label: 'About App',
+                  label: lang.tr('about_app'),
                   trailing: const Icon(Icons.chevron_right_rounded,
                       color: AppTheme.textSecondary, size: 20),
                   onTap: _showAboutAppSheet,
@@ -1748,7 +1733,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     height: 1, thickness: 1, color: AppTheme.cardBorder),
                 _buildSettingsRow(
                   icon: Icons.tag_rounded,
-                  label: 'Version',
+                  label: lang.tr('version'),
                   trailing: Text(
                     '1.0.0',
                     style: AppTheme.caption
@@ -1765,6 +1750,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildSignOutButton() {
+    final lang = context.watch<LanguageProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
       child: SizedBox(
@@ -1773,7 +1759,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: OutlinedButton.icon(
           onPressed: _showSignOutDialog,
           icon: const Icon(Icons.logout_rounded, size: 20),
-          label: const Text('Гарах'),
+          label: Text(lang.tr('logout')),
           style: OutlinedButton.styleFrom(
             foregroundColor: AppTheme.crimson,
             side: const BorderSide(color: AppTheme.crimson, width: 1.5),

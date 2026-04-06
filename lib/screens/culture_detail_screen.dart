@@ -161,16 +161,6 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(title, style: AppTheme.h2.copyWith(fontSize: 23)),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _badge('XP +20', AppTheme.accentGold,
-                          AppTheme.accentGold.withValues(alpha: 0.14)),
-                      const SizedBox(width: 8),
-                      _badge('● Хялбар', AppTheme.xpGreen,
-                          AppTheme.xpGreen.withValues(alpha: 0.12)),
-                    ],
-                  ),
                 ],
               ),
             ),

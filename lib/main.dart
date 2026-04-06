@@ -10,6 +10,7 @@ import 'providers/auth_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/journey_provider.dart';
 import 'providers/story_quiz_provider.dart';
+import 'providers/language_provider.dart';
 import 'services/ai_service.dart';
 import 'screens/auth_gate.dart';
 
@@ -49,6 +50,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => JourneyProvider()),
         ChangeNotifierProvider(create: (_) => StoryQuizProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: const MyApp(),
     ),
@@ -84,13 +86,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
 
-  static const List<NavItem> _navItems = [
-    NavItem(icon: Icons.home_rounded, label: 'Нүүр'),
-    NavItem(icon: Icons.military_tech_rounded, label: 'Хүмүүс'),
-    NavItem(icon: Icons.menu_book_rounded, label: 'Судлах'),
-    NavItem(icon: Icons.public_rounded, label: 'Зураг'),
-    NavItem(icon: Icons.person_rounded, label: 'Профайл'),
-  ];
+  List<NavItem> _getNavItems(LanguageProvider lang) {
+    return [
+      NavItem(icon: Icons.home_rounded, label: lang.tr('nav_home')),
+      NavItem(icon: Icons.military_tech_rounded, label: lang.tr('nav_people')),
+      NavItem(icon: Icons.menu_book_rounded, label: lang.tr('nav_learn')),
+      NavItem(icon: Icons.public_rounded, label: lang.tr('nav_map')),
+      NavItem(icon: Icons.person_rounded, label: lang.tr('nav_profile')),
+    ];
+  }
 
   @override
   void initState() {
@@ -143,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // navbar height(58) + rise(16) + safe area + small gap(8)
     final navbarReserved = 58.0 + 16.0 + bottomPadding + 8.0;
+    final lang = Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -173,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: PremiumBottomNav(
               selectedIndex: _selectedIndex,
               onTabSelected: _onTabSelected,
-              items: _navItems,
+              items: _getNavItems(lang),
               activeColor: AppTheme.accentGold,
               inactiveColor: AppTheme.textSecondary,
               navbarColor: AppTheme.surface,
