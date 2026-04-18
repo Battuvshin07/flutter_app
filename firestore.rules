@@ -225,5 +225,17 @@ service cloud.firestore {
       allow read, write: if isOwner(uid);
       allow read: if isAdmin();
     }
+
+    // ═══════════════════════════════════════
+    // email_verifications/{docId} — OTP verification codes
+    // Only Cloud Functions can write (via Admin SDK)
+    // ═══════════════════════════════════════
+    match /email_verifications/{docId} {
+      // Users can read their own verification status
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      // No client-side writes - only Cloud Functions via Admin SDK
+      allow write: if false;
+    }
   }
 }

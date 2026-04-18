@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
 import '../services/role_service.dart';
 
@@ -9,10 +10,12 @@ import '../services/role_service.dart';
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final RoleService _roleService = RoleService();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   User? _user;
   String _role = 'user';
   bool _isLoading = true;
+  bool _isEmailVerifiedViaOtp = false;
   String? _error;
 
   StreamSubscription<User?>? _authSub;
@@ -26,6 +29,10 @@ class AuthProvider with ChangeNotifier {
   String get role => _role;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
+  bool get isEmailVerified => _user?.emailVerified ?? false;
+
+  /// Check if email is verified via custom OTP system (stored in Firestore).
+  bool get isEmailVerifiedViaOtp => _isEmailVerifiedViaOtp;
   bool get isAdmin => _role == 'admin' || _role == 'superAdmin';
   bool get isSuperAdmin => _role == 'superAdmin';
   String? get error => _error;
@@ -43,20 +50,48 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
 
       try {
-        _role = await _roleService
-                .getCurrentUserRole()
-                .timeout(const Duration(seconds: 8), onTimeout: () => 'user') ??
-            'user';
+        // Fetch role and email verification status in parallel
+        final results = await Future.wait([
+          _roleService
+              .getCurrentUserRole()
+              .timeout(const Duration(seconds: 8), onTimeout: () => 'user'),
+          _checkEmailVerifiedViaOtp(user.uid),
+        ]);
+
+        _role = results[0] as String? ?? 'user';
+        _isEmailVerifiedViaOtp = results[1] as bool;
       } catch (_) {
         _role = 'user';
+        _isEmailVerifiedViaOtp = false;
       }
     } else {
       _role = 'user';
+      _isEmailVerifiedViaOtp = false;
     }
 
     _isLoading = false;
     _error = null;
     notifyListeners();
+  }
+
+  /// Check if email is verified via OTP (custom field in Firestore user doc).
+  Future<bool> _checkEmailVerifiedViaOtp(String uid) async {
+    try {
+      final doc = await _db.doc('users/$uid').get();
+      if (!doc.exists) return false;
+      final data = doc.data();
+      return data?['emailVerified'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Refresh email verification status (call after successful OTP verification).
+  Future<void> refreshEmailVerificationStatus() async {
+    if (_user != null) {
+      _isEmailVerifiedViaOtp = await _checkEmailVerifiedViaOtp(_user!.uid);
+      notifyListeners();
+    }
   }
 
   // ── Auth actions ─────────────────────────────────────────────

@@ -223,25 +223,6 @@ class _CultureDetailScreenState extends State<CultureDetailScreen>
     );
   }
 
-  Widget _badge(String label, Color textColor, Color bgColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: textColor.withValues(alpha: 0.35), width: 1),
-      ),
-      child: Text(
-        label,
-        style: AppTheme.caption.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.w700,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
   // ── Tab bar ────────────────────────────────────────────────────
   Widget _buildTabBar() {
     return Container(

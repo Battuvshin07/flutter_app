@@ -139,6 +139,41 @@ class AuthService {
     await _auth.sendPasswordResetEmail(email: email);
   }
 
+  /// Send email verification to current user.
+  /// Call this right after signup or when user requests re-verification.
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'Нэвтэрсэн хэрэглэгч олдсонгүй.',
+      );
+    }
+
+    if (user.emailVerified) {
+      throw FirebaseAuthException(
+        code: 'already-verified',
+        message: 'Имэйл аль хэдийн баталгаажсан байна.',
+      );
+    }
+
+    await user.sendEmailVerification();
+  }
+
+  /// Reload current user to check if email is verified.
+  /// Returns true if verified, false otherwise.
+  Future<bool> checkEmailVerified() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    await user.reload();
+    final refreshedUser = _auth.currentUser;
+    return refreshedUser?.emailVerified ?? false;
+  }
+
+  /// Check if current user's email is verified.
+  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
+
   /// Change password for email/password users.
   /// 1. Re-authenticates with [currentPassword].
   /// 2. Updates Firebase Auth password to [newPassword].

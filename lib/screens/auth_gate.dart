@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import '../screens/login_screen.dart';
+import '../screens/otp_verification_screen.dart';
 
 // Forward-import targets (the actual home screens in your app)
 import '../main.dart' show HomeScreen;
@@ -13,6 +14,7 @@ import '../screens/admin_dashboard_screen.dart';
 ///
 ///   - Loading  → splash / spinner
 ///   - Signed out → LoginScreen
+///   - Signed in + email not verified (via OTP) → OtpVerificationScreen
 ///   - Signed in + admin → AdminDashboardScreen
 ///   - Signed in + user  → HomeScreen (the main user app)
 class AuthGate extends StatelessWidget {
@@ -32,7 +34,13 @@ class AuthGate extends StatelessWidget {
           return const LoginScreen();
         }
 
-        // 3) Signed in → route by role
+        // 3) Signed in but email not verified via OTP (skip for admins)
+        //    Check custom emailVerified field in Firestore (set by Cloud Function)
+        if (!auth.isEmailVerifiedViaOtp && !auth.isAdmin) {
+          return const OtpVerificationScreen();
+        }
+
+        // 4) Signed in + verified (or admin) → route by role
         if (auth.isAdmin) {
           return const AdminDashboardScreen();
         }

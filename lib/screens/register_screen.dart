@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import 'otp_verification_screen.dart';
 
 /// Registration screen with dark + gold glassmorphism design.
 class RegisterScreen extends StatefulWidget {
@@ -41,8 +42,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success && mounted) {
-      // After signup, auth state changes → AuthGate takes over
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigate to OTP verification screen
+      // OTP will be sent automatically when the screen loads
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const OtpVerificationScreen(),
+        ),
+      );
     }
   }
 

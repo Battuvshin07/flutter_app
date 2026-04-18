@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 /// Login screen with dark + gold glassmorphism design.
 class LoginScreen extends StatefulWidget {
@@ -120,7 +121,30 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
+
+                          // Forgot password link
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Нууц үг мартсан?',
+                                style: AppTheme.caption.copyWith(
+                                  color: AppTheme.accentGold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
 
                           // Error message
                           if (auth.error != null) ...[
