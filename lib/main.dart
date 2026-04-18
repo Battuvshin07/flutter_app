@@ -29,19 +29,66 @@ import 'components/quiz_journey_card.dart';
 // Global navigator key for showing dialogs from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
+  runApp(const AppBootstrap());
+}
+
+class AppBootstrap extends StatefulWidget {
+  const AppBootstrap({super.key});
+
+  @override
+  State<AppBootstrap> createState() => _AppBootstrapState();
+}
+
+class _AppBootstrapState extends State<AppBootstrap> {
+  bool _isInitializing = true;
+  String? _initError;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFirebase();
+  }
+
+  Future<void> _initializeFirebase() async {
+    setState(() {
+      _isInitializing = true;
+      _initError = null;
+    });
+
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+    } catch (e) {
+      debugPrint('Firebase init error: $e');
+      _initError = e.toString();
+    } finally {
+      if (mounted) {
+        setState(() => _isInitializing = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const _BootstrapShell(child: _StartupLoadingScreen());
+    }
+
+    if (_initError != null) {
+      return _BootstrapShell(
+        child: StartupFailureScreen(
+          errorMessage: _initError!,
+          onRetry: _initializeFirebase,
+        ),
       );
     }
-  } catch (e) {
-    debugPrint('Firebase init error: $e');
-  }
-  runApp(
-    MultiProvider(
+
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => InsightService()),
@@ -53,8 +100,100 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: const MyApp(),
-    ),
-  );
+    );
+  }
+}
+
+class _BootstrapShell extends StatelessWidget {
+  final Widget child;
+
+  const _BootstrapShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      home: child,
+    );
+  }
+}
+
+class _StartupLoadingScreen extends StatelessWidget {
+  const _StartupLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppTheme.background,
+      body: Center(
+        child: CircularProgressIndicator(color: AppTheme.accentGold),
+      ),
+    );
+  }
+}
+
+class StartupFailureScreen extends StatelessWidget {
+  final String errorMessage;
+  final Future<void> Function() onRetry;
+
+  const StartupFailureScreen({
+    super.key,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.cloud_off_rounded,
+                color: AppTheme.textSecondary,
+                size: 56,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Апп эхлүүлэхэд алдаа гарлаа',
+                style: AppTheme.sectionTitle,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Firebase холболт амжилтгүй боллоо. Интернэтээ шалгаад дахин оролдоно уу.',
+                style: AppTheme.body.copyWith(color: AppTheme.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                errorMessage,
+                style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentGold,
+                  foregroundColor: AppTheme.background,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text('Дахин оролдох', style: AppTheme.button),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

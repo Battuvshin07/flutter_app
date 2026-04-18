@@ -118,14 +118,19 @@ class _PersonsScreenState extends State<PersonsScreen>
   Widget _buildPersonsList() {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
-        if (provider.isLoading) {
-          return Center(
+        if (provider.isLoading || !provider.hasAttemptedLoad) {
+          return const Center(
             child: CircularProgressIndicator(
               color: AppTheme.accentGold,
               strokeWidth: 2.5,
             ),
           );
         }
+
+        if (provider.hasLoadError && provider.persons.isEmpty) {
+          return _buildLoadError(provider);
+        }
+
         final persons = provider.persons;
         if (persons.isEmpty) {
           return Center(
@@ -161,6 +166,48 @@ class _PersonsScreenState extends State<PersonsScreen>
           },
         );
       },
+    );
+  }
+
+  Widget _buildLoadError(AppProvider provider) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              color: AppTheme.textSecondary,
+              size: 52,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Хүмүүсийн мэдээлэл ачаалахад алдаа гарлаа',
+              textAlign: TextAlign.center,
+              style: AppTheme.sectionTitle,
+            ),
+            if (provider.loadError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                provider.loadError!,
+                textAlign: TextAlign.center,
+                style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              ),
+            ],
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              onPressed: provider.loadAllData,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text('Дахин оролдох', style: AppTheme.button),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: AppTheme.background,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

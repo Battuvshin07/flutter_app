@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../models/history_topic.dart';
 import '../models/story.dart';
+import '../providers/auth_provider.dart';
 import '../providers/journey_provider.dart';
 import '../components/history_wagon.dart';
 import '../components/journey_progress_bar.dart';
@@ -153,6 +155,9 @@ class _HistoryJourneyScreenState extends State<HistoryJourneyScreen>
   // ── Build ────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final canSeedSampleData = kDebugMode ||
+        context.select<AuthProvider, bool>((auth) => auth.isAdmin);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -177,30 +182,54 @@ class _HistoryJourneyScreenState extends State<HistoryJourneyScreen>
               }
 
               if (journey.stories.isEmpty) {
+                final hasError = (journey.error ?? '').isNotEmpty;
                 return Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.train_rounded,
-                          color: AppTheme.textSecondary, size: 48),
+                      Icon(
+                        hasError
+                            ? Icons.cloud_off_rounded
+                            : Icons.train_rounded,
+                        color: AppTheme.textSecondary,
+                        size: 48,
+                      ),
                       const SizedBox(height: 12),
-                      Text('Түүх олдсонгүй',
+                      Text(
+                          hasError
+                              ? 'Түүх ачаалахад алдаа гарлаа'
+                              : 'Түүх олдсонгүй',
                           style: AppTheme.body
                               .copyWith(color: AppTheme.textSecondary)),
+                      if (hasError) ...[
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          child: Text(
+                            journey.error!,
+                            textAlign: TextAlign.center,
+                            style: AppTheme.caption
+                                .copyWith(color: AppTheme.textSecondary),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () => journey.init(),
-                        child: Text('Дахин ачаалах',
+                        child: Text(
+                            hasError ? 'Дахин оролдох' : 'Дахин ачаалах',
                             style: AppTheme.captionBold
                                 .copyWith(color: AppTheme.accentGold)),
                       ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => journey.seedSampleData(),
-                        child: Text('Жишиг өгөгдөл ачаалах',
-                            style: AppTheme.captionBold
-                                .copyWith(color: const Color(0xFF5ED8B5))),
-                      ),
+                      if (canSeedSampleData) ...[
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => journey.seedSampleData(),
+                          child: Text('Жишиг өгөгдөл ачаалах',
+                              style: AppTheme.captionBold
+                                  .copyWith(color: const Color(0xFF5ED8B5))),
+                        ),
+                      ],
                     ],
                   ),
                 );

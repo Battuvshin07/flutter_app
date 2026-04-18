@@ -12,6 +12,8 @@ import '../data/models/culture_model.dart';
 class AppProvider with ChangeNotifier {
   int _selectedNavIndex = 0;
   bool _isLoading = false;
+  bool _hasAttemptedLoad = false;
+  String? _loadError;
   final DataService _dataService = DataService();
   final CultureService _cultureService = CultureService();
 
@@ -23,6 +25,9 @@ class AppProvider with ChangeNotifier {
 
   int get selectedNavIndex => _selectedNavIndex;
   bool get isLoading => _isLoading;
+  bool get hasAttemptedLoad => _hasAttemptedLoad;
+  bool get hasLoadError => _loadError != null;
+  String? get loadError => _loadError;
   DataService get dataService => _dataService;
 
   List<Person> get persons =>
@@ -62,6 +67,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> loadAllData() async {
     _isLoading = true;
+    _loadError = null;
     notifyListeners();
 
     try {
@@ -69,10 +75,12 @@ class AppProvider with ChangeNotifier {
       await _mergeFirestoreAvatars();
     } catch (e) {
       debugPrint('Error loading data: $e');
+      _loadError = 'Хүмүүсийн өгөгдлийг ачаалж чадсангүй.';
+    } finally {
+      _hasAttemptedLoad = true;
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   /// Fetch avatarUrl from Firestore persons and merge into local Person list.

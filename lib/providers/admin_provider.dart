@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../data/repositories/admin_repository.dart';
 import '../data/models/culture_model.dart';
@@ -51,6 +52,19 @@ class AdminProvider with ChangeNotifier {
   // ── Progress (flat list for admin read) ──
   List<Map<String, dynamic>> _progress = [];
   List<Map<String, dynamic>> get progress => _progress;
+
+  static const int _progressPageSize = 40;
+  DocumentSnapshot<Map<String, dynamic>>? _progressCursor;
+  ProgressQuerySource? _progressSource;
+  bool _progressInitialLoading = false;
+  bool _progressLoadingMore = false;
+  bool _progressHasMore = true;
+  String? _progressError;
+
+  bool get progressInitialLoading => _progressInitialLoading;
+  bool get progressLoadingMore => _progressLoadingMore;
+  bool get hasMoreProgress => _progressHasMore;
+  String? get progressError => _progressError;
 
   // ── Loading / Error ──
   bool _isLoading = false;
@@ -344,21 +358,64 @@ class AdminProvider with ChangeNotifier {
   //  PROGRESS (read-only + admin reset)
   // ══════════════════════════════════════════════════════════════
 
-  Future<void> loadProgress() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadProgress({bool refresh = true}) async {
+    if (refresh) {
+      _progressInitialLoading = true;
+      _progressLoadingMore = false;
+      _progressHasMore = true;
+      _progressError = null;
+      _progressCursor = null;
+      _progressSource = null;
+      _progress = [];
+      notifyListeners();
+    } else {
+      if (_progressLoadingMore ||
+          _progressInitialLoading ||
+          !_progressHasMore) {
+        return;
+      }
+      _progressLoadingMore = true;
+      _progressError = null;
+      notifyListeners();
+    }
+
     try {
-      _progress = await _repo.getAllProgress();
+      final page = await _repo.getProgressPage(
+        limit: _progressPageSize,
+        source: _progressSource,
+        startAfter: _progressCursor,
+      );
+
+      if (refresh) {
+        _progress = page.items;
+      } else {
+        _progress.addAll(page.items);
+      }
+
+      _progressCursor = page.cursor;
+      _progressSource = page.source;
+      _progressHasMore = page.hasMore;
     } catch (e) {
-      _error = e.toString();
+      _progressError = e.toString();
+      if (refresh) {
+        _progress = [];
+        _progressHasMore = false;
+      }
     } finally {
-      _isLoading = false;
+      _progressInitialLoading = false;
+      _progressLoadingMore = false;
       notifyListeners();
     }
   }
 
-  Future<bool> deleteProgress(String id, {String? userId}) async {
-    return _safeExecute(() => _repo.deleteProgress(id, userId: userId));
+  Future<void> loadMoreProgress() async {
+    await loadProgress(refresh: false);
+  }
+
+  Future<bool> deleteProgress(String id, {String? userId, String? path}) async {
+    return _safeExecute(
+      () => _repo.deleteProgress(id, userId: userId, path: path),
+    );
   }
 
   // ══════════════════════════════════════════════════════════════

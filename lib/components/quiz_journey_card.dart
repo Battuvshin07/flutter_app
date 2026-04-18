@@ -17,7 +17,12 @@ class QuizJourneyCard extends StatelessWidget {
         if (journey.isLoading) {
           return _buildSkeleton(context);
         }
-        if (journey.stories.isEmpty) return const SizedBox.shrink();
+        if (journey.stories.isEmpty) {
+          if ((journey.error ?? '').isNotEmpty) {
+            return _buildErrorState(context, journey.error!);
+          }
+          return _buildEmptyState();
+        }
 
         final story = journey.currentStory;
         if (story == null) return const SizedBox.shrink();
@@ -66,12 +71,12 @@ class QuizJourneyCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF2E2040),
-                        const Color(0xFF1A1230),
+                        Color(0xFF2E2040),
+                        Color(0xFF1A1230),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -211,6 +216,77 @@ class QuizJourneyCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: AppTheme.cardBorder),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.menu_book_rounded,
+              color: AppTheme.textSecondary,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Одоогоор хичээл нэмэгдээгүй байна.',
+                style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String error) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.pagePadding),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: AppTheme.cardBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Одоогийн хичээл ачаалахад алдаа гарлаа',
+              style: AppTheme.captionBold.copyWith(fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              error,
+              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: () =>
+                  Provider.of<JourneyProvider>(context, listen: false).init(),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: Text('Дахин оролдох', style: AppTheme.captionBold),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.accentGold,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -23,7 +23,9 @@ class AdminListScreen extends StatefulWidget {
 }
 
 class _AdminListScreenState extends State<AdminListScreen> {
+  static const int _pageSize = 30;
   String _searchQuery = '';
+  int _visibleCount = _pageSize;
 
   AdminCollectionConfig get _config => adminCollections[widget.collectionKey]!;
 
@@ -71,8 +73,10 @@ class _AdminListScreenState extends State<AdminListScreen> {
 
                     final allItems = config.getItems(admin);
                     final items = _filtered(allItems);
+                    final visibleItems = items.take(_visibleCount).toList();
+                    final hasMoreItems = visibleItems.length < items.length;
 
-                    if (items.isEmpty) {
+                    if (visibleItems.isEmpty) {
                       return AdminEmptyState(
                         message: _searchQuery.isNotEmpty
                             ? 'Хайлтын үр дүн олдсонгүй.'
@@ -89,15 +93,19 @@ class _AdminListScreenState extends State<AdminListScreen> {
                         100,
                       ),
                       physics: const BouncingScrollPhysics(),
-                      itemCount: items.length,
+                      itemCount: visibleItems.length + (hasMoreItems ? 1 : 0),
                       itemBuilder: (context, index) {
+                        if (index == visibleItems.length) {
+                          return _buildLoadMoreTile(items.length - index);
+                        }
+
                         return _buildItemTile(
                           context,
                           config,
-                          items[index],
+                          visibleItems[index],
                           admin,
                           index,
-                          items.length,
+                          visibleItems.length,
                         );
                       },
                     );
@@ -168,9 +176,14 @@ class _AdminListScreenState extends State<AdminListScreen> {
                 Text(config.title, style: AppTheme.sectionTitle),
                 Consumer<AdminProvider>(
                   builder: (context, admin, _) {
-                    final count = config.getItems(admin).length;
+                    final filteredCount =
+                        _filtered(config.getItems(admin)).length;
+                    final shownCount = filteredCount < _visibleCount
+                        ? filteredCount
+                        : _visibleCount;
+
                     return Text(
-                      '$count зүйл',
+                      '$shownCount/$filteredCount зүйл',
                       style: AppTheme.caption.copyWith(fontSize: 11),
                     );
                   },
@@ -199,7 +212,10 @@ class _AdminListScreenState extends State<AdminListScreen> {
         border: Border.all(color: AppTheme.cardBorder),
       ),
       child: TextField(
-        onChanged: (v) => setState(() => _searchQuery = v),
+        onChanged: (v) => setState(() {
+          _searchQuery = v;
+          _visibleCount = _pageSize;
+        }),
         style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
         decoration: InputDecoration(
           hintText: config.searchHint,
@@ -212,7 +228,10 @@ class _AdminListScreenState extends State<AdminListScreen> {
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? GestureDetector(
-                  onTap: () => setState(() => _searchQuery = ''),
+                  onTap: () => setState(() {
+                    _searchQuery = '';
+                    _visibleCount = _pageSize;
+                  }),
                   child: const Icon(
                     Icons.close_rounded,
                     color: AppTheme.textSecondary,
@@ -220,6 +239,28 @@ class _AdminListScreenState extends State<AdminListScreen> {
                   ),
                 )
               : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreTile(int remaining) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14, top: 2),
+      child: Center(
+        child: OutlinedButton.icon(
+          onPressed: () => setState(() {
+            _visibleCount += _pageSize;
+          }),
+          icon: const Icon(Icons.expand_more_rounded),
+          label: Text(
+            'Дараагийн ${remaining > _pageSize ? _pageSize : remaining}-г харах',
+            style: AppTheme.button,
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _config.color,
+            side: const BorderSide(color: AppTheme.cardBorder),
+          ),
         ),
       ),
     );
@@ -261,7 +302,8 @@ class _AdminListScreenState extends State<AdminListScreen> {
                 decoration: BoxDecoration(
                   color: config.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  border: Border.all(color: config.color.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: config.color.withValues(alpha: 0.2)),
                 ),
                 child: Icon(config.icon, color: config.color, size: 22),
               ),

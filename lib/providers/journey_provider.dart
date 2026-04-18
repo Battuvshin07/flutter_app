@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/story.dart';
+import '../services/role_service.dart';
 
 /// Manages stories list, user progress, XP and unlock state.
 class JourneyProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final RoleService _roleService = RoleService();
 
   List<Story> _stories = [];
   Map<String, UserStoryProgress> _progress = {};
@@ -175,7 +177,7 @@ class JourneyProvider with ChangeNotifier {
     final uid = _uid;
     if (uid == null) return 0;
 
-    final passThreshold = 0.7;
+    const passThreshold = 0.7;
     final passed = total > 0 && (score / total) >= passThreshold;
 
     if (!passed) return 0;
@@ -229,8 +231,17 @@ class JourneyProvider with ChangeNotifier {
   /// Writes 5 sample Mongol-history stories and their quizzes to Firestore.
   /// Call once to populate an empty collection; no-ops if stories exist.
   Future<void> seedSampleData() async {
+    _error = null;
     _isLoading = true;
     notifyListeners();
+
+    final canSeed = kDebugMode || await _roleService.isAdmin();
+    if (!canSeed) {
+      _isLoading = false;
+      _error = 'Жишиг өгөгдөл ачаалах эрхгүй байна.';
+      notifyListeners();
+      return;
+    }
 
     final batch = _db.batch();
 
@@ -533,10 +544,14 @@ class JourneyProvider with ChangeNotifier {
 
     try {
       await batch.commit();
+      _error = null;
       debugPrint('Seed data written to Firestore');
     } catch (e) {
       debugPrint('Seed error: $e');
+      _isLoading = false;
       _error = 'Seed алдаа: $e';
+      notifyListeners();
+      return;
     }
 
     // Reload

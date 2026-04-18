@@ -8,6 +8,26 @@ import '../models/event_model.dart';
 import '../models/story_model.dart';
 import '../models/video_model.dart';
 
+enum ProgressQuerySource {
+  flatProgress,
+  userProgressQuizzes,
+  usersProgress,
+}
+
+class AdminProgressPage {
+  final List<Map<String, dynamic>> items;
+  final DocumentSnapshot<Map<String, dynamic>>? cursor;
+  final bool hasMore;
+  final ProgressQuerySource source;
+
+  const AdminProgressPage({
+    required this.items,
+    required this.cursor,
+    required this.hasMore,
+    required this.source,
+  });
+}
+
 /// Repository for all admin CRUD operations against Cloud Firestore.
 ///
 /// Uses direct Firestore count aggregation (AggregateQuery) for total users
@@ -252,37 +272,189 @@ class AdminRepository {
   //  PROGRESS — Read-only admin view
   // ══════════════════════════════════════════════════════════════
 
-  /// Returns a flat list of all progress docs across all users.
-  /// Reads `user_progress/{uid}/quizzes` subcollections for each user.
-  /// For a simpler admin view, we also support a top-level `progress`
-  /// collection if present.
-  Future<List<Map<String, dynamic>>> getAllProgress() async {
-    // Try flat `progress` collection first
-    final flat = await _db
-        .collection('progress')
-        .orderBy('updatedAt', descending: true)
-        .limit(200)
-        .get();
-    if (flat.docs.isNotEmpty) {
-      return flat.docs.map((d) => {'id': d.id, ...d.data()}).toList();
+  Future<AdminProgressPage> getProgressPage({
+    int limit = 40,
+    ProgressQuerySource? source,
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+  }) async {
+    if (source == ProgressQuerySource.flatProgress) {
+      return _fetchFlatProgressPage(limit: limit, startAfter: startAfter);
     }
-    // Fallback: read user_progress per-user subcollections
-    final usersSnap = await _db.collection('user_progress').get();
+    if (source == ProgressQuerySource.userProgressQuizzes) {
+      return _fetchCollectionGroupPage(
+        limit: limit,
+        startAfter: startAfter,
+        collectionGroup: 'quizzes',
+        source: ProgressQuerySource.userProgressQuizzes,
+        pathMatcher: _isUserProgressQuizPath,
+      );
+    }
+    if (source == ProgressQuerySource.usersProgress) {
+      return _fetchCollectionGroupPage(
+        limit: limit,
+        startAfter: startAfter,
+        collectionGroup: 'progress',
+        source: ProgressQuerySource.usersProgress,
+        pathMatcher: _isUsersProgressPath,
+      );
+    }
+
+    final flatPage =
+        await _fetchFlatProgressPage(limit: limit, startAfter: startAfter);
+    if (flatPage.items.isNotEmpty) return flatPage;
+
+    final userProgressPage = await _fetchCollectionGroupPage(
+      limit: limit,
+      startAfter: startAfter,
+      collectionGroup: 'quizzes',
+      source: ProgressQuerySource.userProgressQuizzes,
+      pathMatcher: _isUserProgressQuizPath,
+    );
+    if (userProgressPage.items.isNotEmpty) return userProgressPage;
+
+    return _fetchCollectionGroupPage(
+      limit: limit,
+      startAfter: startAfter,
+      collectionGroup: 'progress',
+      source: ProgressQuerySource.usersProgress,
+      pathMatcher: _isUsersProgressPath,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllProgress({int limit = 200}) async {
+    final page = await getProgressPage(limit: limit);
+    return page.items;
+  }
+
+  Future<AdminProgressPage> _fetchFlatProgressPage({
+    required int limit,
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+  }) async {
+    Query<Map<String, dynamic>> query =
+        _db.collection('progress').orderBy('updatedAt', descending: true);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    try {
+      final snap = await query.limit(limit).get();
+      return AdminProgressPage(
+        items: snap.docs.map((d) => _toProgressMap(d)).toList(),
+        cursor: snap.docs.isNotEmpty ? snap.docs.last : startAfter,
+        hasMore: snap.docs.length == limit,
+        source: ProgressQuerySource.flatProgress,
+      );
+    } on FirebaseException {
+      Query<Map<String, dynamic>> fallback =
+          _db.collection('progress').orderBy(FieldPath.documentId);
+      if (startAfter != null) {
+        fallback = fallback.startAfterDocument(startAfter);
+      }
+      final snap = await fallback.limit(limit).get();
+      return AdminProgressPage(
+        items: snap.docs.map((d) => _toProgressMap(d)).toList(),
+        cursor: snap.docs.isNotEmpty ? snap.docs.last : startAfter,
+        hasMore: snap.docs.length == limit,
+        source: ProgressQuerySource.flatProgress,
+      );
+    }
+  }
+
+  Future<AdminProgressPage> _fetchCollectionGroupPage({
+    required int limit,
+    required String collectionGroup,
+    required ProgressQuerySource source,
+    required bool Function(String path) pathMatcher,
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+  }) async {
     final results = <Map<String, dynamic>>[];
-    for (final userDoc in usersSnap.docs) {
-      final quizzesSnap = await userDoc.reference.collection('quizzes').get();
-      for (final qDoc in quizzesSnap.docs) {
-        results.add({'userId': userDoc.id, 'id': qDoc.id, ...qDoc.data()});
+    var cursor = startAfter;
+    var reachedEnd = false;
+    final batchSize = (limit * 2).clamp(60, 200);
+
+    // Filter by full path so top-level collections with same name are excluded.
+    while (results.length < limit && !reachedEnd) {
+      Query<Map<String, dynamic>> query = _db
+          .collectionGroup(collectionGroup)
+          .orderBy(FieldPath.documentId)
+          .limit(batchSize);
+
+      if (cursor != null) {
+        query = query.startAfterDocument(cursor);
+      }
+
+      final snap = await query.get();
+      if (snap.docs.isEmpty) {
+        reachedEnd = true;
+        break;
+      }
+
+      cursor = snap.docs.last;
+      if (snap.docs.length < batchSize) {
+        reachedEnd = true;
+      }
+
+      for (final doc in snap.docs) {
+        if (!pathMatcher(doc.reference.path)) continue;
+        results.add(_toProgressMap(doc));
+        if (results.length >= limit) break;
       }
     }
-    return results;
+
+    return AdminProgressPage(
+      items: results,
+      cursor: cursor,
+      hasMore: !reachedEnd,
+      source: source,
+    );
+  }
+
+  bool _isUserProgressQuizPath(String path) {
+    final segments = path.split('/');
+    return segments.length >= 4 &&
+        segments[0] == 'user_progress' &&
+        segments[2] == 'quizzes';
+  }
+
+  bool _isUsersProgressPath(String path) {
+    final segments = path.split('/');
+    return segments.length >= 4 &&
+        segments[0] == 'users' &&
+        segments[2] == 'progress';
+  }
+
+  Map<String, dynamic> _toProgressMap(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final path = doc.reference.path;
+    final data = doc.data();
+    final segments = path.split('/');
+
+    String? userId;
+    if (_isUserProgressQuizPath(path) || _isUsersProgressPath(path)) {
+      userId = segments[1];
+    }
+
+    return {
+      'id': doc.id,
+      'path': path,
+      if (userId != null) 'userId': userId,
+      ...data,
+    };
   }
 
   /// Deletes a single progress record. Accepts either a flat `progress/{id}`
   /// doc or `user_progress/{userId}/quizzes/{quizId}`.
-  Future<void> deleteProgress(String id, {String? userId}) async {
+  Future<void> deleteProgress(String id, {String? userId, String? path}) async {
+    if (path != null && path.isNotEmpty) {
+      await _db.doc(path).delete();
+      return;
+    }
+
     if (userId != null) {
       await _db.doc('user_progress/$userId/quizzes/$id').delete();
+      await _db.doc('users/$userId/progress/$id').delete();
     } else {
       await _db.collection('progress').doc(id).delete();
     }

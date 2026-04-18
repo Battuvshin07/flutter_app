@@ -867,8 +867,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       false;
 
   void _showChangePasswordSheet() {
+    final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
+    bool showCurrent = false;
     bool showNew = false;
     bool showConfirm = false;
     bool isLoading = false;
@@ -919,9 +921,14 @@ class _ProfileScreenState extends State<ProfileScreen>
               );
 
           Future<void> submit() async {
+            final currentPw = currentCtrl.text.trim();
             final newPw = newCtrl.text.trim();
             final confirm = confirmCtrl.text.trim();
 
+            if (currentPw.isEmpty) {
+              setSheetState(() => errorMsg = 'Одоогийн нууц үгээ оруулна уу.');
+              return;
+            }
             if (newPw.isEmpty || confirm.isEmpty) {
               setSheetState(() => errorMsg = 'Бүх талбарыг бөглөнө үү.');
               return;
@@ -943,7 +950,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
             try {
               await AuthService().changePassword(
-                currentPassword: '', // Empty since we don't need it
+                currentPassword: currentPw,
                 newPassword: newPw,
               );
 
@@ -1021,6 +1028,20 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                   Text('Нууц үг солих', style: AppTheme.sectionTitle),
                   const SizedBox(height: 20),
+
+                  // Current password
+                  TextField(
+                    controller: currentCtrl,
+                    obscureText: !showCurrent,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+                    decoration: fieldDecoration(
+                      label: 'Одоогийн нууц үг',
+                      obscureToggle: showCurrent,
+                      onToggle: () =>
+                          setSheetState(() => showCurrent = !showCurrent),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
                   // New password
                   TextField(
@@ -1118,6 +1139,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
       ),
     ).whenComplete(() {
+      currentCtrl.dispose();
       newCtrl.dispose();
       confirmCtrl.dispose();
     });

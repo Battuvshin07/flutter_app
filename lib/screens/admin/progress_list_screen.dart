@@ -51,12 +51,17 @@ class _ProgressListScreenState extends State<ProgressListScreen> {
           Expanded(
             child: Consumer<AdminProvider>(
               builder: (context, admin, _) {
-                if (admin.isLoading && admin.progress.isEmpty) {
+                if (admin.progressInitialLoading && admin.progress.isEmpty) {
                   return const Center(
                     child:
                         CircularProgressIndicator(color: AppTheme.accentGold),
                   );
                 }
+
+                if (admin.progressError != null && admin.progress.isEmpty) {
+                  return _buildLoadError(admin);
+                }
+
                 final items = _filtered(admin.progress);
                 if (items.isEmpty) {
                   return const AdminEmptyState(
@@ -64,13 +69,21 @@ class _ProgressListScreenState extends State<ProgressListScreen> {
                     icon: Icons.bar_chart_rounded,
                   );
                 }
+
+                final showLoadMoreRow =
+                    admin.hasMoreProgress || admin.progressLoadingMore;
+
                 return RefreshIndicator(
                   color: AppTheme.accentGold,
-                  onRefresh: () => admin.loadProgress(),
+                  onRefresh: () => admin.loadProgress(refresh: true),
                   child: ListView.builder(
                     padding: const EdgeInsets.all(AppTheme.pagePadding),
-                    itemCount: items.length,
+                    itemCount: items.length + (showLoadMoreRow ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index == items.length) {
+                        return _buildLoadMoreRow(admin);
+                      }
+
                       final item = items[index];
                       return _ProgressTile(
                         data: item,
@@ -113,10 +126,11 @@ class _ProgressListScreenState extends State<ProgressListScreen> {
                                 .deleteProgress(
                               item['id'] ?? '',
                               userId: item['userId'],
+                              path: item['path']?.toString(),
                             );
                             if (context.mounted) {
                               Provider.of<AdminProvider>(context, listen: false)
-                                  .loadProgress();
+                                  .loadProgress(refresh: true);
                             }
                           }
                         },
@@ -128,6 +142,79 @@ class _ProgressListScreenState extends State<ProgressListScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadError(AdminProvider admin) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              color: AppTheme.textSecondary,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Ахицыг ачаалахад алдаа гарлаа',
+              style: AppTheme.sectionTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              admin.progressError ?? '',
+              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => admin.loadProgress(refresh: true),
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text('Дахин оролдох', style: AppTheme.button),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: AppTheme.background,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreRow(AdminProvider admin) {
+    if (admin.progressLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: AppTheme.accentGold,
+            strokeWidth: 2,
+          ),
+        ),
+      );
+    }
+
+    if (!admin.hasMoreProgress) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 10),
+      child: Center(
+        child: OutlinedButton.icon(
+          onPressed: admin.loadMoreProgress,
+          icon: const Icon(Icons.expand_more_rounded),
+          label: Text('Илүүг ачаалах', style: AppTheme.button),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppTheme.accentGold,
+            side: const BorderSide(color: AppTheme.cardBorder),
+          ),
+        ),
       ),
     );
   }

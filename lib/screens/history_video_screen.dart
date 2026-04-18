@@ -23,6 +23,7 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
 
   List<VideoModel> _playlist = [];
   bool _loaded = false;
+  String? _loadError;
   StreamSubscription<List<VideoModel>>? _sub;
 
   YoutubePlayerController? _controller;
@@ -34,6 +35,11 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _subscribeToVideos();
+  }
+
+  void _subscribeToVideos() {
+    _sub?.cancel();
     _sub = _videoService.watchVideos().listen(
       (videos) {
         if (!mounted) return;
@@ -41,6 +47,7 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
         setState(() {
           _playlist = videos;
           _loaded = true;
+          _loadError = null;
           _currentIndex =
               _currentIndex.clamp(0, videos.isEmpty ? 0 : videos.length - 1);
         });
@@ -49,10 +56,22 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
           _checkSavedStatus();
         }
       },
-      onError: (_) {
-        if (mounted) setState(() => _loaded = true);
+      onError: (e) {
+        if (!mounted) return;
+        setState(() {
+          _loaded = true;
+          _loadError = 'Видео жагсаалт ачаалахад алдаа гарлаа.';
+        });
       },
     );
+  }
+
+  void _retryLoadVideos() {
+    setState(() {
+      _loaded = false;
+      _loadError = null;
+    });
+    _subscribeToVideos();
   }
 
   void _checkSavedStatus() async {
@@ -182,10 +201,12 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
             onPressed: () => Navigator.maybePop(context),
           ),
         ),
-        body: const Center(
-          child: Text('Видео олдсонгүй.',
-              style: TextStyle(color: AppTheme.textSecondary)),
-        ),
+        body: _loadError != null
+            ? _buildLoadErrorState()
+            : const Center(
+                child: Text('Видео олдсонгүй.',
+                    style: TextStyle(color: AppTheme.textSecondary)),
+              ),
       );
     }
 
@@ -441,6 +462,46 @@ class _HistoryVideoScreenState extends State<HistoryVideoScreen> {
           );
         }),
       ],
+    );
+  }
+
+  Widget _buildLoadErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              color: AppTheme.textSecondary,
+              size: 50,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Видео жагсаалт ачаалахад алдаа гарлаа',
+              style: AppTheme.sectionTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _loadError ?? '',
+              style: AppTheme.caption.copyWith(color: AppTheme.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              onPressed: _retryLoadVideos,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text('Дахин оролдох', style: AppTheme.button),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: AppTheme.background,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
