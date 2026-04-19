@@ -79,6 +79,25 @@ class AuthService {
     return user;
   }
 
+  /// Sign in using a Firebase custom token.
+  /// Ensures user doc exists and updates `lastLogin` timestamp.
+  Future<User?> signInWithCustomToken(String customToken) async {
+    final credential = await _auth.signInWithCustomToken(customToken);
+    final user = credential.user;
+
+    if (user != null) {
+      // Ensure doc exists (handles accounts created before field additions)
+      await UserService.ensureUserDocExists();
+      // Update last login
+      await _db.doc('users/${user.uid}').update({
+        'lastLogin': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    return user;
+  }
+
   /// Sign out the current user.
   Future<void> signOut() async {
     await GoogleSignIn().signOut();

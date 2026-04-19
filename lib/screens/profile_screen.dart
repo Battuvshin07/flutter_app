@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
-import '../services/auth_service.dart';
+import '../services/otp_service.dart';
 import '../services/user_service.dart';
 import '../services/culture_service.dart';
 import '../theme/app_theme.dart';
@@ -867,14 +868,51 @@ class _ProfileScreenState extends State<ProfileScreen>
       false;
 
   void _showChangePasswordSheet() {
-    final currentCtrl = TextEditingController();
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email?.trim() ?? '';
+
+    if (!_isPasswordUser || user == null || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Нууц үг солихын тулд имэйл/нууц үгээр нэвтэрсэн байх шаардлагатай.',
+          ),
+          backgroundColor: AppTheme.crimson,
+        ),
+      );
+      return;
+    }
+
+    final otpService = OtpService();
+    final otpCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
-    bool showCurrent = false;
+
+    Timer? resendTimer;
+    Timer? expiryTimer;
+    DateTime? otpExpiresAt;
+
+    bool sheetActive = true;
+    bool hasSentOtp = false;
     bool showNew = false;
     bool showConfirm = false;
     bool isLoading = false;
+    int resendCountdown = 0;
+    int expiryCountdown = 5 * 60;
     String? errorMsg;
+    String? infoMsg;
+
+    String formatDuration(int seconds) {
+      final minutes = seconds ~/ 60;
+      final secs = seconds % 60;
+      return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
+
+    int secondsUntilExpiry() {
+      if (otpExpiresAt == null) return 5 * 60;
+      final diff = otpExpiresAt!.difference(DateTime.now()).inSeconds;
+      return diff > 0 ? diff : 0;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -882,10 +920,64 @@ class _ProfileScreenState extends State<ProfileScreen>
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
+          void startResendCooldown(int seconds) {
+            resendTimer?.cancel();
+            resendCountdown = seconds > 0 ? seconds : 60;
+
+            resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (!sheetActive || !ctx.mounted) {
+                timer.cancel();
+                return;
+              }
+
+              if (resendCountdown <= 0) {
+                timer.cancel();
+                return;
+              }
+
+              setSheetState(() {
+                resendCountdown--;
+              });
+            });
+          }
+
+          void startExpiryCountdown(DateTime? expiresAt) {
+            expiryTimer?.cancel();
+
+            final now = DateTime.now();
+            final fallbackExpiry = now.add(const Duration(minutes: 5));
+            otpExpiresAt = (expiresAt != null && expiresAt.isAfter(now))
+                ? expiresAt
+                : fallbackExpiry;
+            expiryCountdown = secondsUntilExpiry();
+
+            expiryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              if (!sheetActive || !ctx.mounted) {
+                timer.cancel();
+                return;
+              }
+
+              final secondsLeft = secondsUntilExpiry();
+              setSheetState(() {
+                expiryCountdown = secondsLeft;
+                if (hasSentOtp && secondsLeft == 0) {
+                  infoMsg = null;
+                  errorMsg ??=
+                      'Кодын хугацаа дууссан байна. Дахин код илгээнэ үү.';
+                }
+              });
+
+              if (secondsLeft == 0) {
+                timer.cancel();
+              }
+            });
+          }
+
           InputDecoration fieldDecoration({
             required String label,
-            required bool obscureToggle,
-            required VoidCallback onToggle,
+            Widget? suffixIcon,
+            String? counterText,
+            IconData? prefixIcon,
           }) =>
               InputDecoration(
                 labelText: label,
@@ -893,6 +985,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                     AppTheme.caption.copyWith(color: AppTheme.textSecondary),
                 filled: true,
                 fillColor: AppTheme.background,
+                prefixIcon: prefixIcon == null
+                    ? null
+                    : Icon(prefixIcon, color: AppTheme.accentGold, size: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppTheme.cardBorder),
@@ -906,27 +1001,58 @@ class _ProfileScreenState extends State<ProfileScreen>
                   borderSide: BorderSide(
                       color: AppTheme.accentGold.withValues(alpha: 0.7)),
                 ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureToggle
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 20,
-                    color: AppTheme.textSecondary,
-                  ),
-                  onPressed: onToggle,
-                ),
+                suffixIcon: suffixIcon,
+                counterText: counterText,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               );
 
+          Future<void> sendOtp({bool isResend = false}) async {
+            if (isLoading || resendCountdown > 0) return;
+
+            setSheetState(() {
+              isLoading = true;
+              errorMsg = null;
+              infoMsg = null;
+            });
+
+            final result = await otpService.sendChangePasswordOtp(
+              email: email,
+              userId: user.uid,
+            );
+
+            if (!sheetActive || !ctx.mounted) return;
+
+            if (result.success) {
+              startResendCooldown(result.resendAfterSeconds);
+              startExpiryCountdown(result.expiresAt);
+              setSheetState(() {
+                isLoading = false;
+                hasSentOtp = true;
+                otpCtrl.clear();
+                infoMsg = isResend ? 'Шинэ код илгээгдлээ.' : result.message;
+              });
+              return;
+            }
+
+            setSheetState(() {
+              isLoading = false;
+              errorMsg = result.message;
+            });
+          }
+
           Future<void> submit() async {
-            final currentPw = currentCtrl.text.trim();
+            final code = otpCtrl.text.trim();
             final newPw = newCtrl.text.trim();
             final confirm = confirmCtrl.text.trim();
 
-            if (currentPw.isEmpty) {
-              setSheetState(() => errorMsg = 'Одоогийн нууц үгээ оруулна уу.');
+            if (!hasSentOtp) {
+              setSheetState(() => errorMsg = 'Эхлээд OTP код илгээнэ үү.');
+              return;
+            }
+            if (code.length != 6) {
+              setSheetState(() =>
+                  errorMsg = 'Имэйлээр ирсэн 6 оронтой OTP кодоо оруулна уу.');
               return;
             }
             if (newPw.isEmpty || confirm.isEmpty) {
@@ -942,43 +1068,79 @@ class _ProfileScreenState extends State<ProfileScreen>
               setSheetState(() => errorMsg = 'Шинэ нууц үг таарахгүй байна.');
               return;
             }
+            if (expiryCountdown <= 0) {
+              setSheetState(() => errorMsg =
+                  'Кодын хугацаа дууссан байна. Дахин код илгээнэ үү.');
+              return;
+            }
 
             setSheetState(() {
               isLoading = true;
               errorMsg = null;
+              infoMsg = null;
             });
 
-            try {
-              await AuthService().changePassword(
-                currentPassword: currentPw,
-                newPassword: newPw,
-              );
+            final verifyResult = await otpService.verifyChangePasswordOtp(
+              email: email,
+              userId: user.uid,
+              code: code,
+            );
 
-              if (!ctx.mounted) return;
-              Navigator.pop(ctx);
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Нууц үг амжилттай солигдлоо'),
-                  backgroundColor: Color(0xFF4ADE80),
-                ),
-              );
-            } on FirebaseAuthException catch (e) {
-              String msg;
-              if (e.code == 'wrong-password' ||
-                  e.code == 'invalid-credential') {
-                msg = 'Одоогийн нууц үг буруу байна.';
-              } else if (e.code == 'weak-password') {
-                msg = 'Шинэ нууц үг хэт энгийн байна.';
-              } else {
-                msg = 'Алдаа гарлаа. Дахин оролдоно уу.';
-              }
+            if (!sheetActive || !ctx.mounted) return;
+
+            if (!verifyResult.success) {
               setSheetState(() {
                 isLoading = false;
-                errorMsg = msg;
+                errorMsg = verifyResult.message;
               });
+              return;
             }
+
+            final otpProof = verifyResult.otpProof;
+            if (otpProof == null || otpProof.isEmpty) {
+              setSheetState(() {
+                isLoading = false;
+                errorMsg =
+                    'Код баталгаажсан ч нотолгоо үүссэнгүй. Дахин оролдоно уу.';
+              });
+              return;
+            }
+
+            final completeResult =
+                await otpService.completeChangePasswordWithOtp(
+              userId: user.uid,
+              otpProof: otpProof,
+              newPassword: newPw,
+            );
+
+            if (!sheetActive || !ctx.mounted) return;
+
+            if (!completeResult.success) {
+              setSheetState(() {
+                isLoading = false;
+                errorMsg = completeResult.message;
+              });
+              return;
+            }
+
+            resendTimer?.cancel();
+            expiryTimer?.cancel();
+
+            Navigator.pop(ctx);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Нууц үг амжилттай солигдлоо'),
+                backgroundColor: Color(0xFF4ADE80),
+              ),
+            );
           }
+
+          final resendText = resendCountdown > 0
+              ? 'Дахин илгээх (${formatDuration(resendCountdown)})'
+              : hasSentOtp
+                  ? 'OTP код дахин илгээх'
+                  : 'OTP код илгээх';
 
           return Padding(
             padding:
@@ -1029,16 +1191,81 @@ class _ProfileScreenState extends State<ProfileScreen>
                   Text('Нууц үг солих', style: AppTheme.sectionTitle),
                   const SizedBox(height: 20),
 
-                  // Current password
+                  // Read-only email
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.cardBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Баталгаажуулах имэйл',
+                          style: AppTheme.caption
+                              .copyWith(color: AppTheme.textSecondary),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: AppTheme.body
+                              .copyWith(color: AppTheme.textPrimary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Send / resend OTP
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: (isLoading || resendCountdown > 0)
+                          ? null
+                          : () => sendOtp(isResend: hasSentOtp),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.accentGold,
+                        side: BorderSide(
+                            color: AppTheme.accentGold.withValues(alpha: 0.5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.mail_outline_rounded, size: 18),
+                      label: Text(resendText, style: AppTheme.button),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Expiry countdown
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Кодын хүчинтэй хугацаа: ${formatDuration(expiryCountdown)}',
+                      style: AppTheme.caption.copyWith(
+                        color: expiryCountdown > 0
+                            ? AppTheme.textSecondary
+                            : AppTheme.crimson,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // OTP code
                   TextField(
-                    controller: currentCtrl,
-                    obscureText: !showCurrent,
+                    controller: otpCtrl,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
                     style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
                     decoration: fieldDecoration(
-                      label: 'Одоогийн нууц үг',
-                      obscureToggle: showCurrent,
-                      onToggle: () =>
-                          setSheetState(() => showCurrent = !showCurrent),
+                      label: 'OTP код (6 оронтой)',
+                      prefixIcon: Icons.verified_user_outlined,
+                      counterText: '',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1050,8 +1277,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                     style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
                     decoration: fieldDecoration(
                       label: 'Шинэ нууц үг (доод тал 6 тэмдэгт)',
-                      obscureToggle: showNew,
-                      onToggle: () => setSheetState(() => showNew = !showNew),
+                      prefixIcon: Icons.lock_outline_rounded,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          showNew
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppTheme.textSecondary,
+                        ),
+                        onPressed: () =>
+                            setSheetState(() => showNew = !showNew),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1063,11 +1300,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                     style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
                     decoration: fieldDecoration(
                       label: 'Шинэ нууц үг давтах',
-                      obscureToggle: showConfirm,
-                      onToggle: () =>
-                          setSheetState(() => showConfirm = !showConfirm),
+                      prefixIcon: Icons.lock_outline_rounded,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          showConfirm
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: AppTheme.textSecondary,
+                        ),
+                        onPressed: () =>
+                            setSheetState(() => showConfirm = !showConfirm),
+                      ),
                     ),
                   ),
+
+                  if (infoMsg != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      infoMsg!,
+                      style: AppTheme.caption.copyWith(
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                  ],
 
                   // Error message
                   if (errorMsg != null) ...[
@@ -1139,7 +1395,10 @@ class _ProfileScreenState extends State<ProfileScreen>
         },
       ),
     ).whenComplete(() {
-      currentCtrl.dispose();
+      sheetActive = false;
+      resendTimer?.cancel();
+      expiryTimer?.cancel();
+      otpCtrl.dispose();
       newCtrl.dispose();
       confirmCtrl.dispose();
     });
@@ -1325,7 +1584,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           'амжилтуудаа хянах боломжтой.',
         ),
         _infoBullet(
-          'Нууц үг сэргээх имэйл хүлээн авахын тулд "Нууц үг солих" товчийг дарна.',
+          'Нууц үг солихын тулд "Нууц үг солих" товчийг дарж, имэйлээр ирэх OTP кодоор баталгаажуулна.',
         ),
         _infoSectionTitle('Холбоо барих'),
         _infoParagraph(

@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import 'login_otp_screen.dart';
 
 /// Login screen with dark + gold glassmorphism design.
 class LoginScreen extends StatefulWidget {
@@ -131,7 +132,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ForgotPasswordScreen(),
+                                    builder: (_) =>
+                                        const ForgotPasswordScreen(),
                                   ),
                                 );
                               },
@@ -193,6 +195,48 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     )
                                   : Text('Нэвтрэх', style: AppTheme.button),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // OTP login button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: OutlinedButton.icon(
+                              onPressed: auth.isLoading
+                                  ? null
+                                  : () {
+                                      auth.clearError();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const LoginOtpScreen(),
+                                        ),
+                                      );
+                                    },
+                              icon: const Icon(
+                                Icons.password_rounded,
+                                size: 20,
+                              ),
+                              label: Text(
+                                'OTP кодоор нэвтрэх',
+                                style: AppTheme.button
+                                    .copyWith(color: AppTheme.accentGold),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.accentGold,
+                                side: BorderSide(
+                                  color: AppTheme.accentGold
+                                      .withValues(alpha: 0.5),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppTheme.radiusMd),
+                                ),
+                              ),
                             ),
                           ),
 

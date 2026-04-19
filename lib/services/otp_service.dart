@@ -13,32 +13,15 @@ class OtpService {
     required String email,
     required String userId,
   }) async {
-    try {
-      final callable = _functions.httpsCallable('sendVerificationCode');
-      final result = await callable.call({
+    return _callOtpFunction(
+      functionName: 'sendVerificationCode',
+      payload: {
         'email': email,
         'userId': userId,
-      });
-
-      final data = result.data as Map<String, dynamic>;
-      return OtpResult(
-        success: data['success'] ?? false,
-        message: data['message'] ?? 'Код илгээгдлээ',
-        expiresAt: data['expiresAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(data['expiresAt'])
-            : null,
-      );
-    } on FirebaseFunctionsException catch (e) {
-      return OtpResult(
-        success: false,
-        message: _mapFunctionError(e.code),
-      );
-    } catch (e) {
-      return OtpResult(
-        success: false,
-        message: 'Код илгээхэд алдаа гарлаа: ${e.toString()}',
-      );
-    }
+      },
+      fallbackSuccessMessage: 'Код илгээгдлээ',
+      fallbackErrorMessage: 'Код илгээхэд алдаа гарлаа',
+    );
   }
 
   /// Verify the OTP code entered by user.
@@ -48,30 +31,146 @@ class OtpService {
     required String code,
     required String userId,
   }) async {
-    try {
-      final callable = _functions.httpsCallable('verifyCode');
-      final result = await callable.call({
+    return _callOtpFunction(
+      functionName: 'verifyCode',
+      payload: {
         'email': email,
         'code': code,
         'userId': userId,
-      });
+      },
+      fallbackSuccessMessage: 'Баталгаажлаа',
+      fallbackErrorMessage: 'Код шалгахад алдаа гарлаа',
+    );
+  }
 
-      final data = result.data as Map<String, dynamic>;
-      return OtpResult(
-        success: data['success'] ?? false,
-        message: data['message'] ?? 'Баталгаажлаа',
-      );
-    } on FirebaseFunctionsException catch (e) {
-      return OtpResult(
-        success: false,
-        message: _mapFunctionError(e.code),
-      );
-    } catch (e) {
-      return OtpResult(
-        success: false,
-        message: 'Код шалгахад алдаа гарлаа: ${e.toString()}',
-      );
-    }
+  /// Send login OTP to email.
+  Future<OtpResult> sendLoginOtp({
+    required String email,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'sendLoginOtp',
+      payload: {
+        'email': email,
+      },
+      fallbackSuccessMessage: 'Хэрэв бүртгэлтэй имэйл бол код илгээгдэнэ.',
+      fallbackErrorMessage: 'Нэвтрэх код илгээхэд алдаа гарлаа',
+    );
+  }
+
+  /// Verify login OTP and receive Firebase custom token.
+  Future<OtpResult> verifyLoginOtp({
+    required String email,
+    required String code,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'verifyLoginOtp',
+      payload: {
+        'email': email,
+        'code': code,
+      },
+      fallbackSuccessMessage: 'Код баталгаажлаа',
+      fallbackErrorMessage: 'Нэвтрэх код шалгахад алдаа гарлаа',
+    );
+  }
+
+  /// Send forgot-password OTP to email.
+  Future<OtpResult> sendForgotPasswordOtp({
+    required String email,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'sendForgotPasswordOtp',
+      payload: {
+        'email': email,
+      },
+      fallbackSuccessMessage: 'Хэрэв бүртгэлтэй имэйл бол код илгээгдэнэ.',
+      fallbackErrorMessage: 'Нууц үг сэргээх код илгээхэд алдаа гарлаа',
+    );
+  }
+
+  /// Verify forgot-password OTP and receive short-lived otpProof.
+  Future<OtpResult> verifyForgotPasswordOtp({
+    required String email,
+    required String code,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'verifyForgotPasswordOtp',
+      payload: {
+        'email': email,
+        'code': code,
+      },
+      fallbackSuccessMessage: 'Код баталгаажлаа',
+      fallbackErrorMessage: 'Сэргээх код шалгахад алдаа гарлаа',
+    );
+  }
+
+  /// Complete forgot-password flow using issued otpProof.
+  Future<OtpResult> completeForgotPasswordWithOtp({
+    required String email,
+    required String otpProof,
+    required String newPassword,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'completeForgotPasswordWithOtp',
+      payload: {
+        'email': email,
+        'otpProof': otpProof,
+        'newPassword': newPassword,
+      },
+      fallbackSuccessMessage: 'Нууц үг амжилттай шинэчлэгдлээ.',
+      fallbackErrorMessage: 'Нууц үг сэргээхэд алдаа гарлаа',
+    );
+  }
+
+  /// Send change-password OTP for authenticated user.
+  Future<OtpResult> sendChangePasswordOtp({
+    required String email,
+    required String userId,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'sendChangePasswordOtp',
+      payload: {
+        'email': email,
+        'userId': userId,
+      },
+      fallbackSuccessMessage: 'Код илгээгдлээ',
+      fallbackErrorMessage: 'Нууц үг солих код илгээхэд алдаа гарлаа',
+    );
+  }
+
+  /// Verify change-password OTP and receive short-lived otpProof.
+  Future<OtpResult> verifyChangePasswordOtp({
+    required String email,
+    required String userId,
+    required String code,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'verifyChangePasswordOtp',
+      payload: {
+        'email': email,
+        'userId': userId,
+        'code': code,
+      },
+      fallbackSuccessMessage: 'Код баталгаажлаа',
+      fallbackErrorMessage: 'Нууц үг солих код шалгахад алдаа гарлаа',
+    );
+  }
+
+  /// Complete change-password flow using issued otpProof.
+  Future<OtpResult> completeChangePasswordWithOtp({
+    required String userId,
+    required String otpProof,
+    required String newPassword,
+  }) async {
+    return _callOtpFunction(
+      functionName: 'completeChangePasswordWithOtp',
+      payload: {
+        'userId': userId,
+        'otpProof': otpProof,
+        'newPassword': newPassword,
+      },
+      fallbackSuccessMessage: 'Нууц үг амжилттай шинэчлэгдлээ.',
+      fallbackErrorMessage: 'Нууц үг солиход алдаа гарлаа',
+    );
   }
 
   /// Check if user's email is already verified via OTP.
@@ -87,29 +186,115 @@ class OtpService {
     }
   }
 
-  /// Get remaining cooldown time for resend (in seconds).
-  /// Returns 0 if can resend immediately.
-  Future<int> getResendCooldown(String email) async {
+  Future<OtpResult> _callOtpFunction({
+    required String functionName,
+    required Map<String, dynamic> payload,
+    required String fallbackSuccessMessage,
+    required String fallbackErrorMessage,
+  }) async {
     try {
-      final query = await _db
-          .collection('email_verifications')
-          .where('email', isEqualTo: email)
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get();
+      final callable = _functions.httpsCallable(functionName);
+      final result = await callable.call(payload);
+      final rawData = result.data;
 
-      if (query.docs.isEmpty) return 0;
+      if (rawData is Map<String, dynamic>) {
+        return _parseOtpResult(
+          rawData,
+          fallbackSuccessMessage: fallbackSuccessMessage,
+        );
+      }
 
-      final doc = query.docs.first;
-      final lastSentAt = doc.data()['createdAt'] as Timestamp?;
-      if (lastSentAt == null) return 0;
+      if (rawData is Map) {
+        return _parseOtpResult(
+          Map<String, dynamic>.from(rawData),
+          fallbackSuccessMessage: fallbackSuccessMessage,
+        );
+      }
 
-      final elapsed = DateTime.now().difference(lastSentAt.toDate()).inSeconds;
-      final cooldown = 60 - elapsed; // 60 second cooldown
-      return cooldown > 0 ? cooldown : 0;
+      return OtpResult(
+        success: false,
+        message: fallbackErrorMessage,
+      );
+    } on FirebaseFunctionsException catch (e) {
+      return OtpResult(
+        success: false,
+        message: _mapFunctionError(e.code),
+        errorCode: e.code,
+      );
     } catch (e) {
-      return 0; // Allow resend on error
+      return OtpResult(
+        success: false,
+        message: '$fallbackErrorMessage: ${e.toString()}',
+      );
     }
+  }
+
+  OtpResult _parseOtpResult(
+    Map<String, dynamic> data, {
+    required String fallbackSuccessMessage,
+  }) {
+    final success = data['success'] == true;
+    final errorCode = _readString(data['errorCode']);
+    final rawMessage = _readString(data['message']);
+
+    final message = rawMessage ??
+        (!success && errorCode != null
+            ? _mapFunctionError(errorCode)
+            : fallbackSuccessMessage);
+
+    return OtpResult(
+      success: success,
+      message: message,
+      expiresAt: _parseEpochDateTime(data['expiresAt']),
+      otpProof: _readString(data['otpProof']),
+      customToken: _readString(data['customToken']),
+      resendAfterSeconds: _parseResendAfterSeconds(data),
+      errorCode: errorCode,
+      proofExpiresAt: _parseEpochDateTime(data['proofExpiresAt']),
+    );
+  }
+
+  int _parseResendAfterSeconds(Map<String, dynamic> data) {
+    final raw = data.containsKey('cooldownSeconds')
+        ? data['cooldownSeconds']
+        : data['resendAfterSeconds'];
+
+    if (raw is int) return raw;
+    if (raw is num) return raw.toInt();
+    if (raw is String) return int.tryParse(raw) ?? 0;
+    return 0;
+  }
+
+  DateTime? _parseEpochDateTime(dynamic value) {
+    if (value == null) return null;
+
+    if (value is int) {
+      return DateTime.fromMillisecondsSinceEpoch(value);
+    }
+
+    if (value is num) {
+      return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    }
+
+    if (value is String) {
+      final millis = int.tryParse(value);
+      if (millis != null) {
+        return DateTime.fromMillisecondsSinceEpoch(millis);
+      }
+    }
+
+    return null;
+  }
+
+  String? _readString(dynamic value) {
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isNotEmpty) {
+        return trimmed;
+      }
+    }
+
+    return null;
   }
 
   String _mapFunctionError(String code) {
@@ -139,10 +324,20 @@ class OtpResult {
   final bool success;
   final String message;
   final DateTime? expiresAt;
+  final String? otpProof;
+  final String? customToken;
+  final int resendAfterSeconds;
+  final String? errorCode;
+  final DateTime? proofExpiresAt;
 
   OtpResult({
     required this.success,
     required this.message,
     this.expiresAt,
+    this.otpProof,
+    this.customToken,
+    this.resendAfterSeconds = 0,
+    this.errorCode,
+    this.proofExpiresAt,
   });
 }

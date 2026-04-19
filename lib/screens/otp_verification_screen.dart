@@ -85,8 +85,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
       setState(() {
         _isSending = false;
         if (result.success) {
-          _startExpiryTimer();
-          _startResendCooldown();
+          final resolvedSeconds = _resolveExpirySeconds(result.expiresAt);
+          _startExpiryTimer(resolvedSeconds);
+          _startResendCooldown(
+            result.resendAfterSeconds > 0 ? result.resendAfterSeconds : 60,
+          );
         } else {
           _errorMsg = result.message;
         }
@@ -94,8 +97,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
     }
   }
 
-  void _startExpiryTimer() {
-    _expiryCountdown = 300; // Reset to 5 minutes
+  int _resolveExpirySeconds(DateTime? expiresAt) {
+    if (expiresAt == null) return 300;
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final expiresAtMs = expiresAt.millisecondsSinceEpoch;
+    final remainingMs = expiresAtMs - nowMs;
+
+    if (remainingMs <= 0) return 300;
+    return (remainingMs / 1000).ceil();
+  }
+
+  void _startExpiryTimer([int seconds = 300]) {
+    final safeSeconds = seconds > 0 ? seconds : 300;
+    _expiryCountdown = safeSeconds;
     _expiryTimer?.cancel();
     _expiryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -113,9 +128,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
     });
   }
 
-  void _startResendCooldown() {
+  void _startResendCooldown([int seconds = 60]) {
+    final safeSeconds = seconds > 0 ? seconds : 60;
     _canResend = false;
-    _resendCountdown = 60;
+    _resendCountdown = safeSeconds;
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
@@ -156,8 +172,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
         if (result.success) {
           _successMsg = 'Шинэ код илгээгдлээ';
           _clearOtpFields();
-          _startExpiryTimer();
-          _startResendCooldown();
+          final resolvedSeconds = _resolveExpirySeconds(result.expiresAt);
+          _startExpiryTimer(resolvedSeconds);
+          _startResendCooldown(
+            result.resendAfterSeconds > 0 ? result.resendAfterSeconds : 60,
+          );
         } else {
           _errorMsg = result.message;
         }
