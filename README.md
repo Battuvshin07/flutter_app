@@ -1,145 +1,141 @@
-# Flutter Mongol History App
+# 13-р зууны Монголын түүхийг таниулах систем (Mongol Empire History App)
 
-A beautiful Flutter application for learning about Mongol Empire history with Firebase integration.
+13-р зууны Монголын эзэнт гүрний түүхийг хэрэглэгчдэд интерактив, сонирхолтой, орчин үеийн хэлбэрээр хүргэхэд зориулагдсан Flutter гар утасны аппликейшн. Энэхүү төсөл нь Firebase болон офлайн мэдээллийн сантай уялдан ажиллаж, түүхэн аялал, түүхэн хүмүүс, соёл уламжлал, интерактив газрын зураг, асуулт хариулт (Quiz), видео хичээл зэрэг олон төрлийн функцыг агуулсан.
 
-## Features
+---
 
-- 🎨 Modern, clean UI with custom components
-- 🔥 Firebase integration for data storage
-- 📱 Responsive design
-- 🎯 Quick action buttons
-- 📚 Featured historical content
-- 💡 AI-powered historical insights
-- 🎨 Beautiful carousel header
+## 👥 Төслийн гишүүд (Team Members)
 
-## Project Structure
+* **Гүйцэтгэсэн оюутан:** Battuvshin Naranbaatar (Н.Баттүвшин)
+* **Оюутны код:** s21c061b
+* **Удирдагч багш:** Б.Батчулуун (Магистр)
+* **Сургууль:** Шинэ Монгол Технологийн Коллеж, Компьютерын Ухааны Тэнхим
 
-```
-lib/
-├── main.dart                 # Main app entry point
-├── firebase_options.dart     # Firebase configuration
-├── components/
-│   ├── HeaderCarousel.dart   # Auto-scrolling header carousel
-│   ├── QuickActions.dart     # Quick action buttons
-│   ├── FeaturedContent.dart  # Featured stories list
-│   └── BottomNav.dart        # Bottom navigation bar
-└── services/
-    └── ai_service.dart       # Historical insights service
-```
+---
 
-## Setup Instructions
+## 🛠️ Ашигласан технологи, хэрэгслүүд (Technologies & Tools)
 
-### 1. Prerequisites
-- Flutter SDK (3.0.0 or higher)
-- Dart SDK
-- Android Studio / VS Code with Flutter extensions
-- Firebase account (optional, for full functionality)
+### 1. Front-end (Хэрэглэгчийн хэсэг)
+* **Flutter Framework:** Хувилбар `>=3.0.0 <4.0.0` - iOS болон Android платформд зориулсан хөгжүүлэлт.
+* **Dart:** Аппликейшны үндсэн програмчлалын хэл.
+* **Provider:** Аппликейшны төлөв удирдах (State Management).
+* **Google Fonts (Inter):** Төгс харагдац бүхий фонт систем.
+* **Lucide Flutter & Cupertino Icons:** Орчин үеийн дүрс тэмдэгтүүд.
+* **Flutter Earth Globe:** Интерактив 3D дэлхийн бөмбөрцөг зураглал.
+* **Youtube Player Flutter:** Түүхэн видео контент үзэх тоглуулагч.
 
-### 2. Install Dependencies
+### 2. Back-end & Өгөгдлийн сан (Backend & Databases)
+* **Firebase Core & Cloud Firestore:** Үүлэн технологид суурилсан өгөгдлийн сан болон хэрэглэгчийн мэдээллийн удирдлага.
+* **Firebase Auth:** Баталгаажуулалт (Имэйл болон утасны дугаарын OTP).
+* **Cloud Functions & Storage:** Түүхэн зураг, материалууд хадгалах болон сервер талын логик.
+* **SQLite (sqflite):** Офлайн горимд апп-ыг ашиглах орон нутгийн мэдээллийн сан.
+* **Flutter Secure Storage:** Нууц мэдээллийг шифрлэж хадгалах хэрэгсэл.
+* **Encrypt:** Өгөгдөл нууцлах, хамгаалах сан.
 
-```bash
-flutter pub get
-```
+---
 
-### 3. Firebase Setup (Optional)
+## ✨ Төслийн үндсэн функцууд (Key Features)
 
-If you want to use Firebase features:
+1. **Баталгаажуулалт ба Профайл (Auth & Profile):**
+   * Имэйл болон нууц үгээр нэвтрэх/бүртгүүлэх.
+   * OTP (One Time Password) код ашиглан баталгаажуулах.
+   * Профайл засварлах, хэрэглэгчийн явц, XP оноо болон Streak харах.
+   * Achievements (Амжилтууд) нээх болон цол авах систем.
 
-1. Install FlutterFire CLI:
+2. **Түүхэн Аялал (History Journey):**
+   * 13-р зууны түүхийг цаг хугацааны шугамаар (Timeline) харах.
+   * Идэвхтэй аяллын түвшин болон явц (Journey Progress).
+   * "History Wagon" зэрэг өвөрмөц UI элементүүд.
+
+3. **Түүхэн хүмүүс ба Ургийн мод (Figures & Family Tree):**
+   * Чингис хаан болон түүний залгамжлагчдын дэлгэрэнгүй намтар, мэдээлэл.
+   * Интерактив ураг удмын мод (Family Tree Graph) - Түүхэн хаадын харилцан хамаарлыг харуулах бүтэц.
+
+4. **Интерактив Газрын Зураг (Interactive Map):**
+   * Их Монгол Улсын түүхэн газар нутаг, байлдан дагуулалтын түүхийг харуулсан 3D болон хавтгай газрын зураг.
+
+5. **Соёл болон Уламжлал (Culture & Traditions):**
+   * 13-р зууны монголчуудын ахуй амьдрал, соёл, зан заншлын тухай мэдээллүүд.
+
+6. **Асуулт Хариултын Тэмцээн (Quizzes & Gamification):**
+   * Түүхэн сэдэвт тулгуурласан сонирхолтой Quiz-үүд.
+   * Зөв хариултад XP оноо цуглуулах, амжилтаа бататгах систем.
+
+7. **Админ удирдлагын хэсэг (Admin Dashboard):**
+   * Аппликейшны өгөгдлийг удирдах, шинээр түүхэн баримт оруулах удирдлагын хэсэг.
+
+8. **AI Түүхийн Зөвлөх (AI History Insights):**
+   * Өдөр бүр түүхэн сонирхолтой баримтуудыг санамсаргүй байдлаар харуулах (Daily Fact Card).
+
+---
+
+## 🚀 Суулгах болон ажиллуулах заавар (Installation & Setup)
+
+Төслийг өөрийн компьютер дээр ажиллуулахын тулд дараах алхмуудыг хийнэ үү.
+
+### 📋 Урьдчилсан шаардлага (Prerequisites)
+* Flutter SDK (Хувилбар 3.0.0 эсвэл түүнээс дээш)
+* Dart SDK
+* Android Studio эсвэл VS Code (Flutter өргөтгөлийн хамт)
+* Firebase Account (Сонголтоор, онлайн дата болон нэвтрэх хэсэгт ашиглагдана)
+
+### ⚙️ Суулгах алхмууд
+
+1. **Эх кодыг клон хийх (Clone Repository):**
    ```bash
-   dart pub global activate flutterfire_cli
+   git clone <repository-url>
+   cd mongol_history_app/flutter_app
    ```
 
-2. Configure Firebase for your project:
+2. **Хамааралтай сангуудыг суулгах (Install Dependencies):**
    ```bash
-   flutterfire configure
+   flutter pub get
    ```
 
-3. This will automatically update `firebase_options.dart` with your Firebase project settings.
+3. **Firebase Тохируулга хийх (Сонголтоор):**
+   Хэрэв онлайн баазтай ажиллах бол:
+   * Firebase CLI суулгах:
+     ```bash
+     dart pub global activate flutterfire_cli
+     ```
+   * Төслийг холбох:
+     ```bash
+     flutterfire configure
+     ```
+   * Сонгосон Firebase төслийн дагуу `firebase_options.dart` файл автоматаар шинэчлэгдэнэ.
+   *(Тэмдэглэл: Firebase тохируулаагүй үед апп нь Demo горимд орон нутгийн загвар өгөгдөл дээр ажиллана).*
 
-**Note:** The app will work without Firebase configuration, but Firebase-dependent features will be simulated with local data.
+4. **Апп ажиллуулах (Run the App):**
+   ```bash
+   # Төхөөрөмжүүдийн жагсаалт харах
+   flutter devices
 
-### 4. Run the App
+   # Аппликейшныг ажиллуулах
+   flutter run
+   ```
 
-```bash
-flutter run
-```
+5. **Аппликейшн бүтээх (Building for Production):**
+   * **Android APK:**
+     ```bash
+     flutter build apk --release
+     ```
+   * **iOS:**
+     ```bash
+     flutter build ios --release
+     ```
+   * **Web:**
+     ```bash
+     flutter build web --release
+     ```
 
-Or select a device in your IDE and press Run.
+---
 
-## Dependencies
+## 🛠️ Нийтлэг асуудлуудыг шийдвэрлэх (Troubleshooting)
 
-- **firebase_core**: Firebase SDK core functionality
-- **cloud_firestore**: Cloud Firestore database
-- **provider**: State management
-- **google_fonts**: Custom fonts (Inter)
-- **lucide_flutter**: Beautiful icon set
-
-## Customization
-
-### Change App Theme
-Edit the `ThemeData` in `lib/main.dart`:
-
-```dart
-theme: ThemeData(
-  textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
-  scaffoldBackgroundColor: Colors.white,
-  // Add your custom theme properties
-),
-```
-
-### Add More Historical Insights
-Edit the insights array in `lib/services/ai_service.dart`:
-
-```dart
-final insights = [
-  "Your historical fact here",
-  // Add more insights
-];
-```
-
-### Modify Carousel Slides
-Edit the `_slides` list in `lib/components/HeaderCarousel.dart`
-
-## Building for Production
-
-### Android
-```bash
-flutter build apk --release
-```
-
-### iOS
-```bash
-flutter build ios --release
-```
-
-### Web
-```bash
-flutter build web --release
-```
-
-## Troubleshooting
-
-### Firebase Issues
-- Make sure you've run `flutterfire configure`
-- Check that your `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) files are in the correct directories
-- The app will work in demo mode without Firebase
-
-### Dependency Issues
-```bash
-flutter clean
-flutter pub get
-```
-
-### Build Issues
-```bash
-flutter doctor
-```
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
-
-## License
-
-This project is open source and available under the MIT License.
+* **Сангууд зөрчилдөх эсвэл ажиллахгүй байх:**
+  ```bash
+  flutter clean
+  flutter pub get
+  ```
+* **Firebase алдаа заах:**
+  Төхөөрөмж дээр интернэт холболтоо шалгах эсвэл Firebase CLI ашиглан дахин нэвтэрч `flutterfire configure` ажиллуулах.

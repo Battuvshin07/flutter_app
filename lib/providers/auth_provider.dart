@@ -55,7 +55,7 @@ class AuthProvider with ChangeNotifier {
           _roleService
               .getCurrentUserRole()
               .timeout(const Duration(seconds: 8), onTimeout: () => 'user'),
-          _checkEmailVerifiedViaOtp(user.uid),
+          _checkEmailVerifiedViaOtp(user),
         ]);
 
         _role = results[0] as String? ?? 'user';
@@ -75,9 +75,14 @@ class AuthProvider with ChangeNotifier {
   }
 
   /// Check if email is verified via OTP (custom field in Firestore user doc).
-  Future<bool> _checkEmailVerifiedViaOtp(String uid) async {
+  Future<bool> _checkEmailVerifiedViaOtp(User user) async {
+    // Google-ээр нэвтэрсэн хэрэглэгч OTP gate-ийг алгасна.
+    final isGoogleUser =
+        user.providerData.any((p) => p.providerId == 'google.com');
+    if (isGoogleUser) return true;
+
     try {
-      final doc = await _db.doc('users/$uid').get();
+      final doc = await _db.doc('users/${user.uid}').get();
       if (!doc.exists) return false;
       final data = doc.data();
       return data?['emailVerified'] == true;
@@ -89,7 +94,7 @@ class AuthProvider with ChangeNotifier {
   /// Refresh email verification status (call after successful OTP verification).
   Future<void> refreshEmailVerificationStatus() async {
     if (_user != null) {
-      _isEmailVerifiedViaOtp = await _checkEmailVerifiedViaOtp(_user!.uid);
+      _isEmailVerifiedViaOtp = await _checkEmailVerifiedViaOtp(_user!);
       notifyListeners();
     }
   }
